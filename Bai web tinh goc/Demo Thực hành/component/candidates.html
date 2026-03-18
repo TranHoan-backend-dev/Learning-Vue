@@ -1,0 +1,813 @@
+<span>
+    <!-- Title danh sách -->
+    <div class="content__header">
+        <div class="content__header__left">
+            <div class="content__header__title">Ứng viên</div>
+        </div>
+
+        <div class="content__header__right">
+            <div class="content__header__right__action__delete">
+                <button type="button" id="bulkDeleteBtn" class="content__header__right__btn--delete">
+                    <div class="mi__icon__delete__user"></div>
+                    Xóa
+                </button>
+            </div>
+            <!-- Thêm ứng viên -->
+            <div class="content__header__action__add">
+                <div class="content__header__action__add__left">
+                    <div class="content__header__action__add__icon__left">
+                    </div>
+                    <div class="content__header__action__add__icon__text">
+                        Thêm ứng viên
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Nội dung bảng -->
+    <div class="content__body">
+        <div class="content__body__container">
+            <!-- Title table -->
+            <div class="content__body__title">
+                <div class="content__body__header__left">
+                    <div class="">
+
+                    </div>
+                </div>
+                <div class="content__body__header__right">
+                    <div class="content__body__header__right__search">
+                        <div class="content__body__header__right__search__icon"></div>
+                        <input class="content__body__header__right__search__input" placeholder="Tìm kiếm ứng viên..." />
+                    </div>
+                    <div class="content__body__header__right__icon" id="openFilterBtn">
+                        <div class="content__body__header__right_filter_icon"></div>
+                    </div>
+                    <div class="content__body__header__right__icon">
+                        <div class="content__body__header__right_shared_icon"></div>
+                    </div>
+                    <div class="content__body__header__right__icon">
+                        <div class="content__body__header__right_samset_icon"></div>
+                    </div>
+                    <div class="content__body__header__right__icon">
+                        <div class="sidebar__menu__item__setting__icon"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Content table -->
+            <div class="content__body__table">
+                <div class="table-wrapper">
+
+                    <table id="table__user">
+                        <!-- Tiêu đề của bảng -->
+                        <thead>
+                            <tr>
+                                <th class="col-checkbox">
+                                    <input type="checkbox" id="checkAll" />
+                                </th>
+                                <th class="col-name">
+                                    STT
+                                </th>
+                                <th class="col-name">
+                                    Họ và Tên
+                                </th>
+                                <th class="col-phone">
+                                    Số điện thoại
+                                </th>
+                                <th class="col-email">
+                                    Email
+                                </th>
+                                <th class="col-email">
+                                    Chiến dịch tuyển dụng
+                                </th>
+                                <th class="col-email">
+                                    Vị trí tuyển dụng
+                                </th>
+                                <th class="col-email">
+                                    Tin tuyển dụng
+                                </th>
+                                <th class="col-email">
+                                    Ngày ứng tuyển
+                                </th>
+                                <th class="col-email">
+                                    Vòng tuyển dụng
+                                </th>
+                                <th class="col-email">
+                                    Đánh giá
+                                </th>
+                                <th class="col-action">
+                                    Hành động
+                                </th>
+                            </tr>
+                        </thead>
+                        <!-- Nội dung của bảng -->
+                        <tbody id="table__body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Footer table -->
+            <div class="content__body__footer">
+                <!-- Tổng bản ghi và Số bản ghi trên trang -->
+                <div class="content__body__footer__left">
+                    <div class="content__body__footer__total">
+                        Tổng: <strong id="totalRecords">0</strong> bản ghi
+                    </div>
+                </div>
+
+                <!-- Phân trang và điều hướng -->
+                <div class="content__body__footer__right">
+                    <div class="content__body__footer__pagesize">
+                        <span class="paging_label">Số bản ghi trên trang</span>
+                        <select id="pageSizeSelect" class="page__size__select">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div class="content__body__footer__info">
+                        <span class="page__info" id="pageInfo">0 - 0 / 0 bản ghi</span>
+                    </div>
+                    <div class="content__body__footer__nav">
+                        <button type="button" class="btn__page" id="btnPrevPage" title="Trang trước">
+                            <div class="icon__prev"></div>
+                        </button>
+                        <button type="button" class="btn__page" id="btnNextPage" title="Trang sau">
+                            <div class="icon__next"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</span>
+
+<!-- Modal thêm -->
+<div id="candidateModal" class="modal">
+    <div class="modal__content">
+        <div class="modal__header">
+            <h3>Thêm ứng viên</h3>
+            <span class="close__btn" id="closeModal">&times;</span>
+        </div>
+        <div class="modal__body">
+            <!-- Upload CV -->
+            <div class="upload__container">
+                <div class="upload__box">
+                    <div class="upload__icon">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+                    <p class="upload__hint">
+                        Chấp nhận file .doc, .docx, .pdf, .jpg, .jpeg, .png (Dung lượng < hơn 15Mb) </p>
+                            <input type="file" class="cv_file_input" style="display: none;"
+                                accept=".doc,.docx,.pdf,.jpg,.jpeg,.png">
+                </div>
+            </div>
+
+            <!-- Form Fields -->
+            <form id="addNewCandidate" class="form__container">
+                <div class="form__left">
+                    <div class="avatar__upload">
+                        <div class="avatar__placeholder">Ảnh</div>
+                    </div>
+                </div>
+
+                <div class="form__right">
+                    <!-- Họ tên -->
+                    <div class="form__row">
+                        <label>Họ và tên <span class="required">*</span></label>
+                        <input type="text" name="fullName" placeholder="Nhập họ và tên" required>
+                    </div>
+
+                    <!-- Ngày sinh, Giới tính -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Ngày sinh <span class="sub__label">Ngày tháng năm</span></label>
+                            <div class="input__with__icon">
+                                <input type="text" name="dob" placeholder="dd/MM/yyyy">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                        <div class="flex__grow">
+                            <label>Giới tính</label>
+                            <select name="gender">
+                                <option value="">Chọn giới tính</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Khu vực -->
+                    <div class="form__row">
+                        <label>Khu vực</label>
+                        <div class="input__group">
+                            <select name="area" class="flex__grow">
+                                <option value="">Chọn giá trị</option>
+                                <option value="Ba Đình">Ba Đình</option>
+                                <option value="Hoàn Kiếm">Hoàn Kiếm</option>
+                                <option value="Hai Bà Trưng">Hai Bà Trưng</option>
+                            </select>
+                            <button type="button" class="btn__more">...</button>
+                        </div>
+                    </div>
+
+                    <!-- Sdt, email -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Số điện thoại <span class="required">*</span></label>
+                            <input type="text" name="phone" placeholder="Nhập số điện thoại" required>
+                        </div>
+                        <div class="flex__grow">
+                            <label>Email <span class="required">*</span></label>
+                            <input type="email" name="email" placeholder="Nhập Email" required>
+                        </div>
+                    </div>
+
+                    <!-- Địa chỉ -->
+                    <div class="form__row">
+                        <label>Địa chỉ</label>
+                        <input type="text" name="address" placeholder="Nhập địa chỉ">
+                    </div>
+
+                    <div class="section__title">HỌC VẤN</div>
+
+                    <!-- Trình độ đào tạo, Nơi đào tạo, Chuyên ngành -->
+                    <div class="education__section">
+                        <div class="form__row flex__row gap-8 align-center">
+                            <label class="edu__label__fixed">• Trình độ đào tạo</label>
+                            <div class="input__with__actions flex__grow">
+                                <input type="text" name="educationLevel" placeholder="Nhập trình độ đào tạo">
+                                <div class="actions">
+                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form__row flex__row gap-8 align-center">
+                            <label class="edu__label__fixed">• Nơi đào tạo</label>
+                            <div class="input__with__actions flex__grow">
+                                <input type="text" name="educationLocation" placeholder="Nhập nơi đào tạo">
+                                <div class="actions">
+                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form__row flex__row gap-8 align-center">
+                            <label class="edu__label__fixed">• Chuyên ngành</label>
+                            <div class="input__with__actions flex__grow">
+                                <input type="text" name="major" placeholder="Nhập chuyên ngành">
+                                <div class="actions">
+                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="add__education__link">+ Thêm học vấn</a>
+                    </div>
+
+                    <hr class="divider">
+
+                    <!-- Ngày ứng tuyển, Nguồn ứng viên -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Ngày ứng tuyển <span class="required">*</span></label>
+                            <div class="input__with__icon">
+                                <input type="text" name="applyDate" value="27/10/2025">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                        <div class="flex__grow">
+                            <label>Nguồn ứng viên</label>
+                            <select name="candidateSource">
+                                <option value="">Chọn nguồn ứng viên</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Nhân sự khai thác + cộng tác viên -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Nhân sự khai thác <span class="required">*</span></label>
+                            <select name="recruiter">
+                                <option value="">Đình Nga QTHT</option>
+                            </select>
+                        </div>
+                        <div class="flex__grow">
+                            <label>Cộng tác viên</label>
+                            <select name="collaborator">
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: inline-flex; margin-bottom: 16px;">
+                        <input type="checkbox" name="quickAddReference" id="quickAdd">
+                        <p>Thêm nhanh người tham chiếu vào kho ứng viên</p>
+                    </div>
+
+                    <div class="form__row">
+                        <a href="#" class="add__education__link">+ Thêm người giới thiệu</a>
+                        <div style="margin-top: 5px">
+                            <label>Nơi làm việc gần đây</label>
+                            <input type="text" name="recentWorkplace" id="" placeholder="Nhập nơi làm việc gần đây">
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="form__row">
+                        <a href="#" class="add__education__link">+ Thêm kinh nghiệm làm việc</a>
+                        <div style="margin-top: 5px;">
+                            <label>Nơi làm việc</label>
+                            <input type="text" name="workplace" id="" placeholder="Nhập nơi làm việc">
+                        </div>
+                    </div>
+
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Thời gian <span class="required">*</span></label>
+                            <div class="input__with__icon">
+                                <input type="text" name="startDate" placeholder="dd/MM/yyyy">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                        <div class="flew__grow" style="margin-bottom: 10px;">-</div>
+                        <div class="flex__grow">
+                            <div class="input__with__icon">
+                                <input type="text" name="endDate" placeholder="dd/MM/yyyy">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form__row">
+                        <label>Vị trí công việc</label>
+                        <input type="text" name="jobPosition" id="" placeholder="Nhập vị trí công việc">
+                    </div>
+
+                    <div class="form__row">
+                        <label>Mô tả công việc</label>
+                        <textarea name="jobDescription" placeholder="Nhập vị trí công việc"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn__cancel" id="cancelModal">Hủy</button>
+            <button type="submit" form="addNewCandidate" class="btn__save">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xóa -->
+<div id="deleteConfirmModal" class="modal">
+    <div class="modal__content modal__content__confirm">
+        <div class="modal__header">
+            <h3>Xác nhận</h3>
+            <span class="close__btn" id="closeDeleteModal">&times;</span>
+        </div>
+        <div class="modal__body modal__body__confirm">
+            <div class="confirm__icon"></div>
+            <div class="confirm__message">
+                <p>Bạn có chắc chắn muốn xóa bản ghi đã chọn không?</p>
+            </div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn__cancel" id="cancelDeleteModal">Không</button>
+            <button type="button" class="btn__delete" id="confirmDeleteBtn">Xóa</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal sửa -->
+<div id="updateCandidateModal" class="modal">
+    <!-- <div id="updateCandidateModal" class="modal" style="display: block !important;"> -->
+    <div class="modal__content">
+        <div class="modal__header">
+            <h3>Sửa thông tin ứng viên</h3>
+            <span class="close__btn" id="closeUpdateModal">&times;</span>
+        </div>
+        <div class="modal__body">
+            <!-- Upload CV -->
+            <div class="upload__container">
+                <div class="upload__box">
+                    <div class="upload__icon">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+                    <p class="upload__text">Kéo thả hoặc bấm vào đây để tải CV lên</p>
+                    <p class="upload__hint">Chấp nhận file .doc, .docx, .pdf, .jpg, .jpeg, .png (Dung lượng < hơn 15
+                            Mb)</p>
+                            <input type="file" class="cv_file_input" style="display: none;"
+                                accept=".doc,.docx,.pdf,.jpg,.jpeg,.png">
+                </div>
+            </div>
+
+            <!-- Form Fields -->
+            <form id="updateCandidate" class="form__container">
+                <div class="form__left">
+                    <div class="avatar__upload">
+                        <div class="avatar__placeholder">Ảnh</div>
+                    </div>
+                </div>
+
+                <div class="form__right">
+                    <!-- Họ tên -->
+                    <div class="form__row">
+                        <label>Họ và tên <span class="required">*</span></label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Nhập họ và tên" required>
+                    </div>
+
+                    <!-- Ngày sinh, Giới tính -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Ngày sinh <span class="sub__label">Ngày tháng năm</span></label>
+                            <div class="input__with__icon">
+                                <input type="text" name="dob" placeholder="dd/MM/yyyy">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                        <div class="flex__grow">
+                            <label>Giới tính</label>
+                            <select name="gender">
+                                <option value="">Chọn giới tính</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Khu vực -->
+                    <div class="form__row">
+                        <label>Khu vực</label>
+                        <div class="input__group">
+                            <select name="area" class="flex__grow">
+                                <option value="">Chọn giá trị</option>
+                                <option value="Ba Đình">Ba Đình</option>
+                                <option value="Hoàn Kiếm">Hoàn Kiếm</option>
+                                <option value="Hai Bà Trưng">Hai Bà Trưng</option>
+                            </select>
+                            <button type="button" class="btn__more">...</button>
+                        </div>
+                    </div>
+
+                    <!-- Sdt, email -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Số điện thoại</label>
+                            <input type="text" id="phone" name="phone" placeholder="Nhập số điện thoại">
+                        </div>
+                        <div class="flex__grow">
+                            <label>Email</label>
+                            <input type="email" id="email" name="email" placeholder="Nhập Email">
+                        </div>
+                    </div>
+
+                    <!-- Địa chỉ -->
+                    <div class="form__row">
+                        <label>Địa chỉ</label>
+                        <input type="text" name="address" placeholder="Nhập địa chỉ">
+                    </div>
+
+                    <div class="section__title">HỌC VẤN</div>
+
+                    <!-- Trình độ đào tạo, Nơi đào tạo, Chuyên ngành -->
+                    <div class="education__section">
+                        <div class="form__row flex__row gap-8 align-center">
+                            <label class="edu__label__fixed">• Trình độ đào tạo</label>
+                            <div class="input__with__actions flex__grow">
+                                <input type="text" name="educationLevel" placeholder="Nhập trình độ đào tạo">
+                                <div class="actions">
+                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form__row flex__row gap-8 align-center">
+                            <label class="edu__label__fixed">• Nơi đào tạo</label>
+                            <div class="input__with__actions flex__grow">
+                                <input type="text" name="educationLocation" placeholder="Nhập nơi đào tạo">
+                                <div class="actions">
+                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form__row flex__row gap-8 align-center">
+                            <label class="edu__label__fixed">• Chuyên ngành</label>
+                            <div class="input__with__actions flex__grow">
+                                <input type="text" name="major" placeholder="Nhập chuyên ngành">
+                                <div class="actions">
+                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="add__education__link">+ Thêm học vấn</a>
+                    </div>
+
+                    <hr class="divider">
+
+                    <!-- Ngày ứng tuyển, Nguồn ứng viên -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Ngày ứng tuyển <span class="required">*</span></label>
+                            <div class="input__with__icon">
+                                <input type="text" name="applyDate" value="27/10/2025">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                        <div class="flex__grow">
+                            <label>Nguồn ứng viên</label>
+                            <select name="candidateSource">
+                                <option value="">Chọn nguồn ứng viên</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Nhân sự khai thác + cộng tác viên -->
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Nhân sự khai thác <span class="required">*</span></label>
+                            <select name="recruiter">
+                                <option value="">Đình Nga QTHT</option>
+                            </select>
+                        </div>
+                        <div class="flex__grow">
+                            <label>Cộng tác viên</label>
+                            <select name="collaborator">
+                                <option>Chọn cộng tác viên</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: inline-flex; margin-bottom: 16px;">
+                        <input type="checkbox" name="quickAddReference" id="quickAdd">
+                        <p>Thêm nhanh người tham chiếu vào kho ứng viên</p>
+                    </div>
+
+                    <div class="form__row">
+                        <a href="#" class="add__education__link">+ Thêm người giới thiệu</a>
+                        <div style="margin-top: 5px">
+                            <label>Nơi làm việc gần đây</label>
+                            <input type="text" name="recentWorkplace" id="" placeholder="Nhập nơi làm việc gần đây">
+                        </div>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="form__row">
+                        <a href="#" class="add__education__link">+ Thêm kinh nghiệm làm việc</a>
+                        <div style="margin-top: 5px;">
+                            <label>Nơi làm việc</label>
+                            <input type="text" name="workplace" id="" placeholder="Nhập nơi làm việc">
+                        </div>
+                    </div>
+
+                    <div class="form__row flex__row gap-16">
+                        <div class="flex__grow">
+                            <label>Thời gian <span class="required">*</span></label>
+                            <div class="input__with__icon">
+                                <input type="text" name="startDate" placeholder="dd/MM/yyyy">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                        <div class="flew__grow" style="margin-bottom: 10px;">-</div>
+                        <div class="flex__grow">
+                            <div class="input__with__icon">
+                                <input type="text" name="endDate" placeholder="dd/MM/yyyy">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form__row">
+                        <label>Vị trí công việc</label>
+                        <input type="text" name="jobPosition" id="" placeholder="Nhập vị trí công việc">
+                    </div>
+
+                    <div class="form__row">
+                        <label>Mô tả công việc</label>
+                        <textarea name="jobDescription" placeholder="Nhập vị trí công việc"></textarea>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn__cancel" id="cancelUpdateModal">Không</button>
+            <button type="submit" class="btn__delete" form="updateCandidate" id="confirmUpdateBtn">Cập nhật</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bộ lọc sidebar -->
+<div id="filterSidebar" class="filter_sidebar">
+    <div class="filter_sidebar_header">
+        <div class="filter_sidebar_title">Bộ lọc</div>
+        <div class="filter_sidebar_close" id="closeFilterBtn">
+            <span class="close__btn" id="closeModal">&times;</span>
+        </div>
+    </div>
+    <div class="filter_sidebar_body">
+        <div class="filter_sidebar_section">
+            <div class="filter_sidebar_item">
+                <div class="mi_icon_user_plus"></div>
+                <span>Ứng viên mới</span>
+            </div>
+            <div class="filter_sidebar_item">
+                <div class="mi_icon_bookmark"></div>
+                <span>Đang theo dõi</span>
+            </div>
+        </div>
+
+        <div class="filter_sidebar_divider"></div>
+
+        <div class="filter_sidebar_dropdown">
+            <span>Tất cả ứng viên</span>
+            <div class="mi_icon_chevron_down_small"></div>
+        </div>
+
+        <div class="filter_sidebar_search">
+            <div class="mi_icon_search_small"></div>
+            <input type="text" class="" placeholder="Tìm kiếm">
+        </div>
+
+        <div class="filter_sidebar_list">
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Tin tuyển dụng</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Vị trí tuyển dụng</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Chiến dịch tuyển dụng</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Kho tiềm năng</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Thẻ</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Vòng tuyển dụng</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái mới nhận việc</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+            <label class="filter_sidebar_checkbox">
+                <input type="checkbox"> <span>Trạng thái</span>
+            </label>
+        </div>
+    </div>
+    <div class="filter_sidebar_footer">
+        <button class="btn_outline" id="clearFilterBtn">Bỏ lọc</button>
+        <button class="btn_primary" id="applyFilterBtn">Áp dụng</button>
+    </div>
+</div>
+<div id="filterOverlay" class="filter_overlay"></div>
+
+<!-- Chi tiết ứng viên Modal -->
+<div id="candidateDetailModal" class="detail-modal">
+    <div class="detail-modal__content">
+        <span class="detail-modal__close" id="closeDetailModal">&times;</span>
+
+        <!-- Sidebar trái -->
+        <div class="detail-sidebar">
+            <div class="detail-sidebar__header">
+                <div class="detail-sidebar__avatar">TT</div>
+                <div class="detail-sidebar__info-top">
+                    <div class="detail-sidebar__name-row">
+                        <span class="detail-sidebar__name"></span>
+                        <div class="detail-sidebar__edit-icon"></div>
+                    </div>
+                    <div class="detail-sidebar__sub-info">Ứng tuyển ngày 28/07/2023</div>
+                    <div class="detail-sidebar__sub-info">Ứng viên thuộc 1 chiến dịch tuyển dụng. <span
+                            class="detail-sidebar__link">Chi tiết</span></div>
+                    <div class="detail-sidebar__rating">
+                        <i class="bi bi-star-fill active"></i>
+                        <i class="bi bi-star-fill active"></i>
+                        <i class="bi bi-star-fill active"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-sidebar__body">
+                <div class="detail-sidebar__section">
+                    <div class="detail-sidebar__section-title">THÔNG TIN ỨNG TUYỂN (0)</div>
+                    <p class="detail-sidebar__sub-info">Ứng viên chưa thuộc tin tuyển dụng nào</p>
+                    <button class="btn-secondary-outline">
+                        <i class="bi bi-person-plus"></i> Chuyển ứng viên vào tin
+                    </button>
+                </div>
+
+                <div class="detail-sidebar__section">
+                    <div class="detail-sidebar__section-title" style="display: flex; gap: 8px; align-items: center;">
+                        Gắn thẻ <i class="bi bi-plus-square" style="color: #2970f6; cursor: pointer;"></i>
+                    </div>
+                </div>
+
+                <div class="detail-sidebar__divider" style="height: 1px; background: #eee; margin: 16px 0;"></div>
+
+                <div class="detail-sidebar__section">
+                    <div class="detail-sidebar__section-title">THÔNG TIN CÁ NHÂN</div>
+                    <div class="detail-sidebar__row">
+                        <div class="detail-sidebar__label"><i class="bi bi-envelope"></i> Email</div>
+                        <div class="detail-sidebar__value"><span
+                                class="detail-sidebar__link detail_sidebar_label_email"></span>
+                        </div>
+                    </div>
+                    <div class="detail-sidebar__row">
+                        <div class="detail-sidebar__label"><i class="bi bi-calendar"></i> Ngày sinh</div>
+                        <div class="detail-sidebar__value">29/07/2003</div>
+                    </div>
+                    <div class="detail-sidebar__row">
+                        <div class="detail-sidebar__label"><i class="bi bi-gender-ambiguous"></i> Giới tính</div>
+                        <div class="detail-sidebar__value">Nam</div>
+                    </div>
+                </div>
+
+                <div class="detail-sidebar__section">
+                    <div class="detail-sidebar__section-title">HỌC VẤN</div>
+                    <div class="detail-sidebar__row">
+                        <div class="detail-sidebar__label" style="align-items: flex-start; padding-top: 4px;">• --</div>
+                        <div class="detail-sidebar__value">
+                            <div style="color: #65696e; font-size: 13px;">Nơi đào tạo</div>
+                            <div>--</div>
+                            <div style="color: #65696e; font-size: 13px; margin-top: 8px;">Chuyên ngành</div>
+                            <div style="font-weight: 700;">Công nghệ thông tin</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-sidebar__footer">
+                <div class="btn-upload" style="padding: 4px 8px; border-radius: 4px;"><i class="bi bi-plus"></i></div>
+                <div class="detail-sidebar__link" style="display: flex; gap: 4px; align-items: center; color: #65696e;">
+                    <i class="bi bi-bookmark"></i> Theo dõi
+                </div>
+            </div>
+        </div>
+
+        <!-- Nội dung chính -->
+        <div class="detail-main">
+            <div class="detail-main__tabs">
+                <div class="detail-main__tab active">Hồ sơ ứng viên</div>
+                <div class="detail-main__tab">Email</div>
+                <div class="detail-main__tab">Tin nhắn</div>
+                <div class="detail-main__tab">Đánh giá</div>
+                <div class="detail-main__tab">Bình luận</div>
+                <div class="detail-main__tab">Tài liệu</div>
+                <div class="detail-main__tab">Công việc</div>
+                <div class="detail-main__tab">Lịch sử</div>
+            </div>
+
+            <div class="detail-main__sub-header">
+                <div class="detail-main__sub-tabs">
+                    <div class="detail-main__sub-tab active">CV ứng viên</div>
+                    <div class="detail-main__sub-tab">Thông tin ứng tuyển</div>
+                    <div class="detail-main__sub-tab">Thông tin tiếp nhận</div>
+                </div>
+                <button class="btn-upload">
+                    <i class="bi bi-upload"></i> Tải lên CV mới
+                </button>
+            </div>
+
+            <div class="detail-main__body">
+                <div class="detail-main__content-area">
+                    <div class="detail-main__placeholder-text">Chưa có CV vui lòng tải lên CV mới!</div>
+                    <button class="btn-upload">
+                        <i class="bi bi-upload"></i> Tải lên CV mới
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

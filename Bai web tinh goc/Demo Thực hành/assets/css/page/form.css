@@ -1,0 +1,470 @@
+/* Modal Styles */
+.form__container {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.form__left {
+  flex-shrink: 0;
+  width: 100px;
+  display: flex;
+  justify-content: center;
+}
+
+.form__right {
+  flex-grow: 1;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal__content {
+  background-color: #fff;
+  margin: auto;
+  width: 90%;
+  max-width: 800px;
+  max-height: 95vh;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal__header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal__header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #212121;
+}
+
+.close__btn {
+  font-size: 24px;
+  color: #65696e;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close__btn:hover {
+  color: #212121;
+}
+
+.modal__body {
+  padding: 16px 24px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.modal__footer {
+  padding: 12px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background-color: #f8f9fa;
+}
+
+/* Upload CV Area */
+.upload__container {
+  margin-bottom: 24px;
+}
+
+.upload__box {
+  border: 1px dashed #2970f6;
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+  background-color: #f1f6ff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.upload__box:hover, .upload__box.dragging {
+  background-color: #e8f0fe;
+  border-color: #2159c4;
+}
+
+.upload__icon {
+  font-size: 32px;
+  color: #2970f6;
+  margin-bottom: 4px;
+}
+
+.upload__text {
+  color: #2970f6;
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.upload__hint {
+  color: #65696e;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* Form Groups */
+.form__row {
+  margin-bottom: 16px;
+}
+
+.flex__row {
+  display: flex;
+  align-items: flex-end;
+}
+
+.align__center, .align-center {
+  align-items: center;
+}
+
+.gap-8 {
+  gap: 8px;
+}
+.gap-16 {
+  gap: 16px;
+}
+
+.flex__grow {
+  flex-grow: 1;
+  max-width: 50%;
+}
+
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #212121;
+}
+
+.sub__label {
+  font-weight: 400;
+  color: #65696e;
+  margin-left: 4px;
+  font-size: 13px;
+}
+
+.required {
+  color: #ff4d4f;
+  margin-left: 2px;
+}
+
+input[type="text"],
+input[type="email"],
+select,
+textarea {
+  width: 100%;
+  height: 36px;
+  padding: 8px 12px;
+  border: 1px solid #dddde4;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  background-color: #fff;
+  font-family: inherit;
+}
+
+textarea {
+  height: 80px;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2970f6;
+}
+
+.input__with__icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input__with__icon input {
+  padding-right: 36px;
+}
+
+.input__with__icon i {
+  position: absolute;
+  right: 10px;
+  color: #65696e;
+  pointer-events: none;
+}
+
+.input__group {
+  display: flex;
+  gap: 4px;
+}
+
+.btn__more {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dddde4;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Avatar Placeholder */
+.avatar__upload {
+  margin-right: 16px;
+}
+
+.avatar__placeholder {
+  width: 80px;
+  height: 80px;
+  border: 1px dashed #dddde4;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #65696e;
+  font-size: 13px;
+  background-color: #fff;
+}
+
+/* Education Section */
+.section__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #212121;
+  margin: 24px 0 16px 0;
+}
+
+.education__section {
+  padding-left: 8px;
+}
+
+.edu__label__fixed {
+  width: 150px;
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.education__section .flex__grow {
+  max-width: none;
+}
+
+.input__with__actions {
+  position: relative;
+}
+
+.input__with__actions input {
+  padding-right: 60px;
+}
+
+.input__with__actions .actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+  color: #2970f6;
+}
+
+.input__with__actions .actions i {
+  cursor: pointer;
+}
+
+.input__with__actions .actions i.bi-chevron-down {
+  color: #65696e;
+}
+
+.add__education__link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #2970f6;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 24px 0;
+}
+
+/* Footer Buttons */
+.btn__cancel {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #212121;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.btn__cancel:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.btn__save {
+  height: 36px;
+  padding: 0 24px;
+  border: none;
+  background-color: #2970f6;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.btn__save:hover {
+  background-color: #2159c4;
+  cursor: pointer;
+}
+
+/* Responsive fixes */
+@media screen and (max-width: 768px) {
+  .form__container {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .form__left {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .flex__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .gap-16,
+  .gap-8 {
+    gap: 12px;
+  }
+
+  .edu__label__fixed {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .form__right {
+    width: 100%;
+  }
+
+  .flex__grow {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .education__section .form__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .modal__content {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  /* Confirm Modal Responsive */
+  .modal__content__confirm {
+    width: 90% !important;
+    max-width: 400px !important;
+    margin: 10% auto !important;
+    height: auto !important;
+  }
+
+  .modal__body__confirm {
+    flex-direction: row !important; /* Keep icon and text side by side if space allows */
+    padding: 24px 16px !important;
+  }
+}
+
+@media screen and (max-height: 700px) {
+  .modal__content {
+    margin: auto;
+  }
+}
+
+/* Confirm Modal Styles */
+.modal__content__confirm {
+  width: 90% !important;
+  max-width: 444px !important;
+  margin: auto !important;
+}
+
+.modal__body__confirm {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  padding: 32px 24px !important;
+}
+
+.confirm__icon {
+  width: 40px;
+  height: 40px;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  background-position: -593px -457px;
+  flex-shrink: 0;
+}
+
+.confirm__message p {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  font-size: 14px;
+  color: #212121;
+  line-height: 20px;
+}
+
+.confirm__message span {
+  color: #212121;
+  font-size: 14px;
+}
+
+.btn__delete {
+  height: 36px;
+  padding: 0 24px;
+  border: none;
+  background-color: #ff4d4f;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 4px;
+  z-index: 3;
+}
+
+.btn__delete:hover {
+  background-color: #d9363e;
+  cursor: pointer;
+}

@@ -1,0 +1,206 @@
+.mi__icon__delete__user {
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/icons/icon-delete-candidate.svg);
+  -webkit-mask-position: 0 0;
+  background-color: var(--color-default-icon);
+}
+
+.mi__icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.mi__icon:hover {
+  background-color: #cccccc;
+}
+
+.mi__icon__edit {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -182px -658px;
+  background-color: var(--color-default-icon);
+  cursor: pointer;
+}
+
+.mi__icon__delete {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -322px -658px;
+  background-color: red;
+  cursor: pointer;
+}
+
+.sidebar__menu__item__tiem__nang__icon {
+  width: 21px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -18px -673px;
+  background-color: #c5ccd5;
+  transform: scale(1.25);
+  transform-origin: center;
+}
+
+.sidebar__menu__item__hiring__campaign__icon {
+  width: 27px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -71px -633px;
+  background-color: #c5ccd5;
+  transform: scale(1.15);
+}
+
+.sidebar__menu__item__job__icon {
+  width: 23px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -23px -112px;
+  background-color: #c5ccd5;
+  transform: scale(1.15);
+}
+
+.sidebar__menu__item__ai__marketing__icon {
+  width: 20px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -179px -694px;
+  background-color: #c5ccd5;
+  transform: scale(1.35);
+}
+
+.sidebar__menu__item__contact__icon {
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -145px -608px;
+  background-color: #c5ccd5;
+  transform: scale(1.15);
+}
+
+.sidebar__menu__item__report__icon {
+  width: 20px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -218px -610px;
+  background-color: #c5ccd5;
+  transform: scale(1.25);
+}
+
+.sidebar__menu__item__setting__icon {
+  width: 22px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -100px -675px;
+  background-color: #c5ccd5;
+  transform: scale(1.5);
+}
+
+.sidebar__menu__item__knowledge__icon {
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -2px -824px;
+  background-color: #c5ccd5;
+  transform: scale(1.25);
+}
+
+.content__body__header__right_filter_icon {
+  width: 20px;
+  height: 20px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -40px -655px;
+  background-color: #c5ccd5;
+  cursor: pointer;
+}
+
+.content__body__header__right_shared_icon {
+  width: 20px;
+  height: 20px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -60px -655px;
+  background-color: #c5ccd5;
+  cursor: pointer;
+}
+
+.content__body__header__right_samset_icon {
+  width: 20px;
+  height: 20px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -2px -846px;
+  background-color: #c5ccd5;
+  cursor: pointer;
+}
+
+.mi_icon_user_plus {
+  width: 17px;
+  height: 17px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -224px -47px;
+  background-color: #65696e;
+}
+
+.mi_icon_bookmark {
+  width: 15px;
+  height: 15px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -160px 0;
+  background-color: #65696e;
+}
+
+.mi_icon_chevron_down_small {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -121px -658px;
+  background-color: #65696e;
+}
+
+.mi_icon_search_small {
+  width: 16px;
+  height: 16px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -311px -1105px;
+  background-color: #c5ccd5;
+}
+
+.mi__icon__close {
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -188px -608px;
+  background-color: #65696e;
+  cursor: pointer;
+}
+
+.content__body__header__right__search__icon {
+  width: 24px;
+  height: 24px !important;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ai-feature/ai-search-candidate.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  animation: spinFFF 20s infinite;
+}
+
+.content__body__header__right .sidebar__menu__item__setting__icon {
+  cursor: pointer;
+}
+
+.mi_icon_view_details {
+  width: 15px;
+  height: 13px;
+  -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  -webkit-mask-position: -81px -1px;
+  background-color: #65696e;
+  cursor: pointer;
+  transform: scale(1.5);
+}

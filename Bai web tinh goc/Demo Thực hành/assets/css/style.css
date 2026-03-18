@@ -1,0 +1,12 @@
+/* Nhúng các link dùng chung */
+@import url("./common.css");
+@import url("./layout.css");
+
+/* Nhúng file cắt icon vào */
+@import url("./components/icon.css");
+@import url("./components/filter-sidebar.css");
+@import url("./page/candidate-detail.css");
+
+/* Nhúng css các màn hình */
+@import url("./page/employees.css");
+@import url("./page/form.css");

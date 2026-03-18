@@ -1,0 +1,65 @@
+* {
+  font-family: Inter, serif;
+  box-sizing: border-box;
+}
+
+:root {
+  --border-control-normal: #dddde4;
+  --border-control-hover: #2970f6;
+  --background-button-hover: #e2efff;
+  --color-default-icon: #65696e;
+  --border-table: rgb(221, 221, 221);
+}
+
+/* Style chung table */
+table {
+  border-collapse: collapse;
+}
+
+tr {
+  display: block;
+}
+
+tr:hover td {
+  background-color: rgba(42, 126, 252, 0.1) !important;
+}
+
+th {
+  height: 48px;
+  padding: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid var(--border-table);
+  background-color: #f9fafb;
+}
+
+td {
+  height: 48px;
+  padding: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid var(--border-table);
+  border-bottom: 1px solid var(--border-table);
+  background-color: white;
+}
+
+.user_avatar_img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #ddd;
+}
+
+.header_icon_btn {
+  position: relative;
+  cursor: pointer;
+  color: #555;
+}
+
+.header_icon_btn {
+  position: relative;
+  cursor: pointer;
+  color: #555;
+}
