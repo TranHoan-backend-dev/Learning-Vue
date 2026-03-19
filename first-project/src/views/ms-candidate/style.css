@@ -1,0 +1,378 @@
+.content_header {
+    height: 50px;
+    padding: 16px 24px 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content_header_title {
+    font-weight: 700;
+    font-size: 24px;
+    color: #ffffff;
+}
+
+.content_header_right {
+    display: flex;
+    gap: 16px;
+}
+
+.content_header_right_btn_delete {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    height: 36px;
+    border-radius: 4px;
+    padding: 0 12px;
+}
+
+.content_header_right_btn_delete:hover {
+    border: 1px solid #2a7efc !important;
+    color: #2a7efc !important;
+}
+
+.content_header_right_btn_delete:hover .mi_icon_delete_user {
+    background-color: #2a7efc !important;
+}
+
+.mi_icon_delete_user {
+    margin-right: 12px;
+}
+
+.content_body {
+    height: calc(100% - 50px);
+    padding: 24px;
+}
+
+.content_body_container {
+    background-color: white;
+    border-radius: 4px;
+    height: 100%;
+}
+
+.content_body_title {
+    display: flex;
+    height: 68px;
+    justify-content: space-between;
+}
+
+.content_body_footer {
+    display: flex;
+    height: 60px;
+    justify-content: space-between;
+}
+
+.content_body_table {
+    height: calc(100% - 128px);
+}
+
+.table_wrapper {
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+#table_user .col_name {
+    min-width: 250px;
+    max-width: 250px;
+}
+
+#table_user thead .col_name,
+#table_user thead .col_checkbox,
+#table_user thead .col_phone,
+#table_user thead .col_email,
+#table_user thead .col_action {
+    border: 0.1px solid #c0c0c0;
+    text-align: center;
+}
+
+#table_user .col_phone {
+    min-width: 150px;
+    max-width: 150px;
+    text-align: right;
+}
+
+.stt,
+.text-center {
+    text-align: center !important;
+}
+
+#table_user .col_email {
+    min-width: 200px;
+    max-width: 200px;
+    text-align: left;
+}
+
+#table_user .col_date {
+    min-width: 200px;
+    max-width: 200px;
+    text-align: center;
+}
+
+#table_user .col_checkbox {
+    min-width: 50px;
+    max-width: 50px;
+    padding: 8px 15px !important;
+    position: sticky;
+    left: 0;
+}
+
+#table_user .col_action {
+    position: sticky;
+    right: 0;
+}
+
+.table_action {
+    display: none;
+}
+
+tr:hover .table_action {
+    display: flex !important;
+}
+
+.table_action .mi_icon {
+    margin-right: 12px;
+}
+
+.content_body_header_left {
+    display: flex;
+    align-items: center;
+    padding-left: 16px;
+}
+
+.content_body_header_right {
+    display: flex;
+    align-items: center;
+    padding-right: 16px;
+    gap: 10px;
+}
+
+.content_body_header_right_search {
+    position: relative;
+}
+
+.content_body_header_right_search_icon::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ai-feature/ai-search-candidate-start.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    animation: inspinFFF 20s infinite;
+}
+
+.content_body_header_right_search_input {
+    height: 36px;
+    padding-left: 40px;
+    border-radius: 4px;
+    outline: none;
+    border: 1px solid #dddde4;
+    width: 300px;
+}
+
+.content_body_header_right_search_input:hover {
+    border: 1px solid #4970e3;
+}
+
+.content_body_footer {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-top: 1px solid #dddde4;
+}
+
+/* ========== FOOTER PAGING STYLES ========== */
+
+/* Total records (left side) */
+.content_body_footer_total {
+    font-size: 13px;
+    color: #111;
+}
+
+.content_body_footer_total strong {
+    font-weight: 600;
+}
+
+/* Paging controls (right side) */
+.content_body_footer_right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.content_body_footer_pagesize,
+.content_body_footer_info,
+.content_body_footer_nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.paging_label {
+    font-size: 13px;
+    color: #666;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Page size select */
+.page_size_select {
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #dddde4;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #111;
+    outline: none;
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.page_size_select:hover {
+    border-color: #2680eb;
+}
+
+.page_size_select:focus {
+    border-color: #2680eb;
+}
+
+/* Page info */
+.page_info {
+    font-size: 13px;
+    color: #111;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* Page navigation buttons */
+.btn_page {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dddde4;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn_page:hover:not(:disabled) {
+    border-color: #2680eb;
+    background-color: #f5f9ff;
+}
+
+.btn_page:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.btn_page:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Icons for prev/next buttons */
+.icon_prev,
+.icon_next {
+    width: 16px;
+    height: 16px;
+    background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+    background-repeat: no-repeat;
+}
+
+.icon_prev {
+    background-position: -62px -698px;
+}
+
+.icon_next {
+    background-position: -44px -698px;
+}
+
+/* Style nút thêm ứng viên */
+.content_header_action_add {
+    display: flex;
+    align-items: center;
+    height: 36px;
+    border: none;
+    background-color: var(--border-control-hover);
+    border-radius: 4px;
+}
+
+.content_header_action_add_left {
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #176cd1;
+    height: 100%;
+    padding: 0 12px;
+}
+
+.content_header_action_add_left:hover,
+.content_header_action_add_right:hover {
+    background-color: #4097ff !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.content_header_action_add_icon_left {
+    width: 20px;
+    height: 20px;
+    -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+    -webkit-mask-position: -20px -656px;
+    background-color: #fff;
+    margin-right: 4px;
+}
+
+.content_header_action_add_icon_text {
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+}
+
+.content_header_action_add_right {
+    width: 40px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content_header_action_add_icon_right {
+    width: 16px;
+    height: 16px;
+    -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+    -webkit-mask-position: -32px -48px;
+    background-color: #fff;
+}
+
+.content_header_right_action_delete {
+    margin-right: 12px;
+}
+
+.content_body_header_right_icon {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #c5ccd5;
+    border-radius: 4px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.content_body_header_right_icon:hover {
+    border-color: var(--border-control-hover);
+    background-color: var(--background-button-hover);
+    cursor: pointer;
+}
+
+.content_body_header_right_icon:hover div {
+    background-color: var(--border-control-hover);
+}

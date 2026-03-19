@@ -1,4 +1,4 @@
-import Candidates from "@/views/Candidates.vue";
+import Candidates from "@/views/ms-candidate/Candidates.vue";
 import Schedule from "@/views/Schedule.vue";
 import Conversation from "@/views/Conversation.vue";
 import HiringPosts from "@/views/HiringPosts.vue";
@@ -9,7 +9,7 @@ import Report from "@/views/Report.vue";
 import Setting from "@/views/Setting.vue";
 import TalentPool from "@/views/TalentPool.vue";
 import UsefulKnowledge from "@/views/UsefulKnowledge.vue";
-import {createMemoryHistory, createRouter} from "vue-router";
+import {createWebHistory, createRouter} from "vue-router";
 
 const routes = [
     {path: '/candidates', component: Candidates},
@@ -22,10 +22,11 @@ const routes = [
     {path: '/report', component: Report},
     {path: '/setting', component: Setting},
     {path: '/talent', component: TalentPool},
-    {path: '/knowledge', component: UsefulKnowledge}
+    {path: '/knowledge', component: UsefulKnowledge},
+    {path: '/', redirect: '/candidates'}
 ]
 
 export const router = createRouter({
-    history: createMemoryHistory(),
+    history: createWebHistory(),
     routes
 })

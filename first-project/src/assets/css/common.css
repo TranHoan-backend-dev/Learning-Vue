@@ -1,68 +1,79 @@
 :root {
-    --misa-amis-icon-1: url("https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg");
-    --misa-amis-icon-2: url("https://amisplatform.misacdn.net/apps/recruit/navbar-bg-event.7d974ba87d2e462e.svg");
-    --local-icon: url("../images/ICON.svg");
-    --border-control-normal: #dddde4;
-    --border-control-hover: #2970f6;
-    --background-button-hover: #e2efff;
-    --color-default-icon: #65696e;
-    --border-table: rgb(221, 221, 221);
+  --misa-amis-icon-1: url("https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg");
+  --misa-amis-icon-2: url("https://amisplatform.misacdn.net/apps/recruit/navbar-bg-event.7d974ba87d2e462e.svg");
+  --local-icon: url("../images/ICON.svg");
+  --border-control-normal: #dddde4;
+  --border-control-hover: #2970f6;
+  --background-button-hover: #e2efff;
+  --color-default-icon: #65696e;
+  --border-table: rgb(221, 221, 221);
 }
 
 * {
-    font-family: Inter, serif;
-    box-sizing: border-box;
+  font-family: Inter, serif;
+  box-sizing: border-box;
 }
 
 /* Style chung table */
 table {
-    border-collapse: collapse;
+  border-collapse: collapse;
 }
 
 tr {
-    display: block;
+  display: block;
 }
 
 tr:hover td {
-    background-color: rgba(42, 126, 252, 0.1) !important;
+  background-color: rgba(42, 126, 252, 0.1) !important;
 }
 
 th {
-    height: 48px;
-    padding: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    border-top: 1px solid var(--border-table);
-    background-color: #f9fafb;
+  height: 48px;
+  padding: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid var(--border-table);
+  background-color: #f9fafb;
 }
 
 td {
-    height: 48px;
-    padding: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    border-top: 1px solid var(--border-table);
-    border-bottom: 1px solid var(--border-table);
-    background-color: white;
+  height: 48px;
+  padding: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-top: 1px solid var(--border-table);
+  border-bottom: 1px solid var(--border-table);
+  background-color: white;
 }
 
 .user_avatar_img {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background-color: #ddd;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #ddd;
 }
 
 .header_icon_btn {
-    position: relative;
-    cursor: pointer;
-    color: #555;
+  position: relative;
+  cursor: pointer;
+  color: #555;
 }
 
 .header_icon_btn {
-    position: relative;
-    cursor: pointer;
-    color: #555;
+  position: relative;
+  cursor: pointer;
+  color: #555;
+}
+
+.content {
+  position: absolute;
+  top: 48px;
+  left: var(--sidebar-width, 233px);
+  right: 0;
+  bottom: 0;
+  background-color: #ebecef;
+  transition: left 0.3s ease;
+  background: url("https://amisplatform.misacdn.net/images/imagesapps/recruit/background_default1.jpg");
 }

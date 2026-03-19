@@ -12,10 +12,9 @@ const emit = defineEmits(['click'])
       :density="props.density ?? 'compact'"
       :size="props.size ?? 'small'"
       :variant="props.variant"
-      :disabled="props.isLoading"
       @click="emit('click')"
   >
-    {{props.label}}
+    {{ props.label }}
     <slot/>
   </v-btn>
 </template>

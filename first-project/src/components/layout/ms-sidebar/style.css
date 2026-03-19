@@ -1,159 +1,168 @@
 .sidebar {
-    position: absolute;
-    top: 48px;
-    left: 0;
-    bottom: 0;
-    width: 233px;
-    background-color: #0a1623;
-    padding: 32px 0 16px 0;
-    background-image: url(https://amisplatform.misacdn.net/apps/recruit/event-sidebar.b836f9e63b28d1c0.png);
-    background-position: bottom;
-    background-repeat: no-repeat;
-    background-size: cover;
-    transition: width 0.3s ease;
+  position: absolute;
+  top: 48px;
+  left: 0;
+  bottom: 0;
+  width: 233px;
+  background-color: #0a1623;
+  padding: 32px 0 16px 0;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/event-sidebar.b836f9e63b28d1c0.png);
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transition: width 0.3s ease;
+  z-index: 5;
 }
 
-.sidebar_collapsed .sidebar {
-    width: 60px;
+.sidebar.sidebar_collapsed {
+  width: 60px;
 }
 
 .sidebar_bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    padding: 32px 0 16px 0;
-    background: rgba(0, 0, 0, 0.3);
-    transition: width 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  padding: 32px 0 16px 0;
+  background: rgba(0, 0, 0, 0.3);
+  transition: width 0.3s ease;
 }
 
-.sidebar_collapsed .sidebar_bg {
-    width: 60px;
+.sidebar.sidebar_collapsed .sidebar_bg {
+  width: 60px;
 }
 
 .sidebar_menu {
-    height: calc(100% - 40px);
+  height: calc(100% - 40px);
 }
 
 .sidebar_menu_item {
-    height: 40px;
-    margin: 0 12px 12px 12px;
-    display: flex;
-    align-items: center;
-    border-radius: 4px;
-    padding: 0 12px;
-    transition: padding 0.3s ease;
-    cursor: pointer;
+  min-height: 40px;
+  height: auto !important;
+  margin: 0 12px 12px 12px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 0 12px;
+  transition: padding 0.3s ease;
+  cursor: pointer;
 }
 
-.sidebar_collapsed .sidebar_menu_item {
-    padding: 0 6px;
-    justify-content: center;
+.sidebar.sidebar_collapsed .sidebar_menu_item {
+  padding: 0 6px;
+  justify-content: center;
 }
 
-.sidebar_collapsed .sidebar_menu_item_text,
-.sidebar_collapsed .sidebar_toggle_text {
-    display: none;
+.sidebar.sidebar_collapsed .sidebar_menu_item_text,
+.sidebar.sidebar_collapsed .sidebar_toggle_text {
+  display: none;
 }
 
-.sidebar_collapsed .sidebar_menu_item_recruitment_icon,
-.sidebar_collapsed .sidebar_menu_item_user_icon,
-.sidebar_collapsed .sidebar_menu_item_calendar_icon,
-.sidebar_collapsed .sidebar_menu_item_tiem_nang_icon,
-.sidebar_collapsed .sidebar_menu_item_hiring_campaign_icon,
-.sidebar_collapsed .sidebar_menu_item_job_icon,
-.sidebar_collapsed .sidebar_menu_item_ai_marketing_icon,
-.sidebar_collapsed .sidebar_menu_item_contact_icon,
-.sidebar_collapsed .sidebar_menu_item_report_icon,
-.sidebar_collapsed .sidebar_menu_item_setting_icon,
-.sidebar_collapsed .sidebar_menu_item_knowledge_icon {
-    margin-left: 0;
+.sidebar.sidebar_collapsed .sidebar_menu_item_recruitment_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_user_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_calendar_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_tiem_nang_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_hiring_campaign_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_job_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_ai_marketing_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_contact_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_report_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_setting_icon,
+.sidebar.sidebar_collapsed .sidebar_menu_item_knowledge_icon {
+  margin-left: 0;
 }
 
 .sidebar_menu_item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-.sidebar_menu_item-active {
-    background-color: #2680eb !important;
-    color: #2680eb !important;
+.sidebar_menu_item_active {
+  background-color: #2680eb !important;
+  color: #2680eb !important;
 }
 
 .sidebar_menu_item_active .sidebar_menu_item_recruitment_icon,
 .sidebar_menu_item_active .sidebar_menu_item_user_icon,
 .sidebar_menu_item_active .sidebar_menu_item_calendar_icon {
-    background-color: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 .sidebar_menu_item_active .sidebar_menu_item_text {
-    color: #ffffff !important;
+  color: #ffffff !important;
 }
 
 .sidebar_menu_item_recruitment_icon {
-    width: 24px;
-    height: 24px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -94px -113px;
-    background-color: #c5ccd5;
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -94px -113px;
+  background-color: #c5ccd5;
 }
 
 .sidebar_menu_item_text {
-    color: #c5ccd5;
-    margin-left: 12px;
-    font-weight: 500;
+  color: #c5ccd5;
+  margin-left: 12px;
+  font-weight: 500;
+  white-space: normal;
 }
 
 .sidebar_menu_item_user_icon {
-    width: 24px;
-    height: 24px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -24px -112px;
-    background-color: #c5ccd5;
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -24px -112px;
+  background-color: #c5ccd5;
 }
 
 .sidebar_menu_item_calendar_icon {
-    width: 24px;
-    height: 24px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -144px -113px;
-    background-color: #c5ccd5;
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -144px -113px;
+  background-color: #c5ccd5;
 }
 
 .sidebar_toggle {
-    display: flex;
-    height: 40px;
-    align-items: center;
-    margin: 0 12px;
-    border: 1px solid #dee2e6;
-    padding: 0 8px;
-    transition: all 0.3s ease;
+  display: flex;
+  height: 40px;
+  align-items: center;
+  margin: 0 12px;
+  border: 1px solid #dee2e6;
+  padding: 0 8px;
+  transition: all 0.3s ease;
 }
 
-.sidebar_collapsed .sidebar_toggle {
-    justify-content: center;
-    padding: 0;
+.sidebar.sidebar_collapsed .sidebar_toggle {
+  justify-content: center;
+  padding: 0;
 }
 
 .sidebar_toggle:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar_toggle_icon {
-    width: 20px;
-    height: 20px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -60px -696px;
-    background-color: #fff;
+  width: 20px;
+  height: 20px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -60px -696px;
+  background-color: #fff;
 }
 
 .sidebar_toggle_text {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    margin-left: 12px;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    outline: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  margin-left: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.sidebar_menu :deep(.v-btn__content) {
+  font-size: 16px;
+  white-space: normal !important;
+  text-align: left !important;
 }
