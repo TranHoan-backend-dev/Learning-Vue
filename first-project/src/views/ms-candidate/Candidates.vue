@@ -6,7 +6,7 @@ import NormalCheckbox from "@/components/ui/ms-checkbox/NormalCheckbox.vue";
 
 import {data as candidateData} from "@/assets/data/data";
 import {computed, ref} from "vue";
-import CandidateAddEditForm from "@/views/ms-candidate/CandidateAddEditForm.vue";
+import CandidateAddEditForm from "@/views/ms-candidate/add-edit-form/CandidateAddEditForm.vue";
 import CandidateViewModal from "@/views/ms-candidate/CandidateViewModal.vue";
 import {usePagination} from "@/views/ms-candidate/usePagination.ts"
 
@@ -95,6 +95,7 @@ const confirmDeleting = () => {
   if (currentCandidate.value) {
     filteredData.value = filteredData.value.filter(c => c.id !== currentCandidate.value.id)
   }
+  currentCandidate.value = null
   isModalOpen.value = false
 }
 // </editor-fold>
@@ -183,21 +184,21 @@ const confirmDeleting = () => {
                     <button
                         class="mi_icon_edit"
                         title="Sửa ứng viên"
-                        @click="handleOpenEditModal(cell.id)"
+                        @click="handleOpenEditModal(cell.id!)"
                     />
                   </div>
                   <div class="mi_icon">
                     <button
                         class="mi_icon_delete"
                         title="Xóa ứng viên"
-                        @click="handleOpenDeleteModal(cell.id)"
+                        @click="handleOpenDeleteModal(cell.id!)"
                     />
                   </div>
                   <div class="mi_icon">
                     <button
                         class="mi_icon_view_details"
                         title="Xem ứng viên"
-                        @click="handleOpenViewModal(cell.id)"
+                        @click="handleOpenViewModal(cell.id!)"
                     />
                   </div>
                 </div>
@@ -241,8 +242,8 @@ const confirmDeleting = () => {
       </div>
     </div>
 
-    <!-- Modal Form (Add/Edit) -->
     <v-dialog v-model="isModalOpen" :max-width="modalMode === 'view' ? '1200px' : '800px'">
+      <!-- Modal Form (Add/Edit) -->
       <v-card v-if="modalMode === 'add' || modalMode === 'edit'">
         <div class="modal__header d-flex justify-space-between align-center px-6 py-4">
           <h3 class="font-weight-bold text-h6 m-0">{{ modalMode === 'add' ? 'Thêm mới' : 'Chỉnh sửa' }} ứng viên</h3>

@@ -5,7 +5,7 @@ const props = defineProps<{
   candidate: any;
 }>();
 
-const emit = defineEmits(['close', 'edit']);
+defineEmits(['close', 'edit']);
 
 const avatarText = computed(() => {
   if (!props.candidate?.name) return 'TT';
@@ -19,19 +19,19 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
 </script>
 
 <template>
-  <div class="detail-modal__content">
+  <div class="detail_modal_content">
     <!-- Sidebar trái -->
-    <div class="detail-sidebar">
-      <div class="detail-sidebar__header">
-        <div class="detail-sidebar__avatar">{{ avatarText }}</div>
-        <div class="detail-sidebar__info-top">
-          <div class="detail-sidebar__name-row">
-            <span class="detail-sidebar__name">{{ candidate?.name }}</span>
-            <div class="detail-sidebar__edit-icon" @click="$emit('edit')"></div>
+    <div class="detail_sidebar">
+      <div class="detail_sidebar_header">
+        <div class="detail_sidebar_avatar">{{ avatarText }}</div>
+        <div class="detail_sidebar_info_top">
+          <div class="detail_sidebar_name_row">
+            <span class="detail_sidebar_name">{{ candidate?.name }}</span>
+            <div class="detail_sidebar_edit_icon" @click="$emit('edit')"></div>
           </div>
-          <div class="detail-sidebar__sub-info">Ứng tuyển ngày {{ candidate?.hiring_at || '28/07/2023' }}</div>
-          <div class="detail-sidebar__sub-info">Ứng viên thuộc 1 chiến dịch tuyển dụng. <span class="detail-sidebar__link">Chi tiết</span></div>
-          <div class="detail-sidebar__rating">
+          <div class="detail_sidebar_sub_info">Ứng tuyển ngày {{ candidate?.hiring_at || '--' }}</div>
+          <div class="detail_sidebar_sub_info">Ứng viên thuộc 1 chiến dịch tuyển dụng. <span class="detail_sidebar_link">Chi tiết</span></div>
+          <div class="detail_sidebar_rating">
             <i class="bi bi-star-fill active"></i>
             <i class="bi bi-star-fill active"></i>
             <i class="bi bi-star-fill active"></i>
@@ -41,29 +41,29 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
         </div>
       </div>
 
-      <div class="detail-sidebar__body">
-        <div class="detail-sidebar__section">
-          <div class="detail-sidebar__section-title">THÔNG TIN ỨNG TUYỂN (0)</div>
-          <p class="detail-sidebar__sub-info">Ứng viên chưa thuộc tin tuyển dụng nào</p>
-          <button class="btn-secondary-outline">
+      <div class="detail_sidebar_body">
+        <div class="detail_sidebar_section">
+          <div class="detail_sidebar_section_title">THÔNG TIN ỨNG TUYỂN (0)</div>
+          <p class="detail_sidebar_sub_info">Ứng viên chưa thuộc tin tuyển dụng nào</p>
+          <button class="btn_secondary_outline">
             <i class="bi bi-person-plus"></i> Chuyển ứng viên vào tin
           </button>
         </div>
 
-        <div class="detail-sidebar__section">
-          <div class="detail-sidebar__section-title" style="display: flex; gap: 8px; align-items: center;">
+        <div class="detail_sidebar_section">
+          <div class="detail_sidebar_section_title" style="display: flex; gap: 8px; align-items: center;">
             Gắn thẻ <i class="bi bi-plus-square" style="color: #2970f6; cursor: pointer;"></i>
           </div>
         </div>
 
         <div class="detail-sidebar__divider"></div>
 
-        <div class="detail-sidebar__section">
-          <div class="detail-sidebar__section-title">THÔNG TIN CÁ NHÂN</div>
+        <div class="detail_sidebar_section">
+          <div class="detail_sidebar_section_title">THÔNG TIN CÁ NHÂN</div>
           <div class="detail-sidebar__row">
             <div class="detail-sidebar__label"><i class="bi bi-envelope"></i> Email</div>
             <div class="detail-sidebar__value">
-              <span class="detail-sidebar__link">{{ candidate?.email }}</span>
+              <span class="detail_sidebar_link">{{ candidate?.email }}</span>
             </div>
           </div>
           <div class="detail-sidebar__row">
@@ -80,8 +80,8 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
           </div>
         </div>
 
-        <div class="detail-sidebar__section">
-          <div class="detail-sidebar__section-title">HỌC VẤN</div>
+        <div class="detail_sidebar_section">
+          <div class="detail_sidebar_section_title">HỌC VẤN</div>
           <div class="detail-sidebar__row">
             <div class="detail-sidebar__label" style="align-items: flex-start; padding-top: 4px;">• --</div>
             <div class="detail-sidebar__value">
@@ -116,14 +116,14 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
             {{ sub }}
           </div>
         </div>
-        <button class="btn-upload">
+        <button class="btn_upload">
           <i class="bi bi-upload"></i> Tải lên CV mới
         </button>
       </div>
 
-      <div class="detail-main__body">
-        <div class="detail-main__content-area">
-          <div class="detail-main__placeholder-text">CV ỨNG VIÊN</div>
+      <div class="detail_main_body">
+        <div class="detail_main_content_area">
+          <div class="detail_main_placeholder_text">CV ỨNG VIÊN</div>
           <div style="text-align: center; color: #65696e;">
             Thông tin CV sẽ được hiển thị tại đây
           </div>
@@ -134,7 +134,7 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
 </template>
 
 <style scoped>
-.detail-modal__content {
+.detail_modal_content {
     background-color: #fff;
     width: 100%;
     height: 90vh;
@@ -145,7 +145,7 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
 }
 
 /* Sidebar Styling */
-.detail-sidebar {
+.detail_sidebar {
     width: 320px;
     border-right: 1px solid #dddde4;
     display: flex;
@@ -153,14 +153,14 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
     background-color: #fff;
 }
 
-.detail-sidebar__header {
+.detail_sidebar_header {
     padding: 24px;
     display: flex;
     gap: 16px;
     position: relative;
 }
 
-.detail-sidebar__avatar {
+.detail_sidebar_avatar {
     width: 48px;
     height: 48px;
     background-color: #2970f6;
@@ -173,64 +173,64 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
     font-weight: 700;
 }
 
-.detail-sidebar__info-top {
+.detail_sidebar_info_top {
     flex: 1;
 }
 
-.detail-sidebar__name-row {
+.detail_sidebar_name_row {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 4px;
 }
 
-.detail-sidebar__name {
+.detail_sidebar_name {
     font-size: 16px;
     font-weight: 700;
     color: #1f1f1f;
 }
 
-.detail-sidebar__edit-icon {
+.detail_sidebar_edit_icon {
     width: 16px;
     height: 16px;
     background: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg) no-repeat -182px -658px;
     cursor: pointer;
 }
 
-.detail-sidebar__sub-info {
+.detail_sidebar_sub_info {
     font-size: 13px;
     color: #65696e;
     margin-bottom: 4px;
 }
 
-.detail-sidebar__link {
+.detail_sidebar_link {
     color: #2970f6;
     text-decoration: none;
     cursor: pointer;
 }
 
-.detail-sidebar__rating {
+.detail_sidebar_rating {
     margin-top: 8px;
     color: #ddd;
     display: flex;
     gap: 4px;
 }
 
-.detail-sidebar__rating .active {
+.detail_sidebar_rating .active {
     color: #f1c40f;
 }
 
-.detail-sidebar__body {
+.detail_sidebar_body {
     flex: 1;
     overflow-y: auto;
     padding: 0 24px 24px 24px;
 }
 
-.detail-sidebar__section {
+.detail_sidebar_section {
     margin-top: 24px;
 }
 
-.detail-sidebar__section-title {
+.detail_sidebar_section_title {
     font-size: 12px;
     font-weight: 700;
     color: #65696e;
@@ -343,14 +343,14 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
     background-color: #e2efff;
 }
 
-.detail-main__body {
+.detail_main_body {
     flex: 1;
     padding: 16px;
     display: flex;
     flex-direction: column;
 }
 
-.detail-main__content-area {
+.detail_main_content_area {
     flex: 1;
     background-color: #fff;
     border-radius: 4px;
@@ -362,13 +362,13 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
     border: 1px solid #dddde4;
 }
 
-.detail-main__placeholder-text {
+.detail_main_placeholder_text {
     font-weight: 700;
     font-size: 18px;
     margin-bottom: 24px;
 }
 
-.btn-upload {
+.btn_upload {
     background-color: #fff;
     border: 1px solid #dddde4;
     padding: 8px 16px;
@@ -380,11 +380,11 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
     font-size: 14px;
 }
 
-.btn-upload:hover {
+.btn_upload:hover {
     background-color: #f8f9fa;
 }
 
-.btn-secondary-outline {
+.btn_secondary_outline {
     background: transparent;
     border: 1px solid #2970f6;
     color: #2970f6;
@@ -398,7 +398,7 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
     cursor: pointer;
 }
 
-.btn-secondary-outline:hover {
+.btn_secondary_outline:hover {
     background-color: #f1f6ff;
 }
 </style>

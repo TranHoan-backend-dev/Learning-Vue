@@ -1,0 +1,272 @@
+.form__container {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.form__left {
+    flex-shrink: 0;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+}
+
+.form__right {
+    flex-grow: 1;
+}
+
+.modal__body {
+    padding: 16px 24px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.modal__footer {
+    padding: 12px 24px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background-color: #f8f9fa;
+}
+
+/* Upload CV Area */
+.upload__container {
+    margin-bottom: 24px;
+}
+
+.upload__box {
+    border: 1px dashed #2970f6;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    background-color: #f1f6ff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.upload__box:hover {
+    background-color: #e8f0fe;
+    border-color: #2159c4;
+}
+
+.upload__icon {
+    font-size: 32px;
+    color: #2970f6;
+    margin-bottom: 4px;
+}
+
+.upload__text {
+    color: #2970f6;
+    margin: 0;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.upload__hint {
+    color: #65696e;
+    font-size: 12px;
+    margin: 0;
+}
+
+/* Form Groups */
+.form__row {
+    margin-bottom: 16px;
+}
+
+.flex__row {
+    display: flex;
+    align-items: flex-end;
+}
+
+.gap-8 {
+    gap: 8px;
+}
+
+.gap-16 {
+    gap: 16px;
+}
+
+.flex__grow {
+    flex-grow: 1;
+    max-width: calc(50% - 8px);
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #212121;
+}
+
+.sub__label {
+    font-weight: 400;
+    color: #65696e;
+    margin-left: 4px;
+    font-size: 13px;
+}
+
+.required {
+    color: #ff4d4f;
+    margin-left: 2px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    height: 36px;
+    padding: 8px 12px;
+    border: 1px solid #dddde4;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    background-color: #fff;
+    font-family: inherit;
+}
+
+textarea {
+    height: 80px;
+    resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #2970f6;
+}
+
+.input__with__icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input__with__icon i {
+    position: absolute;
+    right: 10px;
+    color: #65696e;
+    pointer-events: none;
+}
+
+.input__group {
+    display: flex;
+    gap: 4px;
+}
+
+.btn__more {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #dddde4;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+}
+
+/* Avatar Placeholder */
+.avatar__placeholder {
+    width: 80px;
+    height: 80px;
+    border: 1px dashed #dddde4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #65696e;
+    font-size: 13px;
+    background-color: #fff;
+}
+
+.section__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #212121;
+    margin: 24px 0 16px 0;
+}
+
+.education__section {
+    padding-left: 8px;
+}
+
+.edu__label__fixed {
+    width: 150px;
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+.input__with__actions {
+    position: relative;
+}
+
+.input__with__actions input {
+    padding-right: 60px;
+}
+
+.input__with__actions .actions {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 8px;
+    color: #2970f6;
+}
+
+.input__with__actions .actions i {
+    cursor: pointer;
+}
+
+.add__education__link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #2970f6;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #f0f0f0;
+    margin: 24px 0;
+}
+
+.btn__cancel {
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #212121;
+    cursor: pointer;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.btn__cancel:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.btn__save {
+    height: 36px;
+    padding: 0 24px;
+    border: none;
+    background-color: #2970f6;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.btn__save:hover {
+    background-color: #2159c4;
+}
