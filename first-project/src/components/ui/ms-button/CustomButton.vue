@@ -6,7 +6,7 @@ const props = defineProps<{
   variant?: 'outlined' | 'tonal' | 'text' | 'plain' | 'flat',
   density?: 'compact' | 'comfortable' | 'default',
   size?: 'x-small' | 'small' | 'large' | 'x-large',
-  tooltipLocation?: string,
+  tooltipLocation?: 'top' | 'bottom' | 'start' | 'end' | 'left' | 'right',
   tooltipContent?: string
 }>()
 const emit = defineEmits(['click'])
