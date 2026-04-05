@@ -1,12 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace BL.Dto;
+namespace BL.Dto.Request;
 
-public class DepartmentUpdateDto
+public class DepartmentCreateDto
 {
-    [Required]
-    public Guid DepartmentId { get; set; }
-
     [Required]
     [MaxLength(200)]
     public required string Name { get; set; }

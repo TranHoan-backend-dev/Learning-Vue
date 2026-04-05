@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace BL.Dto;
+namespace BL.Dto.Request;
 
-public class EmployeeCreateDto
+public class EmployeeUpdateDto
 {
+    [Required]
+    public Guid EmployeeId { get; set; }
+
     [Required]
     [MaxLength(20)]
     public required string EmployeeCode { get; set; }

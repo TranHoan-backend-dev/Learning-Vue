@@ -1,4 +1,4 @@
-﻿using Model;
+using Model;
 
 namespace DL.Interfaces;
 
@@ -9,4 +9,6 @@ public interface IEmployeeRepository
     Task AddAsync(Employee employee);
     Task UpdateAsync(Employee employee);
     Task DeleteAsync(Guid employeeId);
+    
+    Task<Boolean> IsExistAsync(string employeeCode);
 }

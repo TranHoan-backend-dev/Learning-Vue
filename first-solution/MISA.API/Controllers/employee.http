@@ -1,0 +1,74 @@
+### [POST] Create a new employee with valid data (Success)
+POST http://localhost:5000/v1/api/Employee
+Content-Type: application/json
+
+{
+  "EmployeeCode": "NV001",
+  "Username": "johndoe",
+  "Email": "john.doe@example.com",
+  "Fullname": "John Doe",
+  "Age": 30,
+  "Address": "123 Main St",
+  "DepartmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+
+### [POST] Create a new employee with missing required fields (Failure: EmployeeCode is required)
+POST http://localhost:80/v1/api/Employee
+Content-Type: application/json
+
+{
+  "Username": "jane",
+  "Email": "jane@example.com",
+  "Fullname": "Jane",
+  "Age": 25,
+  "DepartmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+
+### [POST] Create a new employee with invalid email format (Failure)
+POST http://localhost:80/v1/api/Employee
+Content-Type: application/json
+
+{
+  "EmployeeCode": "NV002",
+  "Username": "bob",
+  "Email": "invalid-email",
+  "Fullname": "Bob",
+  "Age": 22,
+  "DepartmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+
+### [POST] Create a new employee with EmployeeCode over 20 chars (Failure)
+POST http://localhost:80/v1/api/Employee
+Content-Type: application/json
+
+{
+  "EmployeeCode": "NV00000000000000000001",
+  "Username": "tester",
+  "Email": "tester@example.com",
+  "Fullname": "Tester",
+  "Age": 20,
+  "DepartmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+
+### [POST] Create a new employee with missing multiple fields (Failure)
+POST http://localhost:80/v1/api/Employee
+Content-Type: application/json
+
+{
+  "EmployeeCode": "NV005",
+  "Age": 25,
+  "DepartmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+
+### [POST] Create a new employee with out-of-range Age (Failure - if business rules applied, but let's just test missing fields for now)
+POST http://localhost:80/v1/api/Employee
+Content-Type: application/json
+
+{
+  "EmployeeCode": "NV006",
+  "Username": "youngun",
+  "Email": "young@example.com",
+  "Fullname": "Young Person",
+  "Age": -1,
+  "DepartmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}

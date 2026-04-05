@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
 namespace Model;
 
+[Index(nameof(Name), IsUnique = true)]
+[Index(nameof(PhoneNumber), IsUnique = true)]
 public class Department
 {
     [Key] public Guid DepartmentId { get; set; }

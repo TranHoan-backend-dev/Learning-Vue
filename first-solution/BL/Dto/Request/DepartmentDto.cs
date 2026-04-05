@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace BL.Dto;
+namespace BL.Dto.Request;
 
 public class DepartmentDto
 {

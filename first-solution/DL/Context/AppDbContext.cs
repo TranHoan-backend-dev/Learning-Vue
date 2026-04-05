@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Model;
 
 namespace DL.Context;
@@ -14,7 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Department>()
             .HasMany(d => d.Employees)
             .WithOne(e => e.Department)
-            .HasForeignKey(e => e.Department)
+            .HasForeignKey(e => e.DepartmentId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }
