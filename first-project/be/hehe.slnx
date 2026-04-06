@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="BL\BL.csproj" Type="Classic C#" />
-  <Project Path="DL\DL.csproj" Type="Classic C#" />
-  <Project Path="MISA.API\MISA.API.csproj" Type="Classic C#" />
-  <Project Path="Models\Models.csproj" Type="Classic C#" />
-</Solution>
