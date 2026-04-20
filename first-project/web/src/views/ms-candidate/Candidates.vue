@@ -9,6 +9,7 @@ import {computed, onMounted, ref, watch} from "vue";
 import CandidateAddEditForm from "@/views/ms-candidate/add-edit-form/CandidateAddEditForm.vue";
 import CandidateViewModal from "@/views/ms-candidate/CandidateViewModal.vue";
 import {usePagination} from "@/views/ms-candidate/usePagination.ts"
+import CustomPagination from "@/components/ui/ms-pagination/CustomPagination.vue";
 import type {BodyProps} from "@/components/ui/ms-table/model.ts";
 import {toast} from "@/services/toast.ts";
 import candidateService, {type Candidate, type Pageable, type FilterRequest} from '@/services/candidateService';
@@ -39,19 +40,9 @@ const {
   handlePageSizeChange,
 } = usePagination(filteredData);
 
-// Tính toán tổng số trang dựa trên dữ liệu thật từ Server
 const totalPages = computed(() => {
   return Math.ceil(totalRecordsServer.value / pageSize.value) || 1;
 });
-
-// Điều hướng trang (sẽ kích hoạt watch để gọi lại API)
-const handlePrevPage = () => {
-  if (currentPage.value > 1) currentPage.value--;
-};
-
-const handleNextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++;
-};
 
 // Hiển thị thông tin phân trang (ví dụ: 1 - 10 trên 134 bản ghi)
 const pageInfo = computed(() => {
@@ -59,30 +50,6 @@ const pageInfo = computed(() => {
   const end = Math.min(currentPage.value * pageSize.value, totalRecordsServer.value);
   return `${start} - ${end} trên ${totalRecordsServer.value} bản ghi`;
 });
-
-// Danh sách các số trang hiển thị
-const visiblePages = computed(() => {
-  const pages = [];
-  const total = totalPages.value;
-  const current = currentPage.value;
-  
-  // Hiển thị tối đa 5 trang xung quanh trang hiện tại
-  let start = Math.max(1, current - 2);
-  let end = Math.min(total, start + 4);
-  
-  if (end - start < 4) {
-    start = Math.max(1, end - 4);
-  }
-  
-  for (let i = start; i <= end; i++) {
-    if (i >= 1) pages.push(i);
-  }
-  return pages;
-});
-
-const goToPage = (page: number) => {
-  currentPage.value = page;
-};
 
 
 // Cập nhật lại tableData để dùng filteredData trực tiếp từ Server
@@ -137,6 +104,13 @@ onMounted(() => {
 
 watch([currentPage, pageSize], () => {
   fetchCandidates();
+});
+
+// Đảm bảo không ở trang ảo (ví dụ đang ở trang 10 nhưng đổi pageSize làm tổng số trang chỉ còn 5)
+watch(totalPages, (newTotal) => {
+  if (currentPage.value > newTotal) {
+    currentPage.value = newTotal || 1;
+  }
 });
 
 // <editor-fold> desc="API Service Methods (Chưa sử dụng)"
@@ -426,27 +400,12 @@ const confirmDeleting = () => {
               <span class="page_info" id="pageInfo">{{ pageInfo }}</span>
             </div>
             <div class="content_body_footer_nav">
-              <button type="button" class="btn_page" id="btnPrevPage" title="Trang trước" @click="handlePrevPage"
-                      :disabled="currentPage <= 1">
-                <div class="icon_prev"></div>
-              </button>
-              
-              <div class="page_numbers d-flex gap-4 mx-2">
-                <button 
-                  v-for="page in visiblePages" 
-                  :key="page"
-                  type="button"
-                  :class="['btn_page_number', { 'active': page === currentPage }]"
-                  @click="goToPage(page)"
-                >
-                  {{ page }}
-                </button>
-              </div>
-
-              <button type="button" class="btn_page" id="btnNextPage" title="Trang sau" @click="handleNextPage"
-                      :disabled="currentPage >= totalPages">
-                <div class="icon_next"></div>
-              </button>
+              <CustomPagination 
+                v-model="currentPage" 
+                :total="totalRecordsServer" 
+                :page-size="pageSize"
+                color="#0070f3"
+              />
             </div>
           </div>
         </div>
@@ -516,29 +475,5 @@ const confirmDeleting = () => {
 
 :deep(.text_right) {
   text-align: right !important;
-}
-
-.btn_page_number {
-  min-width: 32px;
-  height: 32px;
-  border: 1px solid transparent;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--text-color);
-}
-
-.btn_page_number:hover {
-  background-color: var(--background-gray);
-}
-
-.btn_page_number.active {
-  border-color: var(--border-control-hover);
-  color: var(--primary-color);
-  font-weight: bold;
 }
 </style>
