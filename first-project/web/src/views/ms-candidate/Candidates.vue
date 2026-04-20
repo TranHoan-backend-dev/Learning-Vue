@@ -10,6 +10,7 @@ import CandidateAddEditForm from "@/views/ms-candidate/add-edit-form/CandidateAd
 import CandidateViewModal from "@/views/ms-candidate/CandidateViewModal.vue";
 import {usePagination} from "@/views/ms-candidate/usePagination.ts"
 import CustomPagination from "@/components/ui/ms-pagination/CustomPagination.vue";
+import CustomSkeleton from "@/components/ui/ms-skeleton/CustomSkeleton.vue";
 import type {BodyProps} from "@/components/ui/ms-table/model.ts";
 import {toast} from "@/services/toast.ts";
 import candidateService, {type Candidate, type Pageable, type FilterRequest} from '@/services/candidateService';
@@ -28,6 +29,7 @@ const modalMode = ref<'add' | 'view' | 'edit' | 'delete'>('add')
 const currentCandidate = ref<any>(null)
 const selectedCandidateIds = ref<string[]>([]);
 const isLoading = ref(false);
+const isSlowLoading = ref(false);
 
 const filteredData = ref<any[]>([]);
 const totalRecordsServer = ref(0);
@@ -54,6 +56,16 @@ const pageInfo = computed(() => {
 
 // Cập nhật lại tableData để dùng filteredData trực tiếp từ Server
 const tableData = computed<BodyProps[][]>(() => {
+  // Chỉ hiển thị Skeleton nếu thời gian tải dữ liệu vượt quá 1 giây
+  if (isSlowLoading.value) {
+    return Array.from({ length: pageSize.value }).map(() => 
+      Array.from({ length: 12 }).map(() => ({
+        tdClassName: 'text_center',
+        slotName: 'skeleton'
+      }))
+    );
+  }
+
   return filteredData.value.map((candidate: any, index: number): BodyProps[] =>
       [
         {tdClassName: 'col_checkbox text_center', slotName: 'checkbox', id: candidate.id},
@@ -72,12 +84,22 @@ const tableData = computed<BodyProps[][]>(() => {
   )
 });
 
+// <editor-fold> desc="Fetch candidates list"
 /**
  * Hàm lấy danh sách ứng viên từ Backend
  */
 const fetchCandidates = async () => {
+  let skeletonTimeout: any = null;
   try {
     isLoading.value = true;
+
+    // Thiết lập đếm ngược 1 giây trước khi hiện Skeleton
+    skeletonTimeout = setTimeout(() => {
+      if (isLoading.value) {
+        isSlowLoading.value = true;
+      }
+    }, 1000);
+
     const pageable: Pageable = {
       pageIndex: currentPage.value - 1, // Chuyển từ 1-indexed sang 0-indexed cho Backend
       pageSize: pageSize.value
@@ -95,6 +117,8 @@ const fetchCandidates = async () => {
     toast.error("Lỗi", "Không thể lấy dữ liệu từ máy chủ");
   } finally {
     isLoading.value = false;
+    isSlowLoading.value = false;
+    if (skeletonTimeout) clearTimeout(skeletonTimeout);
   }
 };
 
@@ -112,8 +136,9 @@ watch(totalPages, (newTotal) => {
     currentPage.value = newTotal || 1;
   }
 });
+// </editor-fold>
 
-// <editor-fold> desc="API Service Methods (Chưa sử dụng)"
+// <editor-fold> desc="Save candidate"
 // /**
 //  * Hàm thêm mới hoặc cập nhật ứng viên thông qua Service
 //  */
@@ -344,6 +369,9 @@ const confirmDeleting = () => {
                     :model-value="selectedCandidateIds.includes(cell.id)"
                     @update:model-value="toggleCandidateSelection(cell.id)"
                 />
+              </template>
+              <template #cell-skeleton>
+                <CustomSkeleton height="16px" border-radius="4px" />
               </template>
               <template #cell-star>
                 <i v-for="i in 5" :key="i" class="bi bi-star"></i>
