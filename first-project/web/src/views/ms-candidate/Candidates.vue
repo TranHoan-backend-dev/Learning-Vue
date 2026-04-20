@@ -117,9 +117,11 @@ const fetchCandidates = async () => {
     const response = await candidateService.getPaginated(pageable, { keyword: "" });
     if (response && response.data) {
       console.log(response.data)
-      // Sửa lỗi: lấy trường 'data' viết thường
-      filteredData.value = response.data.data || [];
-      // Sửa lỗi: lấy totalRecords từ object pageable
+      // Sửa lỗi mapping: gán candidateId vào id để đồng bộ logic toàn app
+      filteredData.value = (response.data.data || []).map((item: any) => ({
+        ...item,
+        id: item.candidateId
+      }));
       totalRecordsServer.value = response.data.pageable?.totalElements || 0;
     }
   } catch (error) {
@@ -190,14 +192,14 @@ const isAllCurrentPageSelected = computed(() => {
 // kiem tra xem lieu nguoi dung da chon checkbox nao hay chua
 const hasSelectedRows = computed(() => selectedCandidateIds.value.length > 0);
 
-const toggleCandidateSelection = (id: string) => {
+const toggleCandidateSelection = (id: string | undefined) => {
+  if (!id) return;
+  
   if (selectedCandidateIds.value.includes(id)) {
-    // neu ban ghi da duoc chon, thi loai bo ban ghi
-    selectedCandidateIds.value = selectedCandidateIds
-        .value
-        .filter(item => item !== id);
+    // Nếu bản ghi đã được chọn, thì loại bỏ khỏi mảng
+    selectedCandidateIds.value = selectedCandidateIds.value.filter(item => item !== id);
   } else {
-    // neu ban ghi chua duoc chon, thi them ban ghi
+    // Nếu bản ghi chưa được chọn, thì thêm vào mảng
     selectedCandidateIds.value.push(id)
   }
 }

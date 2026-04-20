@@ -13,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Register Dapper TypeHandlers
 SqlMapper.AddTypeHandler(new GuidTypeHandler());
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 // Add services to the container.
 builder.Services.AddOpenApi();
