@@ -29,7 +29,7 @@ const subTabs = ['CV ứng viên', 'Thông tin ứng tuyển', 'Thông tin tiế
             <span class="detail_sidebar_name">{{ candidate?.name }}</span>
             <div class="detail_sidebar_edit_icon" @click="$emit('edit')"></div>
           </div>
-          <div class="detail_sidebar_sub_info">Ứng tuyển ngày {{ candidate?.hiring_at || '--' }}</div>
+          <div class="detail_sidebar_sub_info">Ứng tuyển ngày {{ candidate?.hiringAt || '--' }}</div>
           <div class="detail_sidebar_sub_info">Ứng viên thuộc 1 chiến dịch tuyển dụng. <span class="detail_sidebar_link">Chi tiết</span></div>
           <div class="detail_sidebar_rating">
             <i class="bi bi-star-fill active"></i>

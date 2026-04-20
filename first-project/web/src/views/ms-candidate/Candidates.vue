@@ -4,7 +4,6 @@ import SearchField from "@/components/ui/ms-input/SearchField.vue";
 import CustomTable from "@/components/ui/ms-table/CustomTable.vue";
 import NormalCheckbox from "@/components/ui/ms-checkbox/NormalCheckbox.vue";
 
-import {data as candidateData} from "@/assets/data/data";
 import {computed, onMounted, ref, watch} from "vue";
 import CandidateAddEditForm from "@/views/ms-candidate/add-edit-form/CandidateAddEditForm.vue";
 import CandidateViewModal from "@/views/ms-candidate/CandidateViewModal.vue";
@@ -24,7 +23,7 @@ const components = [
   {iconClassName: "content_body_header_right_samset_icon"},
   {iconClassName: "sidebar_menu_item_setting_icon"},
 ]
-// const candidateData = ref(await fetchCandidates())
+
 const isModalOpen = ref(false)
 const modalMode = ref<'add' | 'view' | 'edit' | 'delete'>('add')
 const currentCandidate = ref<any>(null)
@@ -83,11 +82,11 @@ const tableData = computed<BodyProps[][]>(() => {
         {tdClassName: 'col_name text_left', value: candidate.name || "--"},
         {tdClassName: 'col_phone text_right', value: candidate.phone || "--"},
         {tdClassName: 'col_email text_left', value: candidate.email || "--"},
-        {tdClassName: 'col_email text_left', value: candidate.hiring_campaign || "--"},
-        {tdClassName: 'col_email text_left', value: candidate.hiring_position || "--"},
-        {tdClassName: 'col_email text_left', value: candidate.hiring_round || "--"},
-        {tdClassName: 'col_date text_center', value: candidate.hiring_at || "--"},
-        {tdClassName: 'col_email text_left', value: candidate.review || "--"},
+        {tdClassName: 'col_email text_left', value: candidate.hiringCampaign || "--"},
+        {tdClassName: 'col_email text_left', value: candidate.hiringPosition || "--"},
+        {tdClassName: 'col_email text_left', value: "--"},
+        {tdClassName: 'col_date text_center', value: candidate.hiringAt || "--"},
+        {tdClassName: 'col_email text_left', value: candidate.hiringRound || "--"},
         {tdClassName: 'col_email text_center', slotName: 'star'},
         {tdClassName: '', slotName: 'action', id: candidate.id, candidate: candidate}
       ]
@@ -151,29 +150,29 @@ watch(totalPages, (newTotal) => {
 // </editor-fold>
 
 // <editor-fold> desc="Save candidate"
-// /**
-//  * Hàm thêm mới hoặc cập nhật ứng viên thông qua Service
-//  */
-// const handleSaveCandidateAPI = async (data: Candidate) => {
-//   try {
-//     isLoading.value = true;
-//     if (data.candidateId) {
-//       await candidateService.update(data.candidateId, data);
-//       toast.success("Thành công", "Cập nhật ứng viên thành công");
-//     } else {
-//       await candidateService.add(data);
-//       toast.success("Thành công", "Thêm mới ứng viên thành công");
-//     }
-//     isModalOpen.value = false;
-//     // Load lại dữ liệu sau khi lưu thành công
-//     // await fetchCandidates();
-//   } catch (error) {
-//     console.error("Lỗi khi lưu ứng viên:", error);
-//     toast.error("Lỗi", "Không thể lưu thông tin ứng viên");
-//   } finally {
-//     isLoading.value = false;
-//   }
-// };
+/**
+ * Hàm thêm mới hoặc cập nhật ứng viên thông qua Service
+ */
+const handleSaveCandidate = async (data: Candidate) => {
+  try {
+    isLoading.value = true;
+    if (data.candidateId) {
+      await candidateService.update(data.candidateId, data);
+      toast.success("Thành công", "Cập nhật ứng viên thành công");
+    } else {
+      await candidateService.add(data);
+      toast.success("Thành công", "Thêm mới ứng viên thành công");
+    }
+    isModalOpen.value = false;
+    // Load lại dữ liệu sau khi lưu thành công
+    await fetchCandidates();
+  } catch (error) {
+    console.error("Lỗi khi lưu ứng viên:", error);
+    toast.error("Lỗi", "Không thể lưu thông tin ứng viên");
+  } finally {
+    isLoading.value = false;
+  }
+};
 // </editor-fold>
 
 // <editor-fold> desc="delete many"
@@ -227,19 +226,10 @@ const handleDeleteMany = () => {
 // </editor-fold>
 
 // <editor-fold> desc="Add new + Edit"
-const saveCandidate = (data: any) => {
-  // Implementation for saving/updating goes here
+const saveCandidate = async (data: any) => {
   isModalOpen.value = false;
-  if (modalMode.value === "add") {
-    console.log('Saving candidate:', data);
-    filteredData.value.push({...data, id: Date.now().toString()})
-    toast.success('Them thanh cong', `Them ung vien ${data.name} thanh cong`)
-  } else if (modalMode.value === "edit") {
-    const index = filteredData.value.findIndex(c => c.id === data.id);
-    if (index > -1) {
-      filteredData.value[index] = {...data}
-    }
-    toast.success('Sua thanh cong', `Sua ung vien ${data.name} thanh cong`)
+  if (modalMode.value === "add" || modalMode.value === "edit") {
+    await handleSaveCandidate(data);
   }
 }
 

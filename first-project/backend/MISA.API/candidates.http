@@ -6,6 +6,7 @@ POST {{host}}/v1/api/Candidates
 Content-Type: application/json
 
 {
+  "candidateId": "9d5a7d3b-9a8c-4b5e-9f8d-7c6b5a4a3e30",
   "name": "Kieu Van A",
   "phone": "0123499999",
   "email": "a@example.com",

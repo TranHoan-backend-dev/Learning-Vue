@@ -1,13 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
+using MISA.Common.Attributes;
 using MISA.Common.Enum;
 
 namespace MISA.Common.Base;
 
 public class BaseModel
 {
-    public string? CreatedBy { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string? ModifiedBy { get; set; }
-    public DateTime? ModifiedAt { get; set; }
+    [ConfigColumn("created_by")] public string? CreatedBy { get; set; }
+    [ConfigColumn("created_at")] public DateTime CreatedAt { get; set; }
+    [ConfigColumn("modified_by")] public string? ModifiedBy { get; set; }
+    [ConfigColumn("modified_at")] public DateTime? ModifiedAt { get; set; }
     [NotMapped] public AppEnum.ModelState? State { get; set; }
 }

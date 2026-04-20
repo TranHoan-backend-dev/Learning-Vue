@@ -2,7 +2,7 @@ import axios from 'axios';
 
 /**
  * Cấu hình instance axios chung cho toàn ứng dụng
- * @author: xuán hoán (18/04/2026)
+ * @author: xuan hoan (18/04/2026)
  */
 const api = axios.create({
     baseURL: 'http://localhost:5156/v1/api',

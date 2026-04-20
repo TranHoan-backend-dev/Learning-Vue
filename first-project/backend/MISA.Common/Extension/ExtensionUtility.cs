@@ -137,6 +137,7 @@ public static class ExtensionUtility
         if (objEntity is null || string.IsNullOrEmpty(propertyName))
             return null;
 
+        Console.WriteLine($"Object: {objEntity}");
         // neu la Dictionary / Expando, IDictionary
         if (objEntity is IDictionary<string, object> objects)
         {
@@ -144,7 +145,18 @@ public static class ExtensionUtility
         }
 
         // neu la obj binh thuong
-        var info = objEntity.GetType().GetProperty(propertyName);
+        var type = objEntity.GetType();
+        var info = type.GetProperty(propertyName);
+
+        // Neu khong tim thay theo property name, thu tim theo ConfigColumnAttribute (snake_case)
+        if (info == null)
+        {
+            info = type.GetProperties().FirstOrDefault(p =>
+                p.GetCustomAttribute<ConfigColumnAttribute>()?.ColumnName == propertyName);
+        }
+
+        Console.WriteLine($"Property: {propertyName}");
+        Console.WriteLine($"info: {info}");
         return info?.GetValue(objEntity);
     }
 

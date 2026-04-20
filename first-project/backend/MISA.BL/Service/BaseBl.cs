@@ -72,7 +72,7 @@ public sealed class BaseBl<T>(
         var type = models[0].GetType();
 
         var tableName = type.GetTableNameOnly();
-        var primaryKey = type.GetPrimaryKeyAttribute();
+        var primaryKey = type.GetPrimaryKey().keyTable;
         var columns = type.GetAllColumns();
 
         var columnsList = string.Join(",", columns);
@@ -106,6 +106,12 @@ public sealed class BaseBl<T>(
             {
                 var value = primaryKey == col ? keyValue : model.GetValue(col);
                 parameters.Add($"@{col}_{count}", value);
+                // Console.WriteLine($"Col: {col}");
+                // Console.WriteLine($"Value: {value}");
+                if (primaryKey == col)
+                {
+                    Console.WriteLine(value);
+                }
             }
 
             count++;

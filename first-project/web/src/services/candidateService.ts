@@ -64,6 +64,7 @@ const candidateService = {
      * @returns Promise kết quả từ server
      */
     add(candidate: Candidate) {
+        console.log(candidate);
         return api.post('/Candidates', candidate);
     },
 

@@ -11,9 +11,11 @@ export const form = ref({
     educationLevel: '',
     educationLocation: '',
     major: '',
-    hiring_campaign: '',
-    hiring_position: '',
-    hiring_at: new Date().toISOString().substr(0, 10),
+    hiringCampaign: '',
+    hiringPosition: '',
+    hiringRound: 'Hồ sơ', // Default hiring round
+    hiringAt: new Date().toISOString().substr(0, 10),
+    status: true,
     candidateSource: '',
     recruiter: 'Đình Nga QTHT',
     collaborator: '',
@@ -30,6 +32,8 @@ export const error = ref({
     name: '',
     phone: '',
     email: '',
+    hiringCampaign: '',
+    hiringPosition: '',
     ngayUngTuyen: '',
     nhanSuKhaiThac: '',
     thoiGianBatDau: ''

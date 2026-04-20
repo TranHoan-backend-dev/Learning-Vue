@@ -31,9 +31,11 @@ watch(() => props.modelValue, (val) => {
       educationLevel: '',
       educationLocation: '',
       major: '',
-      hiring_campaign: '',
-      hiring_position: '',
-      hiring_at: new Date().toISOString().substr(0, 10),
+      hiringCampaign: '',
+      hiringPosition: '',
+      hiringRound: 'Hồ sơ',
+      hiringAt: new Date().toISOString().substr(0, 10),
+      status: true,
       candidateSource: '',
       recruiter: 'Đình Nga QTHT',
       collaborator: '',
@@ -113,7 +115,13 @@ const validateAll = () => {
   }
 
   // Validate other required fields
-  error.value.ngayUngTuyen = !form.value.hiring_at ? 'Ngày ứng tuyển không được để trống' : '';
+  error.value.hiringCampaign = !form.value.hiringCampaign ? 'Chiến dịch không được để trống' : '';
+  if (error.value.hiringCampaign) isValid = false;
+
+  error.value.hiringPosition = !form.value.hiringPosition ? 'Vị trí không được để trống' : '';
+  if (error.value.hiringPosition) isValid = false;
+
+  error.value.ngayUngTuyen = !form.value.hiringAt ? 'Ngày ứng tuyển không được để trống' : '';
   if (error.value.ngayUngTuyen) isValid = false;
 
   error.value.nhanSuKhaiThac = !form.value.recruiter ? 'Nhân sự khai thác không được để trống' : '';
@@ -164,7 +172,7 @@ watch(() => form.value.email, (val) => {
   }
 });
 
-watch(() => form.value.hiring_at, (val) => {
+watch(() => form.value.hiringAt, (val) => {
   error.value.ngayUngTuyen = !val ? 'Ngày ứng tuyển không được để trống' : '';
 });
 
@@ -341,13 +349,33 @@ watch(() => form.value.startDate, (val) => {
 
           <hr class="divider">
 
+          <!-- Chiến dịch và Vị trí tuyển dụng -->
+          <div class="form__row flex__row gap-16">
+            <div class="flex__grow">
+              <label>Chiến dịch tuyển dụng <span class="required">*</span></label>
+              <NormalInput
+                  v-model="form.hiringCampaign"
+                  placeholder="Nhập chiến dịch tuyển dụng"
+                  :error-message="error.hiringCampaign"
+              />
+            </div>
+            <div class="flex__grow">
+              <label>Vị trí tuyển dụng <span class="required">*</span></label>
+              <NormalInput
+                  v-model="form.hiringPosition"
+                  placeholder="Nhập vị trí tuyển dụng"
+                  :error-message="error.hiringPosition"
+              />
+            </div>
+          </div>
+
           <!-- Ngày ứng tuyển, Nguồn ứng viên -->
           <div class="form__row flex__row gap-16">
             <div class="flex__grow">
               <label>Ngày ứng tuyển <span class="required">*</span></label>
               <div class="input__with__icon">
                 <DateInput
-                    v-model="form.hiring_at"
+                    v-model="form.hiringAt"
                     :error-message="error.ngayUngTuyen"
                 />
               </div>
