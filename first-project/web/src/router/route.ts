@@ -9,6 +9,7 @@ import Report from "@/views/Report.vue";
 import Setting from "@/views/Setting.vue";
 import TalentPool from "@/views/TalentPool.vue";
 import UsefulKnowledge from "@/views/UsefulKnowledge.vue";
+import InventoryItemsList from "@/views/DI/InventoryItem/InventoryItemsList.vue";
 import {createWebHistory, createRouter} from "vue-router";
 
 const routes = [
@@ -23,7 +24,8 @@ const routes = [
     {path: '/setting', component: Setting},
     {path: '/talent', component: TalentPool},
     {path: '/knowledge', component: UsefulKnowledge},
-    {path: '/', redirect: '/candidates'}
+    {path: '/', redirect: '/candidates'},
+    {path: '/inventory', component: InventoryItemsList},
 ]
 
 export const router = createRouter({

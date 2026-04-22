@@ -45,7 +45,7 @@ var theme = new AnsiConsoleTheme(new Dictionary<ConsoleThemeStyle, string>
     [ConsoleThemeStyle.LevelDebug] = "\x1b[45m",
 });
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Information()
     .WriteTo.Console(theme: theme,
         outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}")
@@ -78,6 +78,8 @@ builder.Host.UseSerilog();
 var app = builder.Build();
 
 app.UseCors("AllowSpecificOrigins");
+
+app.UseRouting();
 
 app.UseExceptionHandler();
 

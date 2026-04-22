@@ -1,8 +1,10 @@
+using System.Reflection;
 using System.Text;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using MISA.BL.Base;
 using MISA.BL.DTO.Request;
+using MISA.Common.Attributes;
 using MISA.Common.Base;
 using MISA.Common.Enum;
 using MISA.Common.Extension;
@@ -29,6 +31,19 @@ public sealed class BaseBl<T>(
     public Task<T?> GetByIdAsync(Guid id)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task AddAsync(T model)
+    {
+        log.LogInformation($"{_logPrefix} Add data with model: {model}");
+        await baseDl.CreateAsync(model);
+    }
+
+    public async Task<int> UpdateAsync(T model, Guid id)
+    {
+        log.LogInformation($"{_logPrefix} Update data with model: {model}");
+        await baseDl.UpdateAsync(model, id);
+        return 0;
     }
 
     public Task DeleteAsync(T model, Guid id)
@@ -106,12 +121,6 @@ public sealed class BaseBl<T>(
             {
                 var value = primaryKey == col ? keyValue : model.GetValue(col);
                 parameters.Add($"@{col}_{count}", value);
-                // Console.WriteLine($"Col: {col}");
-                // Console.WriteLine($"Value: {value}");
-                if (primaryKey == col)
-                {
-                    Console.WriteLine(value);
-                }
             }
 
             count++;
@@ -211,7 +220,7 @@ public sealed class BaseBl<T>(
         }
 
         // Them limit offset
-        query.AppendLine(" LIMIT @limit OFFSET @offset");
+        query.AppendLine("  ORDER BY created_at DESC LIMIT @limit OFFSET @offset");
         parameters.Add("@limit", pageSize);
         parameters.Add("@offset", pageIndex * pageSize);
 

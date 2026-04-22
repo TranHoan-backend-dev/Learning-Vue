@@ -75,6 +75,7 @@ const candidateService = {
      * @returns Promise kết quả từ server
      */
     update(id: string, candidate: Candidate) {
+        console.log('[candidateService.ts]: Request payload:', candidate);
         return api.put(`/Candidates/${id}`, candidate);
     },
     

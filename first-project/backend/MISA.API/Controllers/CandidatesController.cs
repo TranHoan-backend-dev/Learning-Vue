@@ -9,7 +9,7 @@ using MISA.Common.Model;
 namespace MISA.API.Controllers;
 
 [ApiController]
-[Route("/v1/api/[controller]")]
+[Route("v1/api/[controller]")]
 public class CandidatesController(
     IBaseBl<Candidate> baseBl,
     ILogger<CandidatesController> log
@@ -21,17 +21,25 @@ public class CandidatesController(
     public async Task<IActionResult> Update([FromBody] Candidate candidate, [FromRoute] Guid id)
     {
         log.LogInformation($"{LogPrefix} Updated Candidate with id: {id}");
-        var res = await baseBl.SaveDataAsync([candidate]);
+        var res = await baseBl.UpdateAsync(candidate, id);
         return Ok(res);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> AddNewCandidate([FromBody] Candidate candidate)
+    [HttpPost("save")]
+    public async Task<IActionResult> SaveCandidate([FromBody] Candidate candidate)
     {
         log.LogInformation($"{LogPrefix} Create new candidate");
         candidate.State = AppEnum.ModelState.Insert;
         var res = await baseBl.SaveDataAsync([candidate]);
         return Ok(res);
+    }
+
+    [HttpPost()]
+    public async Task<IActionResult> AddNewCandidate([FromBody] Candidate candidate)
+    {
+        log.LogInformation($"{LogPrefix} Create new candidate");
+        await baseBl.AddAsync(candidate);
+        return Created();
     }
 
     [HttpGet]
@@ -50,4 +58,6 @@ public class CandidatesController(
             }
         });
     }
+    
+    
 }

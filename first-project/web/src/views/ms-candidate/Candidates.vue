@@ -48,11 +48,11 @@ const totalPages = computed(() => {
 
 // Định nghĩa các lựa chọn cho số bản ghi trên trang
 const pageSizeOptions = [
-  { value: 5, label: "5" },
-  { value: 10, label: "10" },
-  { value: 15, label: "15" },
-  { value: 25, label: "25" },
-  { value: 50, label: "50" },
+  {value: 5, label: "5"},
+  {value: 10, label: "10"},
+  {value: 15, label: "15"},
+  {value: 25, label: "25"},
+  {value: 50, label: "50"},
 ];
 
 // Hiển thị thông tin phân trang (ví dụ: 1 - 10 trên 134 bản ghi)
@@ -67,18 +67,17 @@ const pageInfo = computed(() => {
 const tableData = computed<BodyProps[][]>(() => {
   // Chỉ hiển thị Skeleton nếu thời gian tải dữ liệu vượt quá 1 giây
   if (isSlowLoading.value) {
-    return Array.from({ length: pageSize.value }).map(() => 
-      Array.from({ length: 12 }).map(() => ({
-        tdClassName: 'text_center',
-        slotName: 'skeleton'
-      }))
+    return Array.from({length: pageSize.value}).map(() =>
+        Array.from({length: 12}).map(() => ({
+          tdClassName: 'text_center',
+          slotName: 'skeleton'
+        }))
     );
   }
 
   return filteredData.value.map((candidate: any, index: number): BodyProps[] =>
       [
-        {tdClassName: 'col_checkbox text_center', slotName: 'checkbox', id: candidate.id},
-        {tdClassName: 'col_name text_center', value: ((currentPage.value - 1) * pageSize.value + index + 1).toString()},
+        {tdClassName: '', slotName: 'checkbox', id: candidate.id},
         {tdClassName: 'col_name text_left', value: candidate.name || "--"},
         {tdClassName: 'col_phone text_right', value: candidate.phone || "--"},
         {tdClassName: 'col_email text_left', value: candidate.email || "--"},
@@ -113,7 +112,7 @@ const fetchCandidates = async () => {
       pageIndex: currentPage.value - 1, // Chuyển từ 1-indexed sang 0-indexed cho Backend
       pageSize: pageSize.value
     };
-    const response = await candidateService.getPaginated(pageable, { keyword: "" });
+    const response = await candidateService.getPaginated(pageable, {keyword: ""});
     if (response && response.data) {
       console.log(response.data)
       // Sửa lỗi mapping: gán candidateId vào id để đồng bộ logic toàn app
@@ -193,7 +192,7 @@ const hasSelectedRows = computed(() => selectedCandidateIds.value.length > 0);
 
 const toggleCandidateSelection = (id: string | undefined) => {
   if (!id) return;
-  
+
   if (selectedCandidateIds.value.includes(id)) {
     // Nếu bản ghi đã được chọn, thì loại bỏ khỏi mảng
     selectedCandidateIds.value = selectedCandidateIds.value.filter(item => item !== id);
@@ -227,8 +226,12 @@ const handleDeleteMany = () => {
 
 // <editor-fold> desc="Add new + Edit"
 const saveCandidate = async (data: any) => {
+  console.log('[Candidates.saveCandidate] data: ' + data)
   isModalOpen.value = false;
-  if (modalMode.value === "add" || modalMode.value === "edit") {
+  if (modalMode.value === "add") {
+    await handleSaveCandidate(data);
+  }
+  if (modalMode.value === "edit") {
     await handleSaveCandidate(data);
   }
 }
@@ -239,7 +242,7 @@ const handleOpenAddingModal = () => {
   isModalOpen.value = true
 }
 
-const handleOpenEditModal = (id: string) => {
+const handleOpenEditModal = async (id: string) => {
   currentCandidate.value = filteredData.value.find(c => c.id === id) || null
   modalMode.value = 'edit'
   isModalOpen.value = true
@@ -346,7 +349,6 @@ const confirmDeleting = () => {
             <CustomTable
                 :header-props="[
                   {className: 'col_checkbox text_center', slotName: 'checkbox'},
-                  {className: 'col_name text_center', value: 'STT'},
                   {className: 'col_name text_left', value: 'Họ và Tên'},
                   {className: 'col_phone text_right', value: 'Số điện thoại'},
                   {className: 'col_email text_left', value: 'Email'},
@@ -373,7 +375,7 @@ const confirmDeleting = () => {
                 />
               </template>
               <template #cell-skeleton>
-                <CustomSkeleton height="16px" border-radius="4px" />
+                <CustomSkeleton height="16px" border-radius="4px"/>
               </template>
               <template #cell-star>
                 <i v-for="i in 5" :key="i" class="bi bi-star"></i>
@@ -419,11 +421,11 @@ const confirmDeleting = () => {
             <div class="content_body_footer_pagesize">
               <span class="paging_label">Số bản ghi trên trang</span>
               <div class="page_size_custom_select">
-                <CustomSelect 
-                  v-model="pageSize" 
-                  :options="pageSizeOptions" 
-                  @update:modelValue="handlePageSizeChange"
-                  size="sm"
+                <CustomSelect
+                    v-model="pageSize"
+                    :options="pageSizeOptions"
+                    @update:modelValue="handlePageSizeChange"
+                    size="sm"
                 />
               </div>
             </div>
@@ -431,11 +433,11 @@ const confirmDeleting = () => {
               <span class="page_info" id="pageInfo">{{ pageInfo }}</span>
             </div>
             <div class="content_body_footer_nav">
-              <CustomPagination 
-                v-model="currentPage" 
-                :total="totalRecordsServer" 
-                :page-size="pageSize"
-                color="#0070f3"
+              <CustomPagination
+                  v-model="currentPage"
+                  :total="totalRecordsServer"
+                  :page-size="pageSize"
+                  color="#0070f3"
               />
             </div>
           </div>

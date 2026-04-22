@@ -1,12 +1,11 @@
 @host = http://localhost:5156
-@id = 00000000-0000-0000-0000-000000000000
+@id = be533dc3-3dde-4389-b1bb-b6e0e7b68614
 
 ### Create new candidate
 POST {{host}}/v1/api/Candidates
 Content-Type: application/json
 
 {
-  "candidateId": "9d5a7d3b-9a8c-4b5e-9f8d-7c6b5a4a3e30",
   "name": "Kieu Van A",
   "phone": "0123499999",
   "email": "a@example.com",
@@ -23,8 +22,7 @@ PUT {{host}}/v1/api/Candidates/{{id}}
 Content-Type: application/json
 
 {
-  "employeeId": "{{id}}",
-  "name": "Nguyen Van A - Updated 1",
+  "name": "Nguyen Van A",
   "phone": "0987654321",
   "email": "a.updated@example.com",
   "hiringCampaign": "Campaign 1",

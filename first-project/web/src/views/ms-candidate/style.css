@@ -115,14 +115,6 @@
   max-width: 200px;
 }
 
-#table_user .col_checkbox {
-  min-width: 50px;
-  max-width: 50px;
-  padding: 8px 15px !important;
-  position: sticky;
-  left: 0;
-}
-
 #table_user .col_action {
   position: sticky;
   right: 0;
