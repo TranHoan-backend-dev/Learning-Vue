@@ -6,6 +6,7 @@ const model = defineModel<string>()
 defineProps<{
   className?: string,
   errorMessage?: string,
+  hideErrorSpace?: boolean,
 }>()
 </script>
 
@@ -14,10 +15,8 @@ defineProps<{
       v-model="model"
       type="date"
       append-inner-icon="mdi-calendar-month-outline"
-      hide-details
-      density="compact"
-      variant="outlined"
       :error-message="errorMessage"
+      :hide-error-space="hideErrorSpace"
       placeholder="dd/MM/yyyy"
       :class-name="className"
   />

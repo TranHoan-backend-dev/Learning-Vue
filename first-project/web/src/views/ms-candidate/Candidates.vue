@@ -160,11 +160,12 @@ watch(totalPages, (newTotal) => {
 /**
  * Hàm thêm mới hoặc cập nhật ứng viên thông qua Service
  */
-const handleSaveCandidate = async (data: Candidate) => {
+const handleSaveCandidate = async (data: Candidate, mode: 'add' | 'edit') => {
   try {
     isLoading.value = true;
-    if (data.candidateId) {
-      await candidateService.update(data.candidateId, data);
+    const id = data.candidateId || (data as any).id;
+    if (mode === 'edit' && id) {
+      await candidateService.update(id, data);
       toast.success("Thành công", "Cập nhật ứng viên thành công");
     } else {
       await candidateService.add(data);
@@ -234,13 +235,11 @@ const handleDeleteMany = () => {
 
 // <editor-fold> desc="Add new + Edit"
 const saveCandidate = async (data: any) => {
-  console.log('[Candidates.saveCandidate] data: ' + data)
-  isModalOpen.value = false;
+  console.log('[Candidates.saveCandidate] data:', data)
   if (modalMode.value === "add") {
-    await handleSaveCandidate(data);
-  }
-  if (modalMode.value === "edit") {
-    await handleSaveCandidate(data);
+    await handleSaveCandidate(data, 'add');
+  } else if (modalMode.value === "edit") {
+    await handleSaveCandidate(data, 'edit');
   }
 }
 
@@ -444,6 +443,7 @@ const confirmDeleting = async () => {
                     :options="pageSizeOptions"
                     @update:modelValue="handlePageSizeChange"
                     size="sm"
+                    hide-error-space
                 />
               </div>
             </div>

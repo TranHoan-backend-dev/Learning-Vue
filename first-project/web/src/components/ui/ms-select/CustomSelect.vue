@@ -15,12 +15,14 @@ interface SelectProps {
   required?: boolean,
   errorMessage?: string,
   placeholder?: string,
-  size?: SelectSize
+  size?: SelectSize,
+  hideErrorSpace?: boolean
 }
 
 const props = withDefaults(defineProps<SelectProps>(), {
   placeholder: 'Chọn giá trị...',
-  size: 'md'
+  size: 'md',
+  hideErrorSpace: false
 });
 
 const emit = defineEmits<{
@@ -121,7 +123,11 @@ onUnmounted(() => {
       </Transition>
     </div>
 
-    <div v-if="errorMessage" class="ms_error_message">
+    <div 
+      v-if="!hideErrorSpace || errorMessage" 
+      class="ms_error_message"
+      :class="{ 'no-space': hideErrorSpace }"
+    >
       {{ errorMessage }}
     </div>
   </div>
@@ -264,7 +270,11 @@ onUnmounted(() => {
 .ms_error_message {
   font-size: 12px;
   color: #f31260;
-  margin-top: 6px;
-  min-height: 16px;
+  margin-top: 4px;
+  min-height: 18px;
+}
+
+.ms_error_message.no-space {
+  min-height: 0;
 }
 </style>

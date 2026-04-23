@@ -14,7 +14,6 @@ export interface Candidate {
     review: string;
     hiringAt: string;
     status: boolean;
-    state?: number; // ModelState: 1 - Insert, 2 - Update, 3 - Delete
 }
 
 /**

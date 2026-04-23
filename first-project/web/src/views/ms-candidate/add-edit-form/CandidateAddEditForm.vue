@@ -17,10 +17,15 @@ const emit = defineEmits(['update:modelValue', 'save', 'cancel']);
 
 watch(() => props.modelValue, (val) => {
   if (val) {
-    form.value = {...form.value, ...val};
+    form.value = {
+      ...form.value,
+      ...val,
+      candidateId: val.candidateId || val.id || ''
+    };
   } else {
     // Reset form
     form.value = {
+      candidateId: '',
       name: '',
       phone: '',
       email: '',
@@ -56,14 +61,30 @@ watch(() => props.modelValue, (val) => {
     email: '',
     ngayUngTuyen: '',
     nhanSuKhaiThac: '',
-    thoiGianBatDau: ''
+    thoiGianBatDau: '',
+    dob: ''
   };
 }, {immediate: true});
 
 const save = () => {
   if (validateAll()) {
-    emit('save', form.value);
-    console.log(form.value);
+    // Filter payload to only send what the backend needs
+    const payload: any = {
+      name: form.value.name,
+      phone: form.value.phone,
+      email: form.value.email,
+      hiringCampaign: form.value.hiringCampaign,
+      hiringPosition: form.value.hiringPosition,
+      hiringRound: form.value.hiringRound,
+      hiringAt: form.value.hiringAt,
+      status: form.value.status,
+      review: form.value.review || '',
+    };
+    if (form.value.candidateId) {
+      payload.candidateId = form.value.candidateId;
+    }
+    emit('save', payload);
+    console.log('Filtered payload:', payload);
   } else {
     console.log('Validation failed', error.value);
   }
@@ -128,7 +149,45 @@ const validateAll = () => {
   if (error.value.nhanSuKhaiThac) isValid = false;
 
   error.value.thoiGianBatDau = !form.value.startDate ? 'Thời gian bắt đầu không được để trống' : '';
+  if (!error.value.thoiGianBatDau) {
+    const startDate = new Date(form.value.startDate);
+    startDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (startDate > today) {
+      error.value.thoiGianBatDau = 'Thời gian bắt đầu không thể là tương lai';
+    }
+  }
   if (error.value.thoiGianBatDau) isValid = false;
+
+  // Validate Ngày ứng tuyển (not future)
+  if (!error.value.ngayUngTuyen) {
+    const hiringAt = new Date(form.value.hiringAt);
+    hiringAt.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (hiringAt > today) {
+      error.value.ngayUngTuyen = 'Ngày ứng tuyển không thể là tương lai';
+      isValid = false;
+    }
+  }
+
+  // Validate DOB (18+)
+  if (form.value.dob) {
+    const dob = new Date(form.value.dob);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      error.value.dob = 'Ứng viên phải đủ 18 tuổi';
+      isValid = false;
+    } else {
+      error.value.dob = '';
+    }
+  }
 
   return isValid;
 };
@@ -173,15 +232,66 @@ watch(() => form.value.email, (val) => {
 });
 
 watch(() => form.value.hiringAt, (val) => {
-  error.value.ngayUngTuyen = !val ? 'Ngày ứng tuyển không được để trống' : '';
+  if (!val) {
+    error.value.ngayUngTuyen = 'Ngày ứng tuyển không được để trống';
+  } else {
+    const hiringAt = new Date(val);
+    hiringAt.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (hiringAt > today) {
+      error.value.ngayUngTuyen = 'Ngày ứng tuyển không thể là tương lai';
+    } else {
+      error.value.ngayUngTuyen = '';
+    }
+  }
 });
 
 watch(() => form.value.recruiter, (val) => {
   error.value.nhanSuKhaiThac = !val ? 'Nhân sự khai thác không được để trống' : '';
 });
 
+watch(() => form.value.hiringCampaign, (val) => {
+  error.value.hiringCampaign = !val ? 'Chiến dịch không được để trống' : '';
+});
+
+watch(() => form.value.hiringPosition, (val) => {
+  error.value.hiringPosition = !val ? 'Vị trí không được để trống' : '';
+});
+
 watch(() => form.value.startDate, (val) => {
-  error.value.thoiGianBatDau = !val ? 'Thời gian bắt đầu không được để trống' : '';
+  if (!val) {
+    error.value.thoiGianBatDau = 'Thời gian bắt đầu không được để trống';
+  } else {
+    const startDate = new Date(val);
+    startDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (startDate > today) {
+      error.value.thoiGianBatDau = 'Thời gian bắt đầu không thể là tương lai';
+    } else {
+      error.value.thoiGianBatDau = '';
+    }
+  }
+});
+
+watch(() => form.value.dob, (val) => {
+  if (val) {
+    const dob = new Date(val);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      error.value.dob = 'Ứng viên phải đủ 18 tuổi';
+    } else {
+      error.value.dob = '';
+    }
+  } else {
+    error.value.dob = '';
+  }
 });
 </script>
 
@@ -220,13 +330,14 @@ watch(() => form.value.startDate, (val) => {
           </div>
 
           <!-- Ngày sinh, Giới tính -->
-          <div class="form__row flex__row gap-16">
+          <div class="form__row flex__row gap-16 col-2">
             <div class="flex__grow">
               <label>Ngày sinh <span class="sub__label">Ngày tháng năm</span></label>
               <div class="input__with__icon">
                 <DateInput
                     v-model="form.dob"
                     aria-label="Ngày tháng năm"
+                    :error-message="error.dob"
                 />
               </div>
             </div>
@@ -268,7 +379,7 @@ watch(() => form.value.startDate, (val) => {
           </div>
 
           <!-- Sdt, email -->
-          <div class="form__row flex__row gap-16">
+          <div class="form__row flex__row gap-16 col-2">
             <div class="flex__grow">
               <label>Số điện thoại <span class="required">*</span></label>
               <NormalInput
@@ -350,7 +461,7 @@ watch(() => form.value.startDate, (val) => {
           <hr class="divider">
 
           <!-- Chiến dịch và Vị trí tuyển dụng -->
-          <div class="form__row flex__row gap-16">
+          <div class="form__row flex__row gap-16 col-2">
             <div class="flex__grow">
               <label>Chiến dịch tuyển dụng <span class="required">*</span></label>
               <NormalInput
@@ -370,7 +481,7 @@ watch(() => form.value.startDate, (val) => {
           </div>
 
           <!-- Ngày ứng tuyển, Nguồn ứng viên -->
-          <div class="form__row flex__row gap-16">
+          <div class="form__row flex__row gap-16 col-2">
             <div class="flex__grow">
               <label>Ngày ứng tuyển <span class="required">*</span></label>
               <div class="input__with__icon">
@@ -392,7 +503,7 @@ watch(() => form.value.startDate, (val) => {
           </div>
 
           <!-- Nhân sự khai thác + cộng tác viên -->
-          <div class="form__row flex__row gap-16">
+          <div class="form__row flex__row gap-16 col-2">
             <div class="flex__grow">
               <CustomSelect
                   label="Nhân sự khai thác"
@@ -443,7 +554,7 @@ watch(() => form.value.startDate, (val) => {
             </div>
           </div>
 
-          <div class="form__row flex__row gap-16">
+          <div class="form__row flex__row gap-16 col-2" style="align-items: flex-start;">
             <div class="flex__grow">
               <label>Thời gian bắt đầu <span class="required">*</span></label>
               <div class="input__with__icon">
@@ -453,7 +564,7 @@ watch(() => form.value.startDate, (val) => {
                 />
               </div>
             </div>
-            <div style="padding-bottom: 10px;">-</div>
+            <div style="margin-top: 40px;">-</div>
             <div class="flex__grow">
               <label>Thời gian kết thúc</label>
               <div class="input__with__icon">

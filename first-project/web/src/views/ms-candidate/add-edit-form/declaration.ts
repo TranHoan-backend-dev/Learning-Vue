@@ -1,6 +1,7 @@
 import {ref} from "vue";
 
 export const form = ref({
+    candidateId: '',
     name: '',
     phone: '',
     email: '',
@@ -32,6 +33,7 @@ export const error = ref({
     name: '',
     phone: '',
     email: '',
+    dob: '',
     hiringCampaign: '',
     hiringPosition: '',
     ngayUngTuyen: '',

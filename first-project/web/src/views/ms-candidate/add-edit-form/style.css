@@ -82,6 +82,15 @@
     align-items: flex-end;
 }
 
+.align-center {
+    align-items: flex-start !important;
+}
+
+.align-center > label,
+.align-center > .edu__label__fixed {
+    margin-top: 10px; /* Align with center of 40px input */
+}
+
 .gap-8 {
     gap: 8px;
 }
@@ -92,6 +101,9 @@
 
 .flex__grow {
     flex-grow: 1;
+}
+
+.col-2 > .flex__grow {
     max-width: calc(50% - 8px);
 }
 
@@ -100,46 +112,19 @@ label {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 8px;
-    color: #212121;
+    color: #11181c;
 }
 
 .sub__label {
     font-weight: 400;
-    color: #65696e;
+    color: #71717a;
     margin-left: 4px;
     font-size: 13px;
 }
 
 .required {
-    color: #ff4d4f;
+    color: #f31260;
     margin-left: 2px;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="date"],
-select,
-textarea {
-    width: 100%;
-    height: 36px;
-    padding: 8px 12px;
-    border: 1px solid #dddde4;
-    border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-    background-color: #fff;
-    font-family: inherit;
-}
-
-textarea {
-    height: 80px;
-    resize: vertical;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    border-color: #2970f6;
 }
 
 .input__with__icon {
@@ -213,12 +198,12 @@ textarea:focus {
 
 .input__with__actions .actions {
     position: absolute;
-    right: 8px;
-    top: 50%;
+    right: 12px;
+    top: 20px; /* Center in 40px input */
     transform: translateY(-50%);
     display: flex;
-    gap: 8px;
-    color: #2970f6;
+    gap: 12px;
+    color: #0070f3;
 }
 
 .input__with__actions .actions i {
@@ -242,31 +227,34 @@ textarea:focus {
 }
 
 .btn__cancel {
-    height: 36px;
-    padding: 0 16px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: #212121;
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    background-color: #f4f4f5;
+    color: #11181c;
     cursor: pointer;
     font-weight: 500;
-    border-radius: 4px;
+    border-radius: 12px;
+    transition: all 0.2s;
 }
 
 .btn__cancel:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #e4e4e7;
 }
 
 .btn__save {
-    height: 36px;
+    height: 40px;
     padding: 0 24px;
     border: none;
-    background-color: #2970f6;
+    background-color: #0070f3;
     color: #fff;
     cursor: pointer;
-    font-weight: 500;
-    border-radius: 4px;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.2s;
 }
 
 .btn__save:hover {
-    background-color: #2159c4;
+    background-color: #0060d0;
+    box-shadow: 0 4px 14px 0 rgba(0, 112, 243, 0.39);
 }

@@ -7,6 +7,7 @@ const props = defineProps<{
   type?: 'text' | 'tel' | 'checkbox' | 'date' | 'email',
   appendInnerIcon?: string,
   errorMessage?: string,
+  hideErrorSpace?: boolean,
 }>()
 
 const value = defineModel<string>({
@@ -29,7 +30,11 @@ const value = defineModel<string>({
         <i :class="props.appendInnerIcon.startsWith('mdi-') ? 'mdi ' + props.appendInnerIcon : props.appendInnerIcon"></i>
       </div>
     </div>
-    <div v-if="props.errorMessage" class="ms_error_message">
+    <div 
+      v-if="!props.hideErrorSpace || props.errorMessage" 
+      class="ms_error_message"
+      :class="{ 'no-space': props.hideErrorSpace }"
+    >
       {{ props.errorMessage }}
     </div>
   </div>
@@ -50,40 +55,53 @@ const value = defineModel<string>({
 
 .ms_input {
   width: 100%;
-  height: 36px;
-  padding: 8px 12px;
-  border: 1px solid #dddde4;
-  border-radius: 4px; /* Default for consistency, can be overridden */
+  height: 40px; /* Matching CustomSelect size-md */
+  padding: 0 16px;
+  border: 2px solid transparent;
+  border-radius: 12px;
   font-size: 14px;
   outline: none;
-  background-color: #fff;
+  background-color: #f4f4f5;
+  color: #11181c;
   font-family: inherit;
-  transition: border-color 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ms_input:hover {
+  background-color: #e4e4e7;
 }
 
 .ms_input:focus {
-  border-color: #2970f6;
+  background-color: #fff;
+  border-color: #0070f3;
 }
 
 .ms-input-error {
-  border-color: #ff4d4f !important;
+  border-color: #f31260 !important;
+  background-color: #fee7ef;
 }
 
 .ms_input_icon {
   position: absolute;
-  right: 10px;
-  color: #65696e;
+  right: 14px;
+  color: #71717a;
   pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  top: 0;
+  height: 40px;
 }
 
 .ms_error_message {
   font-size: 12px;
-  color: #ff4d4f;
+  color: #f31260;
   margin-top: 4px;
-  min-height: 16px;
+  min-height: 18px;
+}
+
+.ms_error_message.no-space {
+  min-height: 0;
 }
 
 /* Specific styling for the date input icon if needed */
