@@ -78,8 +78,6 @@
   max-width: 250px;
 }
 
-#table_user thead .col_name,
-#table_user thead .col_checkbox,
 #table_user thead .col_phone,
 #table_user thead .col_email,
 #table_user thead .col_action {

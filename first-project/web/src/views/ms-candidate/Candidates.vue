@@ -15,6 +15,39 @@ import type {BodyProps} from "@/components/ui/ms-table/model.ts";
 import {toast} from "@/services/toast.ts";
 import candidateService, {type Candidate, type Pageable, type FilterRequest} from '@/services/candidateService';
 
+/**
+ * Hàm lấy chữ cái viết tắt từ tên (tối đa 2 ký tự)
+ */
+const getInitials = (name: string) => {
+  if (!name || name === "--") return "";
+  const parts = name.trim().split(' ').filter(p => p.length > 0);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+/**
+ * Danh sách màu sắc cho avatar
+ */
+const avatarColors = [
+  '#FF5722', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
+  '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50',
+  '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#795548'
+];
+
+/**
+ * Lấy màu sắc ngẫu nhiên dựa trên tên
+ */
+const getAvatarColor = (name: string) => {
+  if (!name || name === "--") return '#ccc';
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % avatarColors.length;
+  return avatarColors[index];
+};
+
 toast.info('Dang nhap thanh cong', 'Chao mung den voi trang tuyen dung')
 
 const components = [
@@ -102,8 +135,8 @@ const tableData = computed<BodyProps[][]>(() => {
 
   return filteredData.value.map((candidate: any, index: number): BodyProps[] =>
       [
-        {tdClassName: '', slotName: 'checkbox', id: candidate.id},
-        {tdClassName: 'col_name text_left', value: candidate.name || "--"},
+        {tdClassName: 'col_checkbox text_center', slotName: 'checkbox', id: candidate.id},
+        {tdClassName: 'col_name text_left', value: candidate.name || "--", slotName: 'name'},
         {tdClassName: 'col_phone text_right', value: candidate.phone || "--"},
         {tdClassName: 'col_email text_left', value: candidate.email || "--"},
         {tdClassName: 'col_email text_left', value: candidate.hiringCampaign || "--"},
@@ -408,6 +441,17 @@ const confirmDeleting = async () => {
                     @update:model-value="toggleCandidateSelection(cell.id)"
                 />
               </template>
+              <template #cell-name="{cell}">
+                <div class="name_cell">
+                  <div
+                      class="name_avatar"
+                      :style="{ backgroundColor: getAvatarColor(cell.value) }"
+                  >
+                    {{ getInitials(cell.value) }}
+                  </div>
+                  <span class="name_text">{{ cell.value }}</span>
+                </div>
+              </template>
               <template #cell-skeleton>
                 <CustomSkeleton height="16px" border-radius="4px"/>
               </template>
@@ -543,6 +587,51 @@ const confirmDeleting = async () => {
 
 :deep(.text_right) {
   text-align: right !important;
+}
+
+:deep(.col_checkbox) {
+  width: 50px !important;
+  min-width: 50px !important;
+  max-width: 50px !important;
+}
+
+:deep(.col_name) {
+  min-width: 250px !important;
+  max-width: 250px !important;
+}
+
+:deep(.col_phone) {
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
+
+:deep(.col_email) {
+  min-width: 200px !important;
+  max-width: 200px !important;
+}
+
+:deep(.col_date) {
+  min-width: 150px !important;
+  max-width: 150px !important;
+}
+
+.name_cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.name_avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .content_body_footer_pagesize {
