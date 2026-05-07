@@ -1,61 +1,62 @@
 .sidebar {
-    position: absolute;
-    top: 48px;
-    left: 0;
-    bottom: 0;
-    width: 233px;
-    background-color: #0a1623;
-    padding: 32px 0 16px 0;
-    background-image: url(https://amisplatform.misacdn.net/apps/recruit/event-sidebar.b836f9e63b28d1c0.png);
-    background-position: bottom;
-    background-repeat: no-repeat;
-    background-size: cover;
-    transition: width 0.3s ease;
-    z-index: 5;
+  position: absolute;
+  top: 48px;
+  left: 0;
+  bottom: 0;
+  width: 233px;
+  background-color: #0a1623;
+  padding: 32px 0 16px 0;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/event-sidebar.b836f9e63b28d1c0.png);
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transition: width 0.3s ease;
+  z-index: 5;
 }
 
 .sidebar.sidebar_collapsed {
-    width: 60px;
+  width: 60px;
 }
 
 .sidebar_bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    padding: 32px 0 16px 0;
-    background: rgba(0, 0, 0, 0.3);
-    transition: width 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 233px;
+  padding: 32px 0 16px 0;
+  background: rgba(0, 0, 0, 0.3);
+  transition: width 0.3s ease;
 }
 
 .sidebar.sidebar_collapsed .sidebar_bg {
-    width: 60px;
+  width: 60px;
 }
 
 .sidebar_menu {
-    height: calc(100% - 40px);
+  height: calc(100% - 44px);
 }
 
 .sidebar_menu_item {
-    min-height: 40px;
-    height: auto !important;
-    margin: 0 12px 12px 12px;
-    display: flex;
-    align-items: center;
-    border-radius: 4px;
-    padding: 0 12px;
-    transition: padding 0.3s ease;
-    cursor: pointer;
+  min-height: 40px;
+  height: auto !important;
+  margin: 0 12px 12px 12px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 0 12px;
+  transition: padding 0.3s ease;
+  cursor: pointer;
 }
 
 .sidebar.sidebar_collapsed .sidebar_menu_item {
-    padding: 0 6px;
-    justify-content: center;
+  padding: 0 6px;
+  justify-content: center;
 }
 
 .sidebar.sidebar_collapsed .sidebar_menu_item_text,
-.sidebar.sidebar_collapsed .sidebar_toggle_text {
-    display: none;
+.sidebar.sidebar_collapsed .sidebar_menu_item_chevron {
+  display: none;
 }
 
 .sidebar.sidebar_collapsed .sidebar_menu_item_recruitment_icon,
@@ -65,119 +66,118 @@
 .sidebar.sidebar_collapsed .sidebar_menu_item_hiring_campaign_icon,
 .sidebar.sidebar_collapsed .sidebar_menu_item_job_icon,
 .sidebar.sidebar_collapsed .sidebar_menu_item_ai_marketing_icon,
-.sidebar.sidebar_collapsed .sidebar_menu_item_contact_icon,
 .sidebar.sidebar_collapsed .sidebar_menu_item_report_icon,
 .sidebar.sidebar_collapsed .sidebar_menu_item_setting_icon,
 .sidebar.sidebar_collapsed .sidebar_menu_item_knowledge_icon {
-    margin-left: 0;
+  margin-left: 0;
 }
 
 .sidebar_menu_item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .sidebar_menu_item_active {
-    background-color: #2680eb !important;
-    color: #2680eb !important;
+  background-color: #2680eb !important;
+  color: #2680eb !important;
 }
 
 .sidebar_menu_item_active .sidebar_menu_item_recruitment_icon,
 .sidebar_menu_item_active .sidebar_menu_item_user_icon,
 .sidebar_menu_item_active .sidebar_menu_item_calendar_icon {
-    background-color: #ffffff !important;
+  background-color: #ffffff !important;
 }
 
 .sidebar_menu_item_active .sidebar_menu_item_text {
-    color: #ffffff !important;
+  color: #ffffff !important;
 }
 
 .sidebar_menu_item_recruitment_icon {
-    width: 24px;
-    height: 24px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -94px -113px;
-    background-color: #c5ccd5;
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -94px -113px;
+  background-color: #c5ccd5;
 }
 
 .sidebar_menu_item_text {
-    color: #c5ccd5;
-    margin-left: 12px;
-    font-weight: 500;
-    white-space: normal;
+  color: #c5ccd5;
+  margin-left: 12px;
+  font-weight: 500;
+  white-space: normal;
 }
 
 .sidebar_menu_item_user_icon {
-    width: 24px;
-    height: 24px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -24px -112px;
-    background-color: #c5ccd5;
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -24px -112px;
+  background-color: #c5ccd5;
 }
 
 .sidebar_menu_item_calendar_icon {
-    width: 24px;
-    height: 24px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -144px -113px;
-    background-color: #c5ccd5;
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -144px -113px;
+  background-color: #c5ccd5;
 }
 
 .sidebar_toggle {
-    display: flex;
-    height: 40px;
-    align-items: center;
-    margin: 0 12px;
-    border: 1px solid #dee2e6;
-    padding: 0 8px;
-    transition: all 0.3s ease;
+  display: flex;
+  height: 44px !important;
+  align-items: center;
+  margin: 0 12px;
+  border: none !important;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+  justify-content: flex-start;
+  padding: 0 12px;
 }
 
 .sidebar.sidebar_collapsed .sidebar_toggle {
-    justify-content: center;
-    padding: 0;
+  justify-content: center;
+  padding: 0 !important;
+  margin: 0 auto;
 }
 
 .sidebar_toggle:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .sidebar_toggle_icon {
-    width: 20px;
-    height: 20px;
-    -webkit-mask-image: var(--misa-amis-icon-1);
-    -webkit-mask-position: -60px -696px;
-    background-color: #fff;
+  width: 20px;
+  height: 20px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -60px -696px;
+  background-color: #fff;
 }
 
 .sidebar_toggle_text {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    margin-left: 12px;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    outline: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 10px;
+  white-space: nowrap;
 }
 
 .sidebar_menu :deep(.v-btn__content) {
-    font-size: 16px;
-    white-space: normal !important;
-    text-align: left !important;
+  font-size: 16px;
+  white-space: normal !important;
+  text-align: left !important;
 }
 
 :deep(.v-btn.v-btn--active) {
-    background-color: #2970f6 !important;
+  background-color: #2970f6 !important;
 }
 
 :deep(.v-btn.v-btn--active .sidebar_menu_item_text) {
-    color: #ffffff !important;
-    font-weight: 600;
+  color: #ffffff !important;
+  font-weight: 600;
 }
 
 :deep(.v-btn.v-btn--active .sidebar_menu_item_recruitment_icon),
 :deep(.v-btn.v-btn--active .sidebar_menu_item_user_icon),
 :deep(.v-btn.v-btn--active .sidebar_menu_item_calendar_icon) {
-    background-color: #ffffff !important;
+  background-color: #ffffff !important;
 }
