@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import CustomButton from "@/components/ui/ms-button/CustomButton.vue";
-import SearchField from "@/components/ui/ms-input/SearchField.vue";
-import CustomTable from "@/components/ui/ms-table/CustomTable.vue";
-import NormalCheckbox from "@/components/ui/ms-checkbox/NormalCheckbox.vue";
+import 'devextreme/dist/css/dx.fluent.blue.light.css';
 
-import {computed, onMounted, ref, watch} from "vue";
-import CandidateAddEditForm from "@/views/ms-candidate/add-edit-form/CandidateAddEditForm.vue";
-import CandidateViewModal from "@/views/ms-candidate/CandidateViewModal.vue";
+import {computed, ref, watch} from "vue";
 import {usePagination} from "@/views/ms-candidate/usePagination.ts"
 import CustomPagination from "@/components/ui/ms-pagination/CustomPagination.vue";
-import CustomSkeleton from "@/components/ui/ms-skeleton/CustomSkeleton.vue";
-import CustomSelect from "@/components/ui/ms-select/CustomSelect.vue";
 import type {BodyProps} from "@/components/ui/ms-table/model.ts";
 import {toast} from "@/services/toast.ts";
-import candidateService, {type Candidate, type Pageable, type FilterRequest} from '@/services/candidateService';
+import DxDataGrid, {
+  DxColumn,
+  DxSelection
+} from 'devextreme-vue/data-grid';
+import DxSelectBox from 'devextreme-vue/select-box';
+import {salaryComponentsData, type SalaryComponents} from "@/views/ms-candidate/data.ts";
+import SearchField from "@/components/ui/ms-input/SearchField.vue";
+import CustomSelect from "@/components/ui/ms-select/CustomSelect.vue";
 
 /**
  * Lấy chữ cái viết tắt từ tên
@@ -56,18 +56,33 @@ const components = [
 const isModalOpen = ref(false)
 const modalMode = ref<'add' | 'view' | 'edit' | 'delete'>('add')
 const currentCandidate = ref<any>(null)
-const selectedCandidateIds = ref<string[]>([]);
+const selectedIds = ref<string[]>([]);
 const isLoading = ref(false);
 const isSlowLoading = ref(false);
 
+const pageSizeOptions = [
+  {value: 5, label: "5"},
+  {value: 10, label: "10"},
+  {value: 15, label: "15"},
+  {value: 25, label: "25"},
+  {value: 50, label: "50"},
+];
+
 const searchKeyword = ref("");
-const filteredData = ref<any[]>([]);
-const totalRecordsServer = ref(0);
+const filteredData = computed(() => {
+  if (!searchKeyword.value) return salaryComponentsData;
+  const keyword = searchKeyword.value.toLowerCase();
+  return salaryComponentsData.filter(item =>
+      item.componentId.toLowerCase().includes(keyword) ||
+      item.componentName.toLowerCase().includes(keyword) ||
+      item.componentType.toLowerCase().includes(keyword)
+  );
+});
 
 // <editor-fold> desc="Search"
 watch(searchKeyword, () => {
   currentPage.value = 1;
-  fetchCandidates();
+  // fetchCandidates();
 });
 // </editor-fold>
 
@@ -77,33 +92,16 @@ const {
   currentPage,
   pageSize,
   handlePageSizeChange,
+  paginatedData,
+  totalRecords,
+  pageInfo: hookPageInfo
 } = usePagination(filteredData);
 
 const totalPages = computed(() => {
-  return Math.ceil(totalRecordsServer.value / pageSize.value) || 1;
+  return Math.ceil(totalRecords.value / pageSize.value) || 1;
 });
-
-// Định nghĩa các lựa chọn cho số bản ghi trên trang
-const pageSizeOptions = [
-  {value: 5, label: "5"},
-  {value: 10, label: "10"},
-  {value: 15, label: "15"},
-  {value: 25, label: "25"},
-  {value: 50, label: "50"},
-];
-
-// Hiển thị thông tin phân trang (ví dụ: 1 - 10 trên 134 bản ghi)
-const pageInfo = computed(() => {
-  const start = totalRecordsServer.value === 0 ? 0 : (currentPage.value - 1) * pageSize.value + 1;
-  const end = Math.min(currentPage.value * pageSize.value, totalRecordsServer.value);
-  return `${start} - ${end} trên ${totalRecordsServer.value} bản ghi`;
-});
-
 
 // Cập nhật lại tableData để dùng filteredData trực tiếp từ Server
-/**
- * Hàm định dạng ngày tháng sang dd/MM/yyyy
- */
 const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "--";
   try {
@@ -117,6 +115,12 @@ const formatDate = (dateStr: string | null | undefined) => {
     return dateStr;
   }
 };
+
+const calculateSTT = (data: SalaryComponents) => {
+  const index = filteredData.value.findIndex(item => item.componentId === data.componentId);
+  return index + 1;
+};
+
 
 const tableData = computed<BodyProps[][]>(() => {
   // Chỉ hiển thị Skeleton nếu thời gian tải dữ liệu vượt quá 1 giây
@@ -146,211 +150,6 @@ const tableData = computed<BodyProps[][]>(() => {
   )
 });
 
-// <editor-fold> desc="Fetch candidates list"
-/**
- * Hàm lấy danh sách ứng viên từ Backend
- */
-const fetchCandidates = async () => {
-  let skeletonTimeout: any = null;
-  try {
-    isLoading.value = true;
-
-    // Thiết lập đếm ngược 1 giây trước khi hiện Skeleton
-    skeletonTimeout = setTimeout(() => {
-      if (isLoading.value) {
-        isSlowLoading.value = true;
-      }
-    }, 1000);
-
-    const pageable: Pageable = {
-      pageIndex: currentPage.value - 1, // Chuyển từ 1-indexed sang 0-indexed cho Backend
-      pageSize: pageSize.value
-    };
-    const response = await candidateService.getPaginated(pageable, {keyword: searchKeyword.value});
-    if (response && response.data) {
-      console.log(response.data)
-      // Sửa lỗi mapping: gán candidateId vào id để đồng bộ logic toàn app
-      filteredData.value = (response.data.data || []).map((item: any) => ({
-        ...item,
-        id: item.candidateId
-      }));
-      totalRecordsServer.value = response.data.pageable?.totalElements || 0;
-    }
-  } catch (error: any) {
-    console.error("Lỗi khi lấy danh sách ứng viên:", error);
-    const userMsg = error.response?.data?.userMsg || "Không thể lấy dữ liệu từ máy chủ";
-    toast.error("Lỗi", userMsg);
-  } finally {
-    isLoading.value = false;
-    isSlowLoading.value = false;
-    if (skeletonTimeout) clearTimeout(skeletonTimeout);
-  }
-};
-
-onMounted(() => {
-  fetchCandidates();
-});
-
-watch([currentPage, pageSize], () => {
-  fetchCandidates();
-});
-
-// Đảm bảo không ở trang ảo (ví dụ đang ở trang 10 nhưng đổi pageSize làm tổng số trang chỉ còn 5)
-watch(totalPages, (newTotal) => {
-  if (currentPage.value > newTotal) {
-    currentPage.value = newTotal || 1;
-  }
-});
-// </editor-fold>
-
-// <editor-fold> desc="Save candidate"
-/**
- * Hàm thêm mới hoặc cập nhật ứng viên thông qua Service
- */
-const handleSaveCandidate = async (data: Candidate, mode: 'add' | 'edit') => {
-  try {
-    isLoading.value = true;
-    const id = data.candidateId || (data as any).id;
-    if (mode === 'edit' && id) {
-      await candidateService.update(id, data);
-      toast.success("Thành công", "Cập nhật ứng viên thành công");
-    } else {
-      await candidateService.add(data);
-      toast.success("Thành công", "Thêm mới ứng viên thành công");
-    }
-    isModalOpen.value = false;
-    // Load lại dữ liệu sau khi lưu thành công
-    await fetchCandidates();
-  } catch (error: any) {
-    console.error("Lỗi khi lưu ứng viên:", error);
-    const userMsg = error.response?.data?.userMsg || "Không thể lưu thông tin ứng viên";
-    toast.error("Lỗi", userMsg);
-  } finally {
-    isLoading.value = false;
-  }
-};
-// </editor-fold>
-
-// <editor-fold> desc="delete many"
-
-// lay toan bo cac id dang co trong trang
-const currentPageIds = computed(() =>
-    filteredData.value.map((candidate: any) => candidate.id)
-)
-
-// kiem tra xem tat ca cac checkbox da duoc chon hay chua
-const isAllCurrentPageSelected = computed(() => {
-  return currentPageIds.value.length > 0 &&
-      currentPageIds.value.every(id => selectedCandidateIds.value.includes(id))
-})
-
-// kiem tra xem lieu nguoi dung da chon checkbox nao hay chua
-const hasSelectedRows = computed(() => selectedCandidateIds.value.length > 0);
-
-const toggleCandidateSelection = (id: string | undefined) => {
-  if (!id) return;
-
-  if (selectedCandidateIds.value.includes(id)) {
-    // Nếu bản ghi đã được chọn, thì loại bỏ khỏi mảng
-    selectedCandidateIds.value = selectedCandidateIds.value.filter(item => item !== id);
-  } else {
-    // Nếu bản ghi chưa được chọn, thì thêm vào mảng
-    selectedCandidateIds.value.push(id)
-  }
-}
-
-const toggleSelectAllCurrentPage = () => {
-  if (isAllCurrentPageSelected.value) {
-    // neu tat ca da duoc chon => bo chon tat ca
-    selectedCandidateIds.value = selectedCandidateIds
-        .value
-        .filter(id => !currentPageIds.value.includes(id));
-  } else {
-    // neu tat ca chua chon het thi tron cai dang co voi tat ca cac ban ghi trong trang
-    const merged = new Set([...selectedCandidateIds.value, ...currentPageIds.value])
-    selectedCandidateIds.value = [...merged]
-  }
-}
-
-const handleDeleteMany = () => {
-  if (hasSelectedRows.value) {
-    currentCandidate.value = null;
-    modalMode.value = 'delete'
-    isModalOpen.value = true
-  }
-}
-// </editor-fold>
-
-// <editor-fold> desc="Add new + Edit"
-const saveCandidate = async (data: any) => {
-  console.log('[Candidates.saveCandidate] data:', data)
-  if (modalMode.value === "add") {
-    await handleSaveCandidate(data, 'add');
-  } else if (modalMode.value === "edit") {
-    await handleSaveCandidate(data, 'edit');
-  }
-}
-
-const handleOpenAddingModal = () => {
-  currentCandidate.value = null;
-  modalMode.value = 'add'
-  isModalOpen.value = true
-}
-
-const handleOpenEditModal = async (id: string) => {
-  currentCandidate.value = filteredData.value.find(c => c.id === id) || null
-  modalMode.value = 'edit'
-  isModalOpen.value = true
-}
-// </editor-fold>
-
-const handleOpenViewModal = (id: string) => {
-  currentCandidate.value = filteredData.value.find(c => c.id === id) || null
-  console.log(currentCandidate.value)
-  modalMode.value = 'view'
-  isModalOpen.value = true
-}
-
-// <editor-fold> desc="handle deleting"
-const handleOpenDeleteModal = (id: string) => {
-  currentCandidate.value = filteredData.value.find(c => c.id === id) || null
-  console.log(currentCandidate)
-  modalMode.value = 'delete'
-  isModalOpen.value = true
-}
-
-const confirmDeleting = async () => {
-  try {
-    isLoading.value = true;
-    let idsToDelete: string[] = [];
-    let message = '';
-
-    if (currentCandidate.value) {
-      idsToDelete = [currentCandidate.value.id];
-      message = `Xóa ứng viên ${currentCandidate.value.name} thành công`;
-    } else if (selectedCandidateIds.value.length > 0) {
-      idsToDelete = [...selectedCandidateIds.value];
-      message = `Xóa ${selectedCandidateIds.value.length} ứng viên thành công`;
-    }
-
-    if (idsToDelete.length > 0) {
-      await candidateService.deleteCandidates(idsToDelete);
-      toast.success('Thành công', message);
-      selectedCandidateIds.value = [];
-      await fetchCandidates();
-    }
-
-    isModalOpen.value = false;
-  } catch (error: any) {
-    console.error("Lỗi khi xóa ứng viên:", error);
-    const userMsg = error.response?.data?.userMsg || "Không thể xóa ứng viên";
-    toast.error("Lỗi", userMsg);
-  } finally {
-    isLoading.value = false;
-    currentCandidate.value = null;
-  }
-}
-// </editor-fold>
 </script>
 
 <template>
@@ -358,33 +157,23 @@ const confirmDeleting = async () => {
     <!-- Title danh sách -->
     <div class="content_header">
       <div class="content_header_left">
-        <div class="content_header_title">Ứng viên</div>
+        <div class="content_header_title">Thành phần lương</div>
       </div>
       <div class="content_header_right">
-        <!--        Xoa-->
-        <CustomButton
-            class-name="content_header_right_btn_delete"
-            :disabled="!hasSelectedRows"
-            @click="handleDeleteMany"
-            tooltip-location="bottom"
-            tooltip-content="Xóa"
-        >
-          <div class="mi_icon_delete_user"></div>
-          Xóa
-        </CustomButton>
+        <button class="misa-btn-outline">
+          <div class="mi_icon_system_category"></div>
+          <span>Danh mục của hệ thống</span>
+        </button>
 
-        <!--        Them-->
-        <CustomButton
-            variant="flat"
-            class-name="content_header_right_btn_delete"
-            style="background-color: var(--border-control-hover)"
-            @click="handleOpenAddingModal"
-            tooltip-location="bottom"
-            tooltip-content="Thêm ứng viên"
-        >
-          <div class="content_header_action_add_icon_left"></div>
-          <div class="content_header_action_add_icon_text">Thêm ứng viên</div>
-        </CustomButton>
+        <div class="split_button_container">
+          <button class="misa-btn-primary-left">
+            <div class="mi_icon_add_white"></div>
+            Thêm mới
+          </button>
+          <div class="split_button_arrow">
+            <div class="mi_icon_arrow_down_white"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -393,18 +182,24 @@ const confirmDeleting = async () => {
       <div class="content_body_container">
         <!--        Title-->
         <div class="content_body_title">
-          <div class="content_body_header_left"></div>
-          <div class="content_body_header_right">
-            <div class="content_body_header_right_search">
-              <div class="content_body_header_right_search_icon"></div>
-              <SearchField v-model="searchKeyword" placeholder="ứng viên..." :width="300"/>
+          <div class="content_body_header_left">
+            <div class="content_body_header_left_search">
+              <div class="navbar_left_search_icon"></div>
+              <SearchField v-model="searchKeyword" :width="250" placeholder=""/>
             </div>
-            <div
-                class="content_body_header_right_icon"
-                v-for="(component, index) in components"
-                :key="index"
-            >
-              <div :class="component.iconClassName"></div>
+          </div>
+          <div class="content_body_header_right">
+            <div class="content_body_header_right_filters">
+              <DxSelectBox class="misa-selectbox" :items="[{ text: 'Tất cả trạng thái', value: 'all' }]"
+                           display-expr="text" value-expr="value" value="all" :width="160"/>
+              <DxSelectBox class="misa-selectbox" :items="[{ text: 'Tất cả đơn vị', value: 'all' }]" display-expr="text"
+                           value-expr="value" value="all" :width="320"/>
+            </div>
+            <div class="content_body_header_right_icon">
+              <div class="mi_icon_filter"></div>
+            </div>
+            <div class="content_body_header_right_icon">
+              <div class="mi_icon_setting"></div>
             </div>
           </div>
         </div>
@@ -412,84 +207,25 @@ const confirmDeleting = async () => {
         <!--        Content table-->
         <div class="content_body_table">
           <div class="table_wrapper">
-            <CustomTable
-                :header-props="[
-                  {className: 'col_checkbox text_center', slotName: 'checkbox'},
-                  {className: 'col_name text_left', value: 'Họ và Tên'},
-                  {className: 'col_phone text_right', value: 'Số điện thoại'},
-                  {className: 'col_email text_left', value: 'Email'},
-                  {className: 'col_email text_left', value: 'Chiến dịch tuyển dụng'},
-                  {className: 'col_email text_left', value: 'Vị trí tuyển dụng'},
-                  {className: 'col_email text_left', value: 'Tin tuyển dụng'},
-                  {className: 'col_date text_center', value: 'Ngày ứng tuyển'},
-                  {className: 'col_email text_left', value: 'Vòng tuyển dụng'},
-                  {className: 'col_email text_center', value: 'Đánh giá', slotName: 'star'},
-                  {className: 'col_action text_center', value: 'Hành động', slotName: 'action'},
-                ]"
-                :body-props="tableData"
-            >
-              <template #header-checkbox>
-                <NormalCheckbox
-                    :model-value="isAllCurrentPageSelected"
-                    @update:model-value="toggleSelectAllCurrentPage"
-                />
-              </template>
-              <template #cell-checkbox="{cell}">
-                <NormalCheckbox
-                    :model-value="selectedCandidateIds.includes(cell.id)"
-                    @update:model-value="toggleCandidateSelection(cell.id)"
-                />
-              </template>
-              <template #cell-name="{cell}">
-                <div class="name_cell">
-                  <div
-                      class="name_avatar"
-                      :style="{ backgroundColor: getAvatarColor(cell.value) }"
-                  >
-                    {{ getInitials(cell.value) }}
-                  </div>
-                  <span class="name_text">{{ cell.value }}</span>
-                </div>
-              </template>
-              <template #cell-skeleton>
-                <CustomSkeleton height="16px" border-radius="4px"/>
-              </template>
-              <template #cell-star>
-                <i v-for="i in 5" :key="i" class="bi bi-star"></i>
-              </template>
-              <template #cell-action="{ cell }">
-                <div class="table_action">
-                  <div class="mi_icon">
-                    <button
-                        class="mi_icon_edit"
-                        title="Sửa ứng viên"
-                        @click="handleOpenEditModal(cell.id!)"
-                    />
-                  </div>
-                  <div class="mi_icon">
-                    <button
-                        class="mi_icon_delete"
-                        title="Xóa ứng viên"
-                        @click="handleOpenDeleteModal(cell.id!)"
-                    />
-                  </div>
-                  <div class="mi_icon">
-                    <button
-                        class="mi_icon_view_details"
-                        title="Xem ứng viên"
-                        @click="handleOpenViewModal(cell.id!)"
-                    />
-                  </div>
-                </div>
-              </template>
-            </CustomTable>
+            <DxDataGrid :data-source="paginatedData" :show-borders="true" :row-alternation-enabled="true"
+                        key-expr="componentId" v-model:selected-row-keys="selectedIds">
+              <DxSelection mode="multiple" show-check-boxes-mode="always"/>
+              <DxColumn caption="STT" :calculate-cell-value="calculateSTT" :width="50" alignment="center"/>
+              <DxColumn data-field="componentId" caption="Mã thành phần"/>
+              <DxColumn data-field="componentName" caption="Tên thành phần"/>
+              <DxColumn data-field="appliedFor" caption="Đơn vị áp dụng"/>
+              <DxColumn data-field="componentType" caption="Loại thành phần"/>
+              <DxColumn data-field="attribute" caption="Tính chất"/>
+              <DxColumn data-field="valueType" caption="Kiểu giá trị"/>
+              <DxColumn data-field="value" caption="Giá trị"/>
+            </DxDataGrid>
           </div>
         </div>
         <div class="content_body_footer">
           <!-- Tổng bản ghi và Số bản ghi trên trang -->
           <div class="content_body_footer_left">
             <div class="content_body_footer_total">
-              Tổng: <strong id="totalRecords">{{ totalRecordsServer }}</strong> bản ghi
+              Tổng: <strong id="totalRecords">{{ totalRecords }}</strong> bản ghi
             </div>
           </div>
 
@@ -503,134 +239,30 @@ const confirmDeleting = async () => {
                     :options="pageSizeOptions"
                     @update:modelValue="handlePageSizeChange"
                     size="sm"
-                    hide-error-space
-                />
+                    hide-error-space/>
               </div>
             </div>
             <div class="content_body_footer_info">
-              <span class="page_info" id="pageInfo">{{ pageInfo }}</span>
+              <span class="page_info" id="pageInfo">{{ hookPageInfo }}</span>
             </div>
             <div class="content_body_footer_nav">
-              <CustomPagination
-                  v-model="currentPage"
-                  :total="totalRecordsServer"
-                  :page-size="pageSize"
-                  color="#0070f3"
-              />
+              <CustomPagination v-model="currentPage" :total="totalRecords" :page-size="pageSize" color="#0070f3"/>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <v-dialog v-model="isModalOpen" :max-width="modalMode === 'view' ? '1200px' : '800px'">
-      <!-- Modal Form (Add/Edit) -->
-      <v-card v-if="modalMode === 'add' || modalMode === 'edit'">
-        <div class="modal__header d-flex justify-space-between align-center px-6 py-4">
-          <h3 class="font-weight-bold text-h6 m-0">{{ modalMode === 'add' ? 'Thêm mới' : 'Chỉnh sửa' }} ứng viên</h3>
-          <span class="close__btn cursor-pointer" @click="isModalOpen = false" style="font-size: 24px; line-height: 1;">&times;</span>
-        </div>
-        <CandidateAddEditForm
-            :model-value="currentCandidate"
-            :mode="modalMode"
-            @save="saveCandidate"
-            @cancel="isModalOpen = false"
-        />
-      </v-card>
-
-      <!-- Modal View Details -->
-      <v-card v-else-if="modalMode === 'view'" style="position: relative;">
-        <CandidateViewModal
-            :candidate="currentCandidate"
-            @close="isModalOpen = false"
-            @edit="handleOpenEditModal(currentCandidate)"
-        />
-        <span class="detail-modal__close" @click="isModalOpen = false"
-              style="position: absolute; right: 20px; top: 10px; z-index: 100; font-size: 30px; cursor: pointer;">&times;</span>
-      </v-card>
-
-      <!-- Modal Delete -->
-      <v-card v-else-if="modalMode === 'delete'" class="delete-confirmation-card">
-        <div class="modal__header d-flex justify-space-between align-center px-6">
-          <h3 class="font-weight-bold text-h6 m-0">Xác nhận</h3>
-          <span class="close__btn cursor-pointer" @click="isModalOpen = false" style="font-size: 24px; line-height: 1;">&times;</span>
-        </div>
-        <v-card-text class="pa-8">
-          <div class="d-flex flex-column text-center gap-16">
-            <div class="confirm__icon"></div>
-            <div>
-              <p style="font-weight: 500; font-size: 14px; margin-bottom: 0;">Bạn có chắc chắn muốn xóa bản ghi đã chọn
-                không?</p>
-            </div>
-          </div>
-        </v-card-text>
-        <v-card-actions class="pa-6 pt-0 justify-end">
-          <CustomButton size="large" type="button" class="btn__cancel" @click="isModalOpen = false">Không</CustomButton>
-          <CustomButton size="large" type="button" class="btn__delete" @click="confirmDeleting" color="error">Xóa
-          </CustomButton>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </section>
 </template>
 
-<style scoped src="./style.css"></style>
-<style scoped>
-:deep(.text_left) {
-  text-align: left !important;
+<style scoped src="./style.css">
+.misa-selectbox {
+  border: 1px solid #dddde4;
+  border-radius: 4px;
 }
 
-:deep(.text_center) {
-  text-align: center !important;
-}
-
-:deep(.text_right) {
-  text-align: right !important;
-}
-
-:deep(.col_checkbox) {
-  width: 50px !important;
-  min-width: 50px !important;
-  max-width: 50px !important;
-}
-
-:deep(.col_name) {
-  min-width: 250px !important;
-  max-width: 250px !important;
-}
-
-:deep(.col_phone) {
-  min-width: 150px !important;
-  max-width: 150px !important;
-}
-
-:deep(.col_email) {
-  min-width: 200px !important;
-  max-width: 200px !important;
-}
-
-:deep(.col_date) {
-  min-width: 150px !important;
-  max-width: 150px !important;
-}
-
-.name_cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.name_avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-  flex-shrink: 0;
+.misa-selectbox.dx-state-hover {
+  border-color: #2ca01c;
 }
 
 .content_body_footer_pagesize {
@@ -640,6 +272,19 @@ const confirmDeleting = async () => {
 }
 
 .page_size_custom_select {
-  width: 80px; /* Độ rộng phù hợp cho số bản ghi */
+  width: 120px;
+}
+
+.navbar_left_search_icon {
+  width: 24px;
+  height: 24px;
+  -webkit-mask-image: var(--misa-amis-icon-1);
+  -webkit-mask-position: -311px -1105px;
+  position: absolute;
+  top: 14px;
+  left: 8px;
+  background-color: #c5ccd5;
+  z-index: 2;
+  pointer-events: none;
 }
 </style>

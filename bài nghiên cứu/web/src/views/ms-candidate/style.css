@@ -1,47 +1,112 @@
 .content_header {
-  height: 50px;
-  padding: 16px 24px 0 24px;
+  height: 64px;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #f4f5f8;
 }
 
 .content_header_title {
   font-weight: 700;
-  font-size: 24px;
-  color: #ffffff;
+  font-size: 20px;
+  color: #111;
 }
 
 .content_header_right {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  align-items: center;
 }
 
-.content_header_right_btn_delete {
+.misa-btn-outline {
   display: flex;
   align-items: center;
-  background-color: white;
+  background-color: #fff;
   height: 36px;
   border-radius: 4px;
-  padding: 0 12px;
+  padding: 0 16px;
+  border: 1px solid #dddde4;
+  font-weight: 500;
+  color: #111;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.content_header_right_btn_delete:hover {
-  border: 1px solid #2a7efc !important;
-  color: #2a7efc !important;
+.misa-btn-outline:hover {
+  background-color: #f5f5f5;
+  border-color: #c5ccd5;
 }
 
-.content_header_right_btn_delete:hover .mi_icon_delete_user {
-  background-color: #2a7efc !important;
+.split_button_container {
+  display: flex;
+  height: 36px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #2ca01c;
 }
 
-.mi_icon_delete_user {
-  margin-right: 12px;
+.misa-btn-primary-left {
+  display: flex;
+  align-items: center;
+  border: none;
+  padding: 0 16px;
+  height: 100%;
+  background-color: transparent;
+  color: #fff;
+  font-weight: 600;
+  gap: 8px;
+  cursor: pointer;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.misa-btn-primary-left:hover {
+  background-color: #248a18;
+}
+
+.split_button_arrow {
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.split_button_arrow:hover {
+  background-color: #248a18;
+}
+
+.mi_icon_system_category {
+  width: 16px;
+  height: 16px;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  background-position: -232px -432px;
+}
+
+.mi_icon_add_white {
+  width: 20px;
+  height: 20px;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  background-position: -20px -656px;
+  background-repeat: no-repeat;
+  filter: brightness(0) invert(1);
+}
+
+.mi_icon_arrow_down_white {
+  width: 12px;
+  height: 12px;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  background-position: -34px -50px;
+  background-repeat: no-repeat;
+  filter: brightness(0) invert(1);
 }
 
 .content_body {
-  height: calc(100% - 50px);
-  padding: 24px;
+  height: calc(100% - 64px);
+  padding: 16px 24px;
+  background-color: #f4f5f8;
 }
 
 .content_body_container {
@@ -52,8 +117,11 @@
 
 .content_body_title {
   display: flex;
-  height: 68px;
+  height: 56px;
   justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  background-color: #fff;
 }
 
 .content_body_footer {
@@ -133,18 +201,39 @@ tr:hover .table_action {
 .content_body_header_left {
   display: flex;
   align-items: center;
-  padding-left: 16px;
 }
 
 .content_body_header_right {
   display: flex;
   align-items: center;
-  padding-right: 16px;
-  gap: 10px;
+  gap: 16px;
 }
 
-.content_body_header_right_search {
-  position: relative;
+.content_body_header_right_filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.mi_icon_filter {
+  width: 20px;
+  height: 20px;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  background-position: -40px -655px;
+  background-repeat: no-repeat;
+}
+
+.mi_icon_setting {
+  width: 25px;
+  height: 25px;
+  background-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
+  background-position: -23px -607px;
+  background-repeat: no-repeat;
+}
+
+.content_body_header_left_search {
+  display: flex;
+  align-items: center;
 }
 
 .content_body_header_right_search_icon::after {
@@ -351,23 +440,20 @@ tr:hover .table_action {
 }
 
 .content_body_header_right_icon {
-  border-style: solid;
-  border-width: 1px;
-  border-color: #c5ccd5;
+  border: 1px solid #c5ccd5;
   border-radius: 4px;
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  background-color: #fff;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .content_body_header_right_icon:hover {
-  border-color: var(--border-control-hover);
-  background-color: var(--background-button-hover);
-  cursor: pointer;
-}
-
-.content_body_header_right_icon:hover div {
-  background-color: var(--border-control-hover);
+  border-color: #2ca01c;
+  background-color: #f6f6f6;
 }

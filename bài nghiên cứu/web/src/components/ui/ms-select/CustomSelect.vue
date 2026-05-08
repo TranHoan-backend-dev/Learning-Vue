@@ -216,6 +216,7 @@ onUnmounted(() => {
   transition: transform 0.3s ease;
   display: flex;
   align-items: center;
+  padding-left: 10px;
 }
 
 .chevron-icon.rotated {
