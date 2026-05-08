@@ -2,7 +2,6 @@
 import 'devextreme/dist/css/dx.fluent.blue.light.css';
 
 import {computed, ref, watch} from "vue";
-import {usePagination} from "@/views/ms-candidate/usePagination.ts"
 import CustomPagination from "@/components/ui/ms-pagination/CustomPagination.vue";
 import type {BodyProps} from "@/components/ui/ms-table/model.ts";
 import {toast} from "@/services/toast.ts";
@@ -11,9 +10,10 @@ import DxDataGrid, {
   DxSelection
 } from 'devextreme-vue/data-grid';
 import DxSelectBox from 'devextreme-vue/select-box';
-import {salaryComponentsData, type SalaryComponents} from "@/views/ms-candidate/data.ts";
 import SearchField from "@/components/ui/ms-input/SearchField.vue";
-import CustomSelect from "@/components/ui/ms-select/CustomSelect.vue";
+
+import {type SalaryComponents, salaryComponentsData} from "@/views/ms-salary-components/data.ts";
+import {usePagination} from "@/views/ms-salary-components/usePagination.ts";
 
 /**
  * Lấy chữ cái viết tắt từ tên
@@ -234,12 +234,14 @@ const tableData = computed<BodyProps[][]>(() => {
             <div class="content_body_footer_pagesize">
               <span class="paging_label">Số bản ghi trên trang</span>
               <div class="page_size_custom_select">
-                <CustomSelect
+                <DxSelectBox
+                    class="misa-selectbox"
                     v-model="pageSize"
-                    :options="pageSizeOptions"
-                    @update:modelValue="handlePageSizeChange"
-                    size="sm"
-                    hide-error-space/>
+                    :items="pageSizeOptions"
+                    display-expr="label"
+                    value-expr="value"
+                    :width="70"
+                    @value-changed="handlePageSizeChange()"/>
               </div>
             </div>
             <div class="content_body_footer_info">
@@ -272,7 +274,7 @@ const tableData = computed<BodyProps[][]>(() => {
 }
 
 .page_size_custom_select {
-  width: 120px;
+  width: 70px;
 }
 
 .navbar_left_search_icon {

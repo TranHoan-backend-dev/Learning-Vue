@@ -87,3 +87,5 @@ uploads/
 storage/
 **.env
 **.vs/
+
+**/.vite/**
