@@ -1,10 +1,11 @@
-using System.Data;
+﻿using System.Data;
 using System.Reflection;
 using System.Text;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using MISA.Common.Attributes;
 using MISA.Common.Base;
+using MISA.Common.Enum;
 using MISA.Common.Extension;
 using MISA.Common.Procedures;
 using MISA.DL.Base;
@@ -17,217 +18,408 @@ public class BaseDl<T>(
     ILogger<BaseDl<T>> log
 ) : IBaseDl<T> where T : BaseModel
 {
-    private const string LogPrefix = "[BaseDl]";
+    private const string Prefix = "[BaseDL]";
 
-    public async Task<IEnumerable<T>?> GetAllAsync(BaseModel model)
+    /// <summary>
+    /// Lấy ra danh sách phân trang các bản ghi có kiểu dữ liệu generic 
+    /// </summary>
+    /// <param name="parameters">Tham số truyền vào query</param>
+    /// <param name="command">Query</param>
+    /// <returns></returns>
+    public async Task<IEnumerable<T>> GetPagedDataListAsync(DynamicParameters parameters, string command)
     {
-        log.LogInformation("{prefix} Get all models", LogPrefix);
-        var storedProcedure = string.Format(ProcedureNames.GetAll, model.GetType().Name);
-        using var conn = context.GetConnection();
-        var res = await conn.QueryAsync<T>(
-            storedProcedure,
-            commandType: CommandType.StoredProcedure
+        log.LogInformation(
+            "{Prefix} Execute query for {Entity}",
+            Prefix,
+            typeof(T).Name
         );
-        log.LogDebug("Response: {res}", res);
-        return res;
+
+        await using var conn = context.GetConnection();
+
+        var result = (await conn.QueryAsync<T>(
+            command,
+            param: parameters,
+            commandType: CommandType.Text
+        )).ToList();
+
+        log.LogDebug(
+            "{Prefix} Returned {Count} rows",
+            Prefix,
+            result.Count
+        );
+
+        return result;
     }
 
-    public async Task<IEnumerable<T>?> GetPagedAsync(DynamicParameters parameters, string command)
-    {
-        log.LogInformation("{prefix} Get paginated models list", LogPrefix);
-        using var conn = context.GetConnection();
-        var res = await conn.QueryAsync<T>(command, param: parameters);
-        log.LogDebug("Response: {res}", res);
-        return res;
-    }
-
-    public async Task<int> GetCountAsync(DynamicParameters parameters, string command)
-    {
-        log.LogInformation("{prefix} Get total records count", LogPrefix);
-        using var conn = context.GetConnection();
-        return await conn.ExecuteScalarAsync<int>(command, param: parameters);
-    }
-
-
+    /// <summary>
+    /// Lấy thông tin chi tiết 1 bản ghi
+    /// </summary>
+    /// <param name="id">ID của bản ghi cần tìm</param>
+    /// <returns></returns>
     public async Task<T?> GetByIdAsync(Guid id)
     {
-        log.LogInformation("{prefix} Get model details by id: {id}", LogPrefix, id.ToString());
-        var storedProcedure = string.Format(ProcedureNames.GetDetails, typeof(T).Name);
-        using var conn = context.GetConnection();
-
-        var param = new DynamicParameters();
-        param.Add("p_Id", id);
-
+        log.LogInformation($"{Prefix} Get by id: {id}");
+        await using var conn = context.GetConnection();
+        var storedProcedure = string.Format(ProcedureNames.GetDetails, typeof(T).GetTableNameOnly());
         var res = await conn.QueryFirstOrDefaultAsync<T>(
             storedProcedure,
-            param,
+            param: new { Id = id },
             commandType: CommandType.StoredProcedure
         );
-        log.LogDebug("{prefix} Response: {res}", LogPrefix, res);
+        log.LogDebug(
+            "{Prefix} Found entity: {Found}",
+            Prefix,
+            res is not null
+        );
         return res;
     }
 
-    public async Task CreateAsync(T entity)
+    /// <summary>
+    /// Tạo lệnh INSERT để thêm nhiều bản ghi vào DB
+    /// </summary>
+    /// <param name="entities">Danh sách các entity cần thêm</param>
+    public async Task CreateAsync(IEnumerable<T> entities)
     {
-        log.LogInformation($"{LogPrefix} Create {entity.GetType().Name}");
+        log.LogInformation($"{Prefix} Create");
 
-        if (await CheckExisting(entity))
+        await using var conn = context.GetConnection();
+
+        conn.Open();
+
+        await using var transaction = await conn.BeginTransactionAsync();
+
+        try
         {
-            throw new ArgumentException("Duplicate entity");
+            var list = entities.ToList();
+
+            if (!list.Any())
+            {
+                return;
+            }
+
+            var type = typeof(T);
+
+            var tableName = type.GetTableNameOnly();
+
+            var columns = type.GetAllColumns();
+
+            var columnsList = string.Join(",", columns);
+
+            var (primaryKeyModel, primaryKeyTable) = type.GetPrimaryKey();
+
+            var sql = new StringBuilder();
+
+            sql.Append($"INSERT INTO `{tableName}` ({columnsList}) VALUES ");
+
+            var param = new DynamicParameters();
+
+            var values = new List<string>();
+
+
+            // =====================================================
+            // FIX N+1 QUERY
+            // =====================================================
+
+            var duplicatedProperties = type
+                .GetProperties()
+                .Where(p => Attribute.IsDefined(p, typeof(CheckDuplicatedAttribute)))
+                .ToList();
+
+            HashSet<string> duplicatedValues = [];
+
+            var hasDuplicateCheck = duplicatedProperties.Any();
+            PropertyInfo? duplicatedProperty = null;
+
+            if (hasDuplicateCheck)
+            {
+                duplicatedProperty = duplicatedProperties.First();
+            }
+
+            if (hasDuplicateCheck)
+            {
+                // Hiện tại xử lý property duplicate đầu tiên
+                // Có thể mở rộng multi-column unique sau
+
+                var duplicatedColumn = duplicatedProperty!.GetColumnName();
+
+                var existingQuery =
+                    $"SELECT {duplicatedColumn} FROM `{tableName}`";
+
+                var existingValues = await conn.QueryAsync<string>(
+                    existingQuery,
+                    transaction: transaction
+                );
+
+                duplicatedValues = existingValues.ToHashSet();
+            }
+
+
+            // =====================================================
+            // BUILD BULK INSERT
+            // =====================================================
+
+            var now = DateTime.Now;
+
+            int count = 0;
+
+            foreach (var entity in list)
+            {
+                // =====================================================
+                // CHECK DUPLICATE IN MEMORY
+                // =====================================================
+
+                if (hasDuplicateCheck)
+                {
+                    var duplicatedValue =
+                        duplicatedProperty!.GetValue(entity)?.ToString();
+
+                    if (!string.IsNullOrWhiteSpace(duplicatedValue))
+                    {
+                        if (!duplicatedValues.Add(duplicatedValue))
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+
+                // =====================================================
+                // AUDIT FIELD
+                // =====================================================
+
+                entity.CreatedAt = now;
+                entity.CreatedBy = "Administrator";
+
+                entity.ModifiedAt = now;
+                entity.ModifiedBy = "Administrator";
+
+
+                // =====================================================
+                // PRIMARY KEY
+                // =====================================================
+
+                if (!Guid.TryParse(
+                        entity.GetValue(primaryKeyModel)?.ToString(),
+                        out Guid keyValue
+                    ) || keyValue == Guid.Empty)
+                {
+                    keyValue = Guid.NewGuid();
+                }
+
+
+                // =====================================================
+                // BUILD PARAMETERS
+                // =====================================================
+
+                var parameterNames = new List<string>();
+
+                foreach (var col in columns)
+                {
+                    var paramName = $"@{col}_{count}";
+
+                    parameterNames.Add(paramName);
+
+                    var value = primaryKeyTable == col
+                        ? keyValue
+                        : entity.GetValue(col);
+
+                    param.Add(paramName, value);
+                }
+
+                values.Add($"({string.Join(",", parameterNames)})");
+
+                count++;
+            }
+
+
+            // =====================================================
+            // NOTHING TO INSERT
+            // =====================================================
+
+            if (!values.Any())
+            {
+                log.LogDebug($"{Prefix} No valid entity to insert");
+                return;
+            }
+
+
+            // =====================================================
+            // EXECUTE
+            // =====================================================
+
+            sql.Append(string.Join(",", values));
+
+            log.LogDebug($"{Prefix} Build command: {sql}");
+
+            var result = await conn.ExecuteAsync(
+                sql.ToString(),
+                param,
+                transaction
+            );
+
+            await transaction.CommitAsync();
+
+            log.LogDebug($"{Prefix} Output: {result}");
         }
-
-        var type = entity.GetType();
-        var tableName = type.GetTableNameOnly();
-
-        entity.CreatedAt = DateTime.Now;
-        entity.CreatedBy = Guid.NewGuid().ToString();
-        entity.ModifiedAt = DateTime.Now;
-        entity.ModifiedBy = Guid.NewGuid().ToString();
-
-        var param = new DynamicParameters();
-        var sql = new StringBuilder();
-
-        var primaryKey = type.GetPrimaryKey().keyTable;
-        var columns = type.GetAllColumns();
-
-        var columnsList = string.Join(",", columns);
-        sql.Append($"INSERT INTO `{tableName}` ({columnsList}) VALUES");
-
-        var isFirst = true;
-        // neu parse fail hoac keyValue bi empty thi tao key moi
-        if (!Guid.TryParse(entity.GetValue(primaryKey) + "", out Guid keyValue) || keyValue == Guid.Empty)
+        catch (Exception ex)
         {
-            keyValue = Guid.NewGuid();
+            await transaction.RollbackAsync();
+            log.LogError($"{Prefix} Exception: {ex}");
+            throw;
         }
-
-        var parameterNames = columns.Select(col => $"@{col}_0");
-        var s = string.Join(",", parameterNames);
-
-        log.LogDebug("{prefix} Append sql command: {s}", LogPrefix, s);
-        if (isFirst)
-        {
-            sql.Append($"({s})");
-            isFirst = false;
-        }
-        else
-        {
-            sql.Append($", ({s})");
-        }
-
-        foreach (var col in columns)
-        {
-            var value = primaryKey == col ? keyValue : entity.GetValue(col);
-            param.Add($"@{col}_0", value);
-        }
-
-        log.LogDebug("{prefix} Build command: {command}", LogPrefix, sql);
-
-        var result = await ExecuteCommandText(sql.ToString(), param);
-        log.LogDebug("{prefix} Output: {res}", LogPrefix, result);
     }
 
-    public async Task UpdateAsync(T entity, Guid id)
+    /// <summary>
+    /// Cập nhật bản ghi 
+    /// </summary>
+    /// <param name="entity"></param>
+    public async Task UpdateAsync(T entity)
     {
-        log.LogInformation("{prefix} Update model details by id: {id}", LogPrefix, id.ToString());
-        var type = entity.GetType();
-        var primaryKey = type.GetPrimaryKey().keyTable;
-        var command = $"SELECT COUNT(*) FROM `{type.Name}` WHERE `{primaryKey}` = @p_Id";
-        var param = new DynamicParameters();
-        param.Add("@p_Id", id);
-        using var conn = context.GetConnection();
-        var res = await conn.ExecuteScalarAsync<long>(command, param);
-        if (res == 0)
-        {
-            throw new ArgumentException("Entity not found");
-        }
-        
-        entity.ModifiedBy = Guid.NewGuid().ToString();
-        entity.ModifiedAt = DateTime.Now;
+        log.LogInformation(
+            "{Prefix} Update entity {Entity}",
+            Prefix,
+            typeof(T).Name
+        );
 
-        var storedProcedure = string.Format(ProcedureNames.Update, typeof(T).Name);
-        param = new DynamicParameters(entity);
-        param.Add("p_Id", id);
-        var response = await ExecuteCommandText(storedProcedure, param);
-        log.LogDebug("{prefix} Response: {res}", LogPrefix, response);
+        await using var conn = context.GetConnection();
+        await conn.OpenAsync();
+        await using var transaction = await conn.BeginTransactionAsync();
+        var variable = "@PrimaryKey";
+
+        try
+        {
+            var type = typeof(T);
+            var tableName = type.GetTableNameOnly();
+            var (primaryKeyModel, primaryKeyTable) = type.GetPrimaryKey();
+
+            var columns = type
+                .GetAllColumns()
+                .Where(c => c != primaryKeyTable)
+                .ToList();
+
+            entity.ModifiedAt = DateTime.Now;
+            entity.ModifiedBy = "Administrator";
+
+            var setStatements = columns
+                .Select(c => $"{c} = @{c}");
+            var sql = $"""
+                       UPDATE `{tableName}`
+                       SET {string.Join(",", setStatements)}
+                       WHERE {primaryKeyTable} = {variable}
+                       """;
+            var param = new DynamicParameters();
+
+            foreach (var col in columns)
+            {
+                param.Add(
+                    $"@{col}",
+                    entity.GetValue(col)
+                );
+            }
+
+            var primaryKeyValue = entity.GetValue(primaryKeyModel);
+            // truyền giá trị cho biến @PrimaryKey
+            param.Add(variable, primaryKeyValue);
+
+            log.LogDebug(
+                "{Prefix} Build command: {Sql}",
+                Prefix,
+                sql
+            );
+
+            var result = await conn.ExecuteAsync(
+                sql,
+                param,
+                transaction
+            );
+
+            await transaction.CommitAsync();
+
+            log.LogDebug(
+                "{Prefix} Updated rows: {Result}",
+                Prefix,
+                result
+            );
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+
+            log.LogError(
+                ex,
+                "{Prefix} Exception while updating",
+                Prefix
+            );
+
+            throw;
+        }
     }
 
     public async Task DeleteAsync(List<string> ids)
     {
-        log.LogInformation("{prefix} Delete {type} with {count} ids", LogPrefix, typeof(T).Name, ids.Count);
-        if (ids.Count == 0) return;
+        log.LogInformation(
+            "{Prefix} Delete entities {Entity}",
+            Prefix,
+            typeof(T).Name
+        );
 
-        var type = typeof(T);
-        var tableName = type.GetTableNameOnly();
-        var primaryKey = type.GetPrimaryKey().keyTable;
-        
-        // Build query using IN clause for better performance and safety
-        var idList = string.Join(", ", ids.Select(id => $"'{id}'"));
-        var command = $"DELETE FROM `{tableName}` WHERE `{primaryKey}` IN ({idList})";
-        
-        await ExecuteCommandText(command, new DynamicParameters());
-    }
-
-    /// <summary>
-    /// Kiem tra xem 1 obj da ton tai hay chua
-    /// </summary>
-    /// <param name="entity">Doi tuong can kiem tra</param>
-    /// <returns>bool</returns>
-    public async Task<bool> CheckExisting(T entity)
-    {
-        // log.LogInformation("{prefix} Check duplicate", _LogPrefix);
-        // var storedProcedure = string.Format(ProcedureNames.CheckExisting, typeof(T).Name);
-        //
-        // var param = new DynamicParameters();
-        // param.Add($"p_{propName}", value);
-        //
-        // var res = await ExecuteCommandText(storedProcedure, param);
-        // log.LogDebug("{prefix} Response: {res}", _LogPrefix, res);
-        // return (int)res > 0;
-        var type = entity.GetType();
-        var tableName = type.GetTableNameOnly();
-        var properties = type.GetProperties()
-            .Where(p => p.GetCustomAttribute<CheckDuplicateAttribute>(true) is not null);
-        var command = new StringBuilder($"SELECT COUNT(*) FROM `{tableName}` WHERE ");
-        var propertyInfos = properties.ToList();
-        command.Append(string.Join(" OR ", propertyInfos.Select(p => $"`{p.Name}` = @{p.Name}")));
-
-        var parameters = new DynamicParameters();
-        foreach (var property in propertyInfos)
+        if (!ids.Any())
         {
-            parameters.Add(property.Name, property.GetValue(entity));
+            return;
         }
 
-        using var conn = context.GetConnection();
-        var res = await conn.ExecuteScalarAsync<long>(command.ToString(), parameters);
-        Console.WriteLine(res > 0);
-        return res > 0;
+        await using var conn = context.GetConnection();
+
+        await conn.OpenAsync();
+
+        await using var transaction = await conn.BeginTransactionAsync();
+
+        try
+        {
+            var type = typeof(T);
+
+            var tableName = type.GetTableNameOnly();
+
+            var (_, primaryKeyTable) = type.GetPrimaryKey();
+
+            var sql = $"""
+                       DELETE FROM `{tableName}`
+                       WHERE {primaryKeyTable} IN @Ids
+                       """;
+
+            var result = await conn.ExecuteAsync(
+                sql,
+                new
+                {
+                    Ids = ids
+                },
+                transaction
+            );
+
+            await transaction.CommitAsync();
+
+            log.LogDebug(
+                "{Prefix} Deleted rows: {Result}",
+                Prefix,
+                result
+            );
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+
+            log.LogError(
+                ex,
+                "{Prefix} Exception while deleting",
+                Prefix
+            );
+
+            throw;
+        }
     }
 
-    /// <summary>
-    /// Build query chi danh cho lenh CUD
-    /// </summary>
-    /// <param name="commandText"></param>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
-    public async Task<object> ExecuteCommandText(string commandText, DynamicParameters parameters)
-    {
-        log.LogInformation("{prefix} Build query: {command}", LogPrefix, commandText);
-        using var conn = context.GetConnection();
-        var commandType = commandText.Contains(' ') ? CommandType.Text : CommandType.StoredProcedure;
-        return await conn.ExecuteAsync(
-            commandText,
-            parameters,
-            commandType: commandType
-        );
-    }
-
-    public async Task<int> CountTotalElements()
-    {
-        log.LogInformation($"{LogPrefix} Count total elements");
-        using var conn = context.GetConnection();
-
-        var type = typeof(T);
-        var query = $"SELECT COUNT(*) FROM `{type.Name}`";
-        return await conn.ExecuteScalarAsync<int>(query);
-    }
+    // public async Task<object> ExecuteCommandText(string commandText, DynamicParameters parameters)
+    // {
+    //     throw new NotImplementedException();
+    // }
 }

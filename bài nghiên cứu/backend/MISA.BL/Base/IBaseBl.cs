@@ -1,6 +1,6 @@
-using MISA.BL.DTO.Request;
+﻿using MISA.BL.DTO.Request;
 using MISA.Common.Base;
-using MISA.Common.Model;
+using MISA.Common.Model.Pageable;
 
 namespace MISA.BL.Base;
 
@@ -11,5 +11,4 @@ public interface IBaseBl<T> where T : BaseModel
     Task AddAsync(T model);
     Task<int> UpdateAsync(T model, Guid id);
     Task DeleteAsync(List<string> ids);
-    Task<List<T>> SaveDataAsync(List<T> models);
 }

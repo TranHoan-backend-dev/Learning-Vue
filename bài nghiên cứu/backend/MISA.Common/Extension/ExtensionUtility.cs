@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using MISA.Common.Attributes;
@@ -6,18 +6,17 @@ using MISA.Common.Attributes;
 namespace MISA.Common.Extension;
 
 /// <summary>
-/// Class Utility, dung de mo rong hanh vi cho cac class khac
+/// Class Utility dùng để mở rộng hành vi cho các class khác
 /// </summary>
 public static class ExtensionUtility
 {
     /// <summary>
-    /// Cho phep lay ra ten bang
+    /// Cho phép lấy ra tên bảng
     /// </summary>
     /// <param name="type">
-    /// Cho phep 1 doi tuong kieu Type goi method nay nhu the no thuoc ve Type
-    /// VD: typeof(Candidate). Khi do co the goi typeof(Candidate).GetTableNameOnly()
+    /// Cho phép 1 đối tượng kiểu Type gọi method này như thể nó thuộc về Type
     /// </param>
-    /// <returns></returns>
+    /// <returns>Tên bảng</returns>
     public static string GetTableNameOnly(this Type type)
     {
         var attribute = type.GetCustomAttribute<ConfigTableAttribute>(true);
@@ -25,23 +24,24 @@ public static class ExtensionUtility
     }
 
     /// <summary>
-    /// Cho phep lay ra thuoc tinh duoc danh dau la khoa chinh ([Key]) cua bang
+    /// Cho phép lấy ra thuộc tính được đánh dấu là khóa chính ([Key]) của bảng
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
     public static string GetPrimaryKeyAttribute(this Type type)
     {
         var primaryKeyName = string.Empty;
-        // lay ra toan bo property
+        // lấy ra toàn bộ property
         PropertyInfo[] properties = type.GetProperties();
         if (properties.Length > 0)
         {
-            // tim doi tuong co attribute [Key]
+            // tìm đối tượng có attribute key ([Key])
             var propertyInfoKey = properties.SingleOrDefault(p => p
                 .GetCustomAttributes<KeyAttribute>(true).Any()
             );
-            if (propertyInfoKey != null)
+            if (propertyInfoKey is not null)
             {
+                // lấy ra tên bảng
                 primaryKeyName = propertyInfoKey.Name;
             }
         }
@@ -72,7 +72,8 @@ public static class ExtensionUtility
             if (propertyInfoKey is not null)
             {
                 keyModel = propertyInfoKey.Name;
-                keyTable = propertyInfoKey.GetCustomAttribute<ConfigColumnAttribute>()?.ColumnName ?? propertyInfoKey.Name;
+                keyTable = propertyInfoKey.GetCustomAttribute<ConfigColumnAttribute>()?.ColumnName ??
+                           propertyInfoKey.Name;
             }
         }
 
@@ -175,7 +176,10 @@ public static class ExtensionUtility
 
         if (properties.Length > 0)
         {
-            columnsTable = properties.Where(p => p.GetCustomAttribute<NotMappedAttribute>(true) is null) // loc va loai bo tat ca cac phan tu not mapped
+            columnsTable = properties
+                .Where(p =>
+                    p.GetCustomAttribute<NotMappedAttribute>(
+                        true) is null) // loc va loai bo tat ca cac phan tu not mapped
                 .Select(p => p.GetCustomAttribute<ConfigColumnAttribute>()?.ColumnName) // chon va lay ra column name
                 .Where(p => p is not null) // loc nhung phan tu bi null
                 .ToList()!;
@@ -197,7 +201,7 @@ public static class ExtensionUtility
     public static List<string> GetSearchableColumns(this Type type)
     {
         var properties = type.GetProperties();
-        return properties.Where(p => p.GetCustomAttribute<ConfigSearchableColumnAttribute>(true) is not null)
+        return properties.Where(p => p.GetCustomAttribute<ConfigSearchableAttribute>(true) is not null)
             .Select(p => p.GetCustomAttribute<ConfigColumnAttribute>(true)?.ColumnName)
             .Where(colName => colName != null)
             .ToList()!;
@@ -209,5 +213,13 @@ public static class ExtensionUtility
         return properties.Where(p => p.Name.Equals(column, StringComparison.OrdinalIgnoreCase))
             .Select(p => p.GetCustomAttribute<ConfigColumnAttribute>()?.ColumnName)
             .FirstOrDefault();
+    }
+
+    public static string GetColumnName(this PropertyInfo property)
+    {
+        return property
+                   .GetCustomAttribute<ConfigColumnAttribute>(true)
+                   ?.ColumnName
+               ?? property.Name;
     }
 }

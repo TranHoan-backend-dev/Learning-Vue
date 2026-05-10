@@ -21,7 +21,7 @@ namespace MISA.Common.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class ResourcesVN {
+    internal class ResourcesVN {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -60,29 +60,29 @@ namespace MISA.Common.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Email bi trung.
+        ///   Looks up a localized string similar to Component code is duplicated.
         /// </summary>
-        public static string DuplicatedEmail {
+        public static string DuplicatedComponentCode {
             get {
-                return ResourceManager.GetString("DuplicatedEmail", resourceCulture);
+                return ResourceManager.GetString("DuplicatedComponentCode", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to SDT bi trung.
+        ///   Looks up a localized string similar to Resource is exisiting.
         /// </summary>
-        public static string DuplicatedPhone {
+        public static string ExistingException {
             get {
-                return ResourceManager.GetString("DuplicatedPhone", resourceCulture);
+                return ResourceManager.GetString("ExistingException", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Co loi trong khi xu ly yeu cau.
+        ///   Looks up a localized string similar to Resource not found.
         /// </summary>
-        public static string Exception {
+        public static string NotFoundException {
             get {
-                return ResourceManager.GetString("Exception", resourceCulture);
+                return ResourceManager.GetString("NotFoundException", resourceCulture);
             }
         }
     }

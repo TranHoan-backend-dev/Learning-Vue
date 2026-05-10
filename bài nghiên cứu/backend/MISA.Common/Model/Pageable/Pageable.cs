@@ -1,5 +1,8 @@
-﻿namespace MISA.Common.Model;
+﻿namespace MISA.Common.Model.Pageable;
 
+/**
+ * Cau hinh cac thong tin pageable
+ */
 public class Pageable
 {
     public int PageIndex { get; set; } = 0;

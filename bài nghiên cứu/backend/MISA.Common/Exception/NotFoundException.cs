@@ -1,16 +1,16 @@
 ﻿namespace MISA.Common.Exception;
 
-public class NotFoundException : System.Exception
+public class NotFoundException: System.Exception
 {
-    public NotFoundException() : base("Resource not found")
+    protected NotFoundException() : base("Resource not found")
     {
     }
 
-    public NotFoundException(string message) : base(message)
+    protected NotFoundException(string message) : base(message)
     {
     }
 
-    public NotFoundException(string message, System.Exception? innerException) : base(message, innerException)
+    protected NotFoundException(string message, System.Exception? innerException) : base(message, innerException)
     {
-    }
+    } 
 }

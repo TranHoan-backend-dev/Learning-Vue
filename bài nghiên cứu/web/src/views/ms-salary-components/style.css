@@ -234,6 +234,7 @@ tr:hover .table_action {
 .content_body_header_left_search {
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .content_body_header_right_search_icon::after {
