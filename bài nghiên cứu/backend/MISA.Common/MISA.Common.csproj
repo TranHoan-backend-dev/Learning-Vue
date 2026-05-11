@@ -4,6 +4,7 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <UserSecretsId>82a41c36-7b4c-4243-8a0d-605c81174723</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Dapper" Version="2.1.72" />
       <PackageReference Include="Microsoft.Extensions.Logging" Version="11.0.0-preview.3.26207.106" />
     </ItemGroup>
 

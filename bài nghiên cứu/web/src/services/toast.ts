@@ -32,19 +32,19 @@ export const toast = {
     snackbars,
     push,
 
-    success(title: string, text: string, timeout = 3000) {
-        push(title, text, 'success', timeout)
+    success(title: string, text: string, timeout?: number) {
+        push(title, text, 'success', timeout ?? 3000)
     },
 
-    error(title: string, text: string, timeout = 3000) {
-        push(title, text, 'error', timeout)
+    error(title: string, text: string, timeout?: number) {
+        push(title, text, 'error', timeout ?? 3000)
     },
 
-    warning(title: string, text: string, timeout = 3000) {
-        push(title, text, 'warning', timeout)
+    warning(title: string, text: string, timeout?: number) {
+        push(title, text, 'warning', timeout ?? 3000)
     },
 
-    info(title: string, text: string, timeout = 3000) {
-        push(title, text, 'info', timeout)
+    info(title: string, text: string, timeout ?: number) {
+        push(title, text, 'info', timeout ?? 3000)
     }
 }

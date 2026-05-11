@@ -1,9 +1,9 @@
-import {createWebHistory, createRouter} from "vue-router";
-import SalaryComponents from "@/views/ms-salary-components/SalaryComponents.vue";
+import { createWebHistory, createRouter } from "vue-router";
+import SalaryCompositions from "@/views/ms-salary-compositions/SalaryCompositions.vue";
 
 const routes = [
-    {path: '/components', component: SalaryComponents},
-    {path: '/', redirect: '/candidates'},
+    { path: '/compositions', component: SalaryCompositions },
+    { path: '/', redirect: '/compositions' },
 ]
 
 export const router = createRouter({

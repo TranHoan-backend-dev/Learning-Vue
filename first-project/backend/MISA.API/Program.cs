@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MISA.BL.Base;
 using MISA.BL.Service;
 using MISA.DL.Base;
@@ -14,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Register Dapper TypeHandlers
 SqlMapper.AddTypeHandler(new GuidTypeHandler());
-Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 // Add services to the container.
 builder.Services.AddOpenApi();

@@ -20,7 +20,7 @@ const sidebarItems: SidebarItems[] = [
   {
     iconClassName: "sidebar_menu_item_user_icon",
     text: "Thành phần lương",
-    to: "/components",
+    to: "/compositions",
     parentClassName: "sidebar_menu_item_active"
   },
   {
@@ -70,9 +70,8 @@ const sidebarItems: SidebarItems[] = [
         </CustomButton>
       </div>
 
-      <CustomButton class-name="sidebar_toggle" @click="toggleSidebar"
-        :width="isCollapsed ? 36 : 209" :height="44" :is-loading="false" variant="text"
-        tooltip-location="right" tooltip-content="Thu gọn">
+      <CustomButton class-name="sidebar_toggle" @click="toggleSidebar" :width="isCollapsed ? 36 : 209" :height="44"
+        :is-loading="false" variant="text" tooltip-location="right" tooltip-content="Thu gọn">
         <div class="sidebar_toggle_icon" :style="{ transform: isCollapsed ? 'rotate(180deg)' : 'none' }"></div>
         <div v-if="!isCollapsed" class="sidebar_toggle_text">Thu gọn</div>
       </CustomButton>

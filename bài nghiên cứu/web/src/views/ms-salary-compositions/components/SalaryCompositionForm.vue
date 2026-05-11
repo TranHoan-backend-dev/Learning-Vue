@@ -2,7 +2,9 @@
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import DxSelectBox from 'devextreme-vue/select-box';
 import MsFormula from '@/components/ui/ms-formula/MsFormula.vue';
-import { salaryComponentsData } from './data';
+import { salaryCompositionsData } from '../data.ts';
+import organizationService from '@/services/organizationService.ts';
+import salaryCompositionSystemService from '@/services/salaryCompositionSystemService.ts';
 
 const emit = defineEmits(['close', 'save']);
 const props = defineProps<{
@@ -16,13 +18,13 @@ const props = defineProps<{
 const getDefaultData = () => ({
   componentName: '',
   componentId: '',
-  appliedFor: null as string | null,
-  componentType: null as string | null,
-  attribute: null as string | null,
+  appliedUnitId: null as string | null,
+  salaryComponentSystemId: null as string | null,
+  attribute: 1, // Default: Thu nhập (1)
   taxType: null as string | null,
   quota: '',
   allowExceedQuota: false,
-  valueType: null as string | null,
+  valueType: 1, // Default: Tiền tệ (1)
   valueCalculation: null as string | null,
   valueFormula: '',
   description: '',
@@ -53,11 +55,19 @@ const validateField = (field: string): boolean => {
         errors.value.componentName = 'Tên thành phần không được để trống';
         return false;
       }
+      if (value.length > 255) {
+        errors.value.componentName = 'Tên thành phần không được vượt quá 255 ký tự';
+        return false;
+      }
       break;
 
     case 'componentId':
       if (!value || !value.trim()) {
         errors.value.componentId = 'Mã thành phần không được để trống';
+        return false;
+      }
+      if (value.length > 255) {
+        errors.value.componentId = 'Mã thành phần không nên quá dài';
         return false;
       }
       // Kiểm tra định dạng: chỉ chữ, số, gạch dưới
@@ -66,7 +76,7 @@ const validateField = (field: string): boolean => {
         return false;
       }
       // Kiểm tra mã duy nhất (trừ trường hợp edit chính bản ghi đó)
-      const isDuplicate = salaryComponentsData.some(item => {
+      const isDuplicate = salaryCompositionsData.some(item => {
         if (props.mode === 'edit' && props.initialData?.componentId === item.componentId) {
           return false;
         }
@@ -78,15 +88,15 @@ const validateField = (field: string): boolean => {
       }
       break;
 
-    case 'componentType':
+    case 'salaryComponentSystemId':
       if (!value) {
-        errors.value.componentType = 'Loại thành phần không được để trống';
+        errors.value.salaryComponentSystemId = 'Loại thành phần không được để trống';
         return false;
       }
       break;
 
     case 'attribute':
-      if (!value) {
+      if (value === null || value === undefined) {
         errors.value.attribute = 'Tính chất không được để trống';
         return false;
       }
@@ -99,7 +109,7 @@ const validateField = (field: string): boolean => {
 };
 
 const validateAll = (): boolean => {
-  const fields = ['componentName', 'componentId', 'componentType', 'attribute'];
+  const fields = ['componentName', 'componentId', 'salaryComponentSystemId', 'attribute'];
   let isValid = true;
 
   // Validate tất cả các trường
@@ -115,7 +125,7 @@ const validateAll = (): boolean => {
 // Focus vào ô lỗi đầu tiên
 const focusFirstError = () => {
   nextTick(() => {
-    const errorFields = ['componentName', 'componentId', 'componentType', 'attribute'];
+    const errorFields = ['componentName', 'componentId', 'salaryComponentSystemId', 'attribute'];
     for (const field of errorFields) {
       if (errors.value[field]) {
         switch (field) {
@@ -125,7 +135,7 @@ const focusFirstError = () => {
           case 'componentId':
             componentIdRef.value?.focus();
             return;
-          case 'componentType':
+          case 'salaryComponentSystemId':
           case 'attribute':
             // DxSelectBox — tìm input bên trong qua DOM
             const el = document.querySelector(`[data-field="${field}"] .dx-texteditor-input`) as HTMLElement;
@@ -146,22 +156,22 @@ const clearError = (field: string) => {
 // 4. Xử lý giao diện khi thay đổi "Tính chất"
 // ============================================================
 const showTaxOptions = computed(() => {
-  return formData.value.attribute === 'Thu nhập' || formData.value.attribute === 'Khấu trừ';
+  return formData.value.attribute === 1 || formData.value.attribute === 2;
 });
 
 const attributeLabel = computed(() => {
-  if (formData.value.attribute === 'Thu nhập') return 'Thu nhập';
-  if (formData.value.attribute === 'Khấu trừ') return 'Khấu trừ';
+  if (formData.value.attribute === 1) return 'Thu nhập';
+  if (formData.value.attribute === 2) return 'Khấu trừ';
   return '';
 });
 
 watch(() => formData.value.attribute, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     // Khi attribute thay đổi, reset các giá trị liên quan
-    if (newVal === 'Khấu trừ') {
+    if (newVal === 2) {
       // Khấu trừ: mặc định không có radio thuế
       formData.value.taxType = null;
-    } else if (newVal === 'Thu nhập') {
+    } else if (newVal === 1) {
       // Thu nhập: mặc định Chịu thuế
       formData.value.taxType = 'Chịu thuế';
     }
@@ -177,7 +187,9 @@ const initForm = () => {
     if (props.initialData) {
       formData.value = {
         ...getDefaultData(),
-        ...props.initialData
+        ...props.initialData,
+        salaryComponentSystemId: props.initialData.salaryComponentSystemId,
+        appliedUnitId: props.initialData.appliedUnitId
       };
 
       if (props.initialData.value) {
@@ -193,8 +205,30 @@ const initForm = () => {
   }
 };
 
+const appliedUnits = ref<any[]>([]);
+const salaryComponentSystems = ref<any[]>([]);
+
+const loadCategories = async () => {
+  try {
+    const [unitsRes, systemsRes] = await Promise.all([
+      organizationService.getAll(),
+      salaryCompositionSystemService.getAll()
+    ]);
+    appliedUnits.value = unitsRes.data;
+    salaryComponentSystems.value = systemsRes.data;
+    
+    // Nếu là add, set mặc định cho system nếu có
+    if (props.mode === 'add' && salaryComponentSystems.value.length > 0) {
+        formData.value.salaryComponentSystemId = salaryComponentSystems.value[0].salaryComponentSystemId;
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải danh mục:', error);
+  }
+};
+
 onMounted(() => {
   initForm();
+  loadCategories();
   // Auto-focus vào ô input đầu tiên
   nextTick(() => {
     componentNameRef.value?.focus();
@@ -219,17 +253,16 @@ const handleSave = () => {
     focusFirstError();
     return;
   }
-  alert('Lưu bản ghi thành công!');
   emit('save', formData.value);
   emit('close');
 };
 
-const handleSaveAndAdd = () => {
+const handleSaveAndAdd = async () => {
   if (!validateAll()) {
     focusFirstError();
     return;
   }
-  alert('Lưu bản ghi thành công!');
+  emit('save', formData.value);
   // Reset form cho lần thêm tiếp theo
   formData.value = getDefaultData();
   errors.value = {};
@@ -239,10 +272,15 @@ const handleSaveAndAdd = () => {
 // ============================================================
 // 7. SelectBox options
 // ============================================================
-const appliedForOptions = ['Toàn công ty', 'CÔNG TY CP INTEL', 'Khối Văn phòng', 'Khối Sản xuất'];
-const componentTypeOptions = ['Phụ cấp', 'Khấu trừ', 'Thưởng', 'Phúc lợi', 'Thông tin nhân viên', 'Lương', 'Doanh số', 'Bảo hiểm - Công đoàn', 'Chấm công', 'Khác'];
-const attributeOptions = ['Thu nhập', 'Khấu trừ'];
-const valueTypeOptions = ['Tiền tệ', 'Phần trăm', 'Hệ số'];
+const attributeOptions = [
+    { id: 1, name: 'Thu nhập' },
+    { id: 2, name: 'Khấu trừ' }
+];
+const valueTypeOptions = [
+    { id: 1, name: 'Tiền tệ' },
+    { id: 2, name: 'Phần trăm' },
+    { id: 3, name: 'Hệ số' }
+];
 const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn công ty'];
 </script>
 
@@ -254,7 +292,7 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
         <div class="salary-form-header-left">
           <div class="back-btn" @click="$emit('close')">
             <svg viewBox="0 0 24 24" width="20" height="20" stroke="#666" stroke-width="2" fill="none"
-                 stroke-linecap="round" stroke-linejoin="round">
+              stroke-linecap="round" stroke-linejoin="round">
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
@@ -275,16 +313,10 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
           <div class="form-row" :class="{ 'has-error': errors.componentName }">
             <div class="form-label">Tên thành phần <span class="required">*</span></div>
             <div class="form-control">
-              <input
-                ref="componentNameRef"
-                type="text"
-                class="misa-input w-600"
-                :class="{ 'input-error': errors.componentName }"
-                v-model="formData.componentName"
-                @input="clearError('componentName')"
-                @blur="validateField('componentName')"
-                tabindex="1"
-              />
+              <input ref="componentNameRef" type="text" class="misa-input w-600"
+                :class="{ 'input-error': errors.componentName }" v-model="formData.componentName"
+                @input="clearError('componentName')" @blur="validateField('componentName')" maxlength="255"
+                tabindex="1" />
               <div v-if="errors.componentName" class="error-message">{{ errors.componentName }}</div>
             </div>
           </div>
@@ -293,47 +325,36 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
           <div class="form-row" :class="{ 'has-error': errors.componentId }">
             <div class="form-label">Mã thành phần <span class="required">*</span></div>
             <div class="form-control">
-              <input
-                ref="componentIdRef"
-                type="text"
-                class="misa-input w-600"
-                :class="{ 'input-error': errors.componentId }"
-                v-model="formData.componentId"
-                placeholder="Nhập mã viết liền"
-                @input="clearError('componentId')"
-                @blur="validateField('componentId')"
-                tabindex="2"
-              />
+              <input ref="componentIdRef" type="text" class="misa-input w-600"
+                :class="{ 'input-error': errors.componentId }" v-model="formData.componentId"
+                placeholder="Nhập mã viết liền" @input="clearError('componentId')" @blur="validateField('componentId')"
+                maxlength="255" tabindex="2" />
               <div v-if="errors.componentId" class="error-message">{{ errors.componentId }}</div>
             </div>
           </div>
 
           <!-- Đơn vị áp dụng -->
           <div class="form-row">
-            <div class="form-label">Đơn vị áp dụng</div>
             <div class="form-control">
-              <DxSelectBox
-                class="misa-selectbox w-600"
-                :items="appliedForOptions"
-                v-model="formData.appliedFor"
-                :tab-index="3"
-              />
+              <DxSelectBox class="misa-selectbox w-600" 
+                :items="appliedUnits" 
+                display-expr="organizationName" 
+                value-expr="organizationId"
+                v-model="formData.appliedUnitId"
+                :tab-index="3" />
             </div>
           </div>
 
-          <!-- Loại thành phần -->
-          <div class="form-row" :class="{ 'has-error': errors.componentType }">
+          <div class="form-row" :class="{ 'has-error': errors.salaryComponentSystemId }">
             <div class="form-label">Loại thành phần <span class="required">*</span></div>
-            <div class="form-control" data-field="componentType">
-              <DxSelectBox
-                class="misa-selectbox w-600"
-                :class="{ 'select-error': errors.componentType }"
-                :items="componentTypeOptions"
-                v-model="formData.componentType"
-                @value-changed="clearError('componentType')"
-                :tab-index="4"
-              />
-              <div v-if="errors.componentType" class="error-message">{{ errors.componentType }}</div>
+            <div class="form-control" data-field="salaryComponentSystemId">
+              <DxSelectBox class="misa-selectbox w-600" :class="{ 'select-error': errors.salaryComponentSystemId }"
+                :items="salaryComponentSystems" 
+                display-expr="salaryComponentSystemName"
+                value-expr="salaryComponentSystemId"
+                v-model="formData.salaryComponentSystemId"
+                @value-changed="clearError('salaryComponentSystemId')" :tab-index="4" />
+              <div v-if="errors.salaryComponentSystemId" class="error-message">{{ errors.salaryComponentSystemId }}</div>
             </div>
           </div>
 
@@ -341,18 +362,15 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
           <div class="form-row" :class="{ 'has-error': errors.attribute }">
             <div class="form-label">Tính chất <span class="required">*</span></div>
             <div class="form-control flex-row" data-field="attribute">
-              <DxSelectBox
-                class="misa-selectbox"
-                :class="{ 'select-error': errors.attribute }"
-                style="width: 250px"
-                :items="attributeOptions"
-                v-model="formData.attribute"
-                @value-changed="clearError('attribute')"
-                :tab-index="5"
-              />
+              <DxSelectBox class="misa-selectbox" :class="{ 'select-error': errors.attribute }" style="width: 250px"
+                :items="attributeOptions" 
+                display-expr="name"
+                value-expr="id"
+                v-model="formData.attribute" @value-changed="clearError('attribute')"
+                :tab-index="5" />
 
               <!-- Radio thuế: chỉ hiển thị khi Tính chất = Thu nhập -->
-              <div v-if="showTaxOptions && formData.attribute === 'Thu nhập'" class="radio-group ml-16">
+              <div v-if="showTaxOptions && formData.attribute === 1" class="radio-group ml-16">
                 <label class="radio-label">
                   <input type="radio" v-model="formData.taxType" value="Chịu thuế" tabindex="6">
                   <span class="radio-custom"></span> Chịu thuế
@@ -376,12 +394,8 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
             <div class="form-label pt-8">Định mức</div>
             <div class="form-control">
               <div class="w-600">
-                <MsFormula
-                  ref="quotaFormulaRef"
-                  v-model="formData.quota"
-                  placeholder="Tự động gợi ý công thức và tham số khi gõ"
-                  :rows="3"
-                />
+                <MsFormula ref="quotaFormulaRef" v-model="formData.quota"
+                  placeholder="Tự động gợi ý công thức và tham số khi gõ" :rows="3" />
               </div>
               <label class="checkbox-label mt-8">
                 <input type="checkbox" v-model="formData.allowExceedQuota" tabindex="10">
@@ -393,15 +407,12 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
 
           <!-- Kiểu giá trị -->
           <div class="form-row">
-            <div class="form-label">Kiểu giá trị</div>
             <div class="form-control">
-              <DxSelectBox
-                class="misa-selectbox"
-                style="width: 250px"
+              <DxSelectBox class="misa-selectbox" style="width: 250px" 
                 :items="valueTypeOptions"
-                v-model="formData.valueType"
-                :tab-index="11"
-              />
+                display-expr="name"
+                value-expr="id"
+                v-model="formData.valueType" :tab-index="11" />
             </div>
           </div>
 
@@ -414,31 +425,23 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
                   <input type="radio" v-model="formData.valueCalculation" value="Tự động cộng tổng" tabindex="12">
                   <span class="radio-custom"></span> Tự động cộng tổng giá trị của các nhân viên
                 </label>
-                <DxSelectBox
-                  class="misa-selectbox ml-8"
-                  style="width: 250px"
-                  :items="calculationTargetOptions"
-                  value="Trong cùng đơn vị công tác"
-                  :disabled="formData.valueCalculation !== 'Tự động cộng tổng'"
-                  :tab-index="13"
-                />
+                <DxSelectBox class="misa-selectbox ml-8" style="width: 250px" :items="calculationTargetOptions"
+                  value="Trong cùng đơn vị công tác" :disabled="formData.valueCalculation !== 'Tự động cộng tổng'"
+                  :tab-index="13" />
               </div>
 
               <div class="radio-row mb-8">
                 <label class="radio-label">
-                  <input type="radio" v-model="formData.valueCalculation" value="Tính theo công thức tự đặt" tabindex="14">
+                  <input type="radio" v-model="formData.valueCalculation" value="Tính theo công thức tự đặt"
+                    tabindex="14">
                   <span class="radio-custom"></span> Tính theo công thức tự đặt
                 </label>
               </div>
 
               <div class="w-600">
-                <MsFormula
-                  ref="valueFormulaRef"
-                  v-model="formData.valueFormula"
+                <MsFormula ref="valueFormulaRef" v-model="formData.valueFormula"
                   placeholder="Tự động gợi ý công thức và tham số khi gõ"
-                  :disabled="formData.valueCalculation !== 'Tính theo công thức tự đặt'"
-                  :rows="3"
-                />
+                  :disabled="formData.valueCalculation !== 'Tính theo công thức tự đặt'" :rows="3" />
               </div>
             </div>
           </div>
@@ -465,7 +468,8 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
                   <span class="radio-custom"></span> Không
                 </label>
                 <label class="radio-label">
-                  <input type="radio" v-model="formData.showOnPayslip" value="Chỉ hiển thị nếu giá trị khác 0" tabindex="19">
+                  <input type="radio" v-model="formData.showOnPayslip" value="Chỉ hiển thị nếu giá trị khác 0"
+                    tabindex="19">
                   <span class="radio-custom"></span> Chỉ hiển thị nếu giá trị khác 0
                 </label>
               </div>
@@ -735,11 +739,11 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
   border-radius: 3px;
 }
 
-.radio-label input:checked + .radio-custom {
+.radio-label input:checked+.radio-custom {
   border-color: #2ca01c;
 }
 
-.radio-label input:checked + .radio-custom::after {
+.radio-label input:checked+.radio-custom::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -751,12 +755,12 @@ const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn c�
   border-radius: 50%;
 }
 
-.checkbox-label input:checked + .checkbox-custom {
+.checkbox-label input:checked+.checkbox-custom {
   border-color: #2ca01c;
   background-color: #2ca01c;
 }
 
-.checkbox-label input:checked + .checkbox-custom::after {
+.checkbox-label input:checked+.checkbox-custom::after {
   content: "";
   position: absolute;
   left: 5px;

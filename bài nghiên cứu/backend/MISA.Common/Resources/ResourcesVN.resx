@@ -27,4 +27,7 @@
     <data name="DuplicatedComponentCode" xml:space="preserve">
         <value>Component code is duplicated</value>
     </data>
+    <data name="GeneralError" xml:space="preserve">
+        <value>There is an error happening</value>
+    </data>
 </root>

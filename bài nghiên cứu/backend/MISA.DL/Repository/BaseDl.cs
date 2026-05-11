@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using System.Reflection;
 using System.Text;
 using Dapper;
@@ -26,17 +26,17 @@ public class BaseDl<T>(
     /// <param name="parameters">Tham số truyền vào query</param>
     /// <param name="command">Query</param>
     /// <returns></returns>
-    public async Task<IEnumerable<T>> GetPagedDataListAsync(DynamicParameters parameters, string command)
+    public async Task<IEnumerable<TReturn>> GetPagedDataListAsync<TReturn>(DynamicParameters parameters, string command)
     {
         log.LogInformation(
             "{Prefix} Execute query for {Entity}",
             Prefix,
-            typeof(T).Name
+            typeof(TReturn).Name
         );
 
         await using var conn = context.GetConnection();
 
-        var result = (await conn.QueryAsync<T>(
+        var result = (await conn.QueryAsync<TReturn>(
             command,
             param: parameters,
             commandType: CommandType.Text
@@ -56,12 +56,12 @@ public class BaseDl<T>(
     /// </summary>
     /// <param name="id">ID của bản ghi cần tìm</param>
     /// <returns></returns>
-    public async Task<T?> GetByIdAsync(Guid id)
+    public async Task<TReturn?> GetByIdAsync<TReturn>(Guid id)
     {
         log.LogInformation($"{Prefix} Get by id: {id}");
         await using var conn = context.GetConnection();
         var storedProcedure = string.Format(ProcedureNames.GetDetails, typeof(T).GetTableNameOnly());
-        var res = await conn.QueryFirstOrDefaultAsync<T>(
+        var res = await conn.QueryFirstOrDefaultAsync<TReturn>(
             storedProcedure,
             param: new { Id = id },
             commandType: CommandType.StoredProcedure
@@ -416,6 +416,13 @@ public class BaseDl<T>(
 
             throw;
         }
+    }
+
+    public async Task<int> CountTotalElements(DynamicParameters parameters, string command)
+    {
+        log.LogInformation($"{Prefix} Get total records count");
+        await using var conn = context.GetConnection();
+        return await conn.ExecuteScalarAsync<int>(command, param: parameters);
     }
 
     // public async Task<object> ExecuteCommandText(string commandText, DynamicParameters parameters)

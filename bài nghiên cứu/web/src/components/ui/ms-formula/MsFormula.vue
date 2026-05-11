@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { PrismEditor } from 'vue-prism-editor';
+import 'vue-prism-editor/dist/prismeditor.min.css';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
 
 const props = defineProps<{
   modelValue: string;
@@ -19,7 +23,22 @@ const suggestedParams = [
   'ROUND', 'IF', 'SUM', 'MIN', 'MAX'
 ];
 
-const textareaRef = ref<HTMLTextAreaElement | null>(null);
+// Định nghĩa ngôn ngữ Excel-like cho Prism
+Prism.languages.formula = {
+  'function': {
+    pattern: /\b(ROUND|IF|SUM|MIN|MAX|AND|OR|NOT|COUNT|AVERAGE)\b/i,
+    alias: 'important'
+  },
+  'parameter': {
+    pattern: /\b(LUONG_CO_BAN|TONG_CONG|NGAY_CONG_THUC_TE|HE_SO_LUONG|BHXH|BHYT|BHTN|PC_AN_TRUA|PC_DIEN_THOAI|TONG_CONG_LUONG|TONG_KHAU_TRU|THUC_LINH)\b/,
+    alias: 'variable'
+  },
+  'operator': /[+\-*/=<>&|]/,
+  'punctuation': /[(),]/,
+  'number': /\b\d+(\.\d+)?\b/
+};
+
+const editorRef = ref<any>(null);
 const showSuggestions = ref(false);
 const filterText = ref('');
 const selectedSuggestionIndex = ref(0);
@@ -30,16 +49,20 @@ const filteredSuggestions = computed(() => {
   return suggestedParams.filter(p => p.includes(keyword));
 });
 
-const handleInput = (e: Event) => {
-  const target = e.target as HTMLTextAreaElement;
-  const value = target.value;
+const highlighter = (code: string) => {
+  return Prism.highlight(code, Prism.languages.formula, 'formula');
+};
+
+const handleInput = (value: string) => {
   emit('update:modelValue', value);
 
-  // Phân tích vị trí con trỏ để tìm từ đang gõ
-  const cursorPos = target.selectionStart || 0;
+  // Tìm textarea bên trong PrismEditor
+  const textarea = editorRef.value?.$el.querySelector('textarea');
+  if (!textarea) return;
+
+  const cursorPos = textarea.selectionStart || 0;
   const textBeforeCursor = value.substring(0, cursorPos);
 
-  // Tìm từ cuối cùng đang gõ (sau dấu =, +, -, *, /, (, ,, space)
   const match = textBeforeCursor.match(/[=+\-*/,()\s]?([A-Za-z_][A-Za-z0-9_]*)$/);
 
   if (match && match[1] && match[1].length >= 1) {
@@ -53,21 +76,19 @@ const handleInput = (e: Event) => {
 };
 
 const insertSuggestion = (param: string) => {
-  if (!textareaRef.value) return;
+  const textarea = editorRef.value?.$el.querySelector('textarea');
+  if (!textarea) return;
 
-  const textarea = textareaRef.value;
   const cursorPos = textarea.selectionStart || 0;
   const value = props.modelValue || '';
   const textBeforeCursor = value.substring(0, cursorPos);
 
-  // Tìm vị trí bắt đầu từ đang gõ
   const match = textBeforeCursor.match(/[=+\-*/,()\s]?([A-Za-z_][A-Za-z0-9_]*)$/);
   if (match && match[1]) {
     const startPos = cursorPos - match[1].length;
     const newValue = value.substring(0, startPos) + param + value.substring(cursorPos);
     emit('update:modelValue', newValue);
 
-    // Đặt lại con trỏ
     nextTick(() => {
       const newCursorPos = startPos + param.length;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
@@ -100,14 +121,14 @@ const handleKeydown = (e: KeyboardEvent) => {
 };
 
 const handleBlur = () => {
-  // Delay để cho phép click vào suggestion
   setTimeout(() => {
     showSuggestions.value = false;
   }, 200);
 };
 
 const focus = () => {
-  textareaRef.value?.focus();
+  const textarea = editorRef.value?.$el.querySelector('textarea');
+  textarea?.focus();
 };
 
 defineExpose({ focus });
@@ -115,18 +136,19 @@ defineExpose({ focus });
 
 <template>
   <div class="ms-formula-container">
-    <textarea
-      ref="textareaRef"
-      class="ms-formula-input"
+    <prism-editor
+      ref="editorRef"
+      class="ms-formula-editor"
       :class="{ 'has-error': hasError, 'is-disabled': disabled }"
-      :value="modelValue"
-      :placeholder="placeholder || 'Tự động gợi ý công thức và tham số khi gõ'"
-      :disabled="disabled"
-      :rows="rows || 3"
-      @input="handleInput"
+      :model-value="modelValue"
+      :highlight="highlighter"
+      :line-numbers="false"
+      :readonly="disabled"
+      @update:model-value="handleInput"
       @keydown="handleKeydown"
       @blur="handleBlur"
-    ></textarea>
+      :placeholder="placeholder || 'Tự động gợi ý công thức và tham số khi gõ'"
+    ></prism-editor>
 
     <!-- Dropdown gợi ý -->
     <div v-if="showSuggestions && filteredSuggestions.length > 0 && !disabled" class="ms-formula-suggestions">
@@ -144,38 +166,61 @@ defineExpose({ focus });
   </div>
 </template>
 
+<style>
+/* CSS toàn cục cho Prism Editor vì component scoped có thể không tác động sâu được */
+.ms-formula-editor .prism-editor__textarea {
+  outline: none !important;
+  padding: 8px 12px !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 13px !important;
+  color: #111 !important;
+  min-height: 80px;
+}
+
+.ms-formula-editor .prism-editor__code {
+  padding: 8px 12px !important;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+  font-size: 13px !important;
+}
+
+/* Các token màu sắc cho công thức */
+.token.function { color: #1565c0; font-weight: bold; }
+.token.parameter { color: #2e7d32; }
+.token.operator { color: #c62828; }
+.token.punctuation { color: #666; }
+.token.number { color: #ef6c00; }
+</style>
+
 <style scoped>
 .ms-formula-container {
   position: relative;
   width: 100%;
 }
 
-.ms-formula-input {
+.ms-formula-editor {
   width: 100%;
-  padding: 8px 12px;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
-  color: #111;
-  outline: none;
+  background-color: #fff;
   transition: border-color 0.2s;
-  resize: vertical;
   box-sizing: border-box;
 }
 
-.ms-formula-input:focus {
+.ms-formula-editor:focus-within {
   border-color: #2ca01c;
 }
 
-.ms-formula-input.has-error {
+.ms-formula-editor.has-error {
   border-color: #ff4d4f;
 }
 
-.ms-formula-input.is-disabled {
+.ms-formula-editor.is-disabled {
   background-color: #f5f5f5;
-  color: #999;
   cursor: not-allowed;
+}
+
+.ms-formula-editor.is-disabled :deep(textarea) {
+    color: #999 !important;
 }
 
 /* Suggestion dropdown */
