@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 interface Props {
-  name: 'pin' | 'check-circle' | 'copy' | 'edit' | 'trash' | 'drag-handle';
+  name: 'pin' | 'check-circle' | 'copy' | 'edit' | 'trash' | 'drag-handle' | 'info' | 'warning' | 'error' | 'close';
   size?: string | number;
   color?: string;
   strokeWidth?: string | number;
@@ -30,10 +30,37 @@ const isFillIcon = computed(() => ['pin', 'drag-handle'].includes(props.name));
       stroke-linecap="round" 
       stroke-linejoin="round"
     >
-      <!-- check-circle / Sử dụng -->
+      <!-- check-circle -->
       <template v-if="name === 'check-circle'">
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="8 12 11 15 16 9"></polyline>
+      </template>
+      
+      <!-- info -->
+      <template v-else-if="name === 'info'">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </template>
+
+      <!-- warning -->
+      <template v-else-if="name === 'warning'">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </template>
+
+      <!-- error -->
+      <template v-else-if="name === 'error'">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </template>
+
+      <!-- close -->
+      <template v-else-if="name === 'close'">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
       </template>
       
       <!-- copy / Nhân bản -->

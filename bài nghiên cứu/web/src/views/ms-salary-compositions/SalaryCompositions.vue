@@ -3,7 +3,7 @@ import 'devextreme/dist/css/dx.fluent.blue.light.css';
 
 import { computed, ref, watch } from "vue";
 import { toast } from "@/services/toast.ts";
-import {type SalaryCompositions} from "@/views/ms-salary-compositions/data.ts";
+import { type SalaryCompositions } from "@/views/ms-salary-compositions/data.ts";
 import salaryCompositionService from "@/services/salaryCompositionService.ts";
 import SalaryCompositionForm from "./components/SalaryCompositionForm.vue";
 import SalaryCompositionPopups from "./components/SalaryCompositionPopups.vue";
@@ -260,38 +260,22 @@ const handleOpenConfig = () => {
 const closeConfig = () => {
   isColumnConfigVisible.value = false;
 };
-
+toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ thống', 5000);
 </script>
 
 <template>
   <section v-if="!isFormVisible" class="content">
     <!-- Title danh sách -->
-    <SalaryCompositionHeader 
-      :is-add-dropdown-visible="isAddDropdownVisible"
-      @add="handleAdd"
-      @toggle-dropdown="toggleAddDropdown"
-      @add-from-system="handleAddFromSystem"
-    />
+    <SalaryCompositionHeader :is-add-dropdown-visible="isAddDropdownVisible" @add="handleAdd"
+      @toggle-dropdown="toggleAddDropdown" @add-from-system="handleAddFromSystem" />
 
     <!-- Nội dung bảng -->
-    <SalaryCompositionDataTable 
-      v-model:searchKeyword="searchKeyword"
-      v-model:selectedIds="selectedIds"
-      v-model:currentPage="currentPage"
-      v-model:pageSize="pageSize"
-      :table-data="tableData"
-      :total-records="totalRecords"
-      :columns="columns"
-      :page-info="pageInfo"
-      @handlePageSizeChange="handlePageSizeChange"
-      @handleOpenConfig="handleOpenConfig"
-      @togglePin="togglePin"
-      @handleActive="handleActive"
-      @handleDuplicate="handleDuplicate"
-      @handleEdit="handleEdit"
-      @handleDelete="handleDelete"
-      @deleteSelected="handleDeleteSelected"
-    />
+    <SalaryCompositionDataTable v-model:searchKeyword="searchKeyword" v-model:selectedIds="selectedIds"
+      v-model:currentPage="currentPage" v-model:pageSize="pageSize" :table-data="tableData"
+      :total-records="totalRecords" :columns="columns" :page-info="pageInfo"
+      @handlePageSizeChange="handlePageSizeChange" @handleOpenConfig="handleOpenConfig" @togglePin="togglePin"
+      @handleActive="handleActive" @handleDuplicate="handleDuplicate" @handleEdit="handleEdit"
+      @handleDelete="handleDelete" @deleteSelected="handleDeleteSelected" />
   </section>
 
   <!-- Form component overlay -->
@@ -299,18 +283,10 @@ const closeConfig = () => {
     @save="handleSaveForm" />
 
   <!-- Popups (Confirm & Column Config) -->
-  <SalaryCompositionPopups 
-    v-model:isConfirmVisible="isConfirmModalOpen" 
-    v-model:isConfigVisible="isColumnConfigVisible"
-    v-model:isDeleteVisible="isDeleteModalOpen"
-    :delete-message="deleteModalMessage"
-    v-model:columns="columns" 
-    :selected-composition="selectedComposition" 
-    @confirmActive="confirmActive"
-    @confirmDelete="confirmDelete"
-    @closeConfirm="closeConfirmModal" 
-    @closeConfig="closeConfig" 
-  />
+  <SalaryCompositionPopups v-model:isConfirmVisible="isConfirmModalOpen" v-model:isConfigVisible="isColumnConfigVisible"
+    v-model:isDeleteVisible="isDeleteModalOpen" :delete-message="deleteModalMessage" v-model:columns="columns"
+    :selected-composition="selectedComposition" @confirmActive="confirmActive" @confirmDelete="confirmDelete"
+    @closeConfirm="closeConfirmModal" @closeConfig="closeConfig" />
 </template>
 
 <style scoped src="./style.css"></style>
