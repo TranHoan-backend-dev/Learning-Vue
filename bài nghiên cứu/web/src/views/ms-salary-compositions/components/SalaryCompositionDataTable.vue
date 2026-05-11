@@ -29,7 +29,8 @@ const emit = defineEmits([
   'handleActive',
   'handleDuplicate',
   'handleEdit',
-  'handleDelete'
+  'handleDelete',
+  'deleteSelected'
 ]);
 
 const calculateSTT = (data: any) => {
@@ -60,44 +61,60 @@ const handlePageSizeValChange = (e: any) => {
     <div class="content_body_container">
       <!-- Title -->
       <div class="content_body_title">
-        <div class="content_body_header_left">
-          <div class="content_body_header_left_search">
-            <input 
-              type="text" 
-              class="misa-search-input" 
-              :value="searchKeyword" 
-              @input="handleSearchChange"
-              placeholder="Tìm kiếm" 
-              style="width: 250px;" 
-            />
+        <template v-if="selectedIds.length > 0">
+          <div class="content_body_header_left" style="display: flex; align-items: center; gap: 24px;">
+            <div class="selected-info">
+              Đã chọn <strong style="margin: 0 4px">{{ selectedIds.length }}</strong>
+              <span class="unselect-link" @click="emit('update:selectedIds', [])">Bỏ chọn</span>
+            </div>
+            <button class="misa-btn-delete-bulk" @click="emit('deleteSelected')">
+              <MSIcon name="trash" color="#ff4d4f" />
+              <span>Xóa</span>
+            </button>
           </div>
-        </div>
-        <div class="content_body_header_right">
-          <div class="content_body_header_right_filters">
-            <DxSelectBox 
-              class="misa-selectbox" 
-              :items="[{ text: 'Tất cả trạng thái', value: 'all' }]"
-              display-expr="text" 
-              value-expr="value" 
-              value="all" 
-              :width="160" 
-            />
-            <DxSelectBox 
-              class="misa-selectbox" 
-              :items="[{ text: 'Tất cả đơn vị', value: 'all' }]" 
-              display-expr="text"
-              value-expr="value" 
-              value="all" 
-              :width="320" 
-            />
+          <div class="content_body_header_right">
           </div>
-          <div class="content_body_header_right_icon">
-            <div class="mi_icon_filter"></div>
+        </template>
+        <template v-else>
+          <div class="content_body_header_left">
+            <div class="content_body_header_left_search">
+              <input 
+                type="text" 
+                class="misa-search-input" 
+                :value="searchKeyword" 
+                @input="handleSearchChange"
+                placeholder="Tìm kiếm" 
+                style="width: 250px;" 
+              />
+            </div>
           </div>
-          <div class="content_body_header_right_icon" @click="emit('handleOpenConfig')">
-            <div class="mi_icon_setting"></div>
+          <div class="content_body_header_right">
+            <div class="content_body_header_right_filters">
+              <DxSelectBox 
+                class="misa-selectbox" 
+                :items="[{ text: 'Tất cả trạng thái', value: 'all' }]"
+                display-expr="text" 
+                value-expr="value" 
+                value="all" 
+                :width="160" 
+              />
+              <DxSelectBox 
+                class="misa-selectbox" 
+                :items="[{ text: 'Tất cả đơn vị', value: 'all' }]" 
+                display-expr="text"
+                value-expr="value" 
+                value="all" 
+                :width="320" 
+              />
+            </div>
+            <div class="content_body_header_right_icon">
+              <div class="mi_icon_filter"></div>
+            </div>
+            <div class="content_body_header_right_icon" @click="emit('handleOpenConfig')">
+              <div class="mi_icon_setting"></div>
+            </div>
           </div>
-        </div>
+        </template>
       </div>
 
       <!-- Content table -->
@@ -241,3 +258,40 @@ const handlePageSizeValChange = (e: any) => {
 </template>
 
 <style scoped src="../style.css"></style>
+<style scoped>
+.selected-info {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.unselect-link {
+  color: #2ca01c;
+  cursor: pointer;
+  margin-left: 16px;
+  font-weight: 500;
+}
+
+.unselect-link:hover {
+  text-decoration: underline;
+}
+
+.misa-btn-delete-bulk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 36px;
+  border: 1px solid #ff4d4f;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #ff4d4f;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.misa-btn-delete-bulk:hover {
+  background-color: #fff1f0;
+}
+</style>

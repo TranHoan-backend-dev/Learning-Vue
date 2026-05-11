@@ -54,6 +54,13 @@ const salaryCompositionService = {
      */
     delete(id: string) {
         return api.delete(`/SalaryCompositions/${id}`);
+    },
+
+    /**
+     * Xóa nhiều thành phần lương
+     */
+    deleteMany(ids: string[]) {
+        return api.delete('/SalaryCompositions', { data: ids });
     }
 };
 

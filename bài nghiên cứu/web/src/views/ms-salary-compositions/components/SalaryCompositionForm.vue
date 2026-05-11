@@ -2,7 +2,6 @@
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import DxSelectBox from 'devextreme-vue/select-box';
 import MsFormula from '@/components/ui/ms-formula/MsFormula.vue';
-import { salaryCompositionsData } from '../data.ts';
 import organizationService from '@/services/organizationService.ts';
 import salaryCompositionSystemService from '@/services/salaryCompositionSystemService.ts';
 
@@ -76,6 +75,8 @@ const validateField = (field: string): boolean => {
         return false;
       }
       // Kiểm tra mã duy nhất (trừ trường hợp edit chính bản ghi đó)
+      // TODO: Kiểm tra mã duy nhất qua API hoặc props nếu cần
+      /*
       const isDuplicate = salaryCompositionsData.some(item => {
         if (props.mode === 'edit' && props.initialData?.componentId === item.componentId) {
           return false;
@@ -86,6 +87,7 @@ const validateField = (field: string): boolean => {
         errors.value.componentId = 'Mã thành phần đã tồn tại trong hệ thống';
         return false;
       }
+      */
       break;
 
     case 'salaryComponentSystemId':

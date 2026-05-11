@@ -9,6 +9,8 @@ interface Props {
   selectedComposition: any;
   isConfigVisible: boolean;
   columns: any[];
+  isDeleteVisible: boolean;
+  deleteMessage: string;
 }
 
 const props = defineProps<Props>();
@@ -19,7 +21,9 @@ const emit = defineEmits([
   'update:columns',
   'confirmActive',
   'closeConfirm',
-  'closeConfig'
+  'closeConfig',
+  'update:isDeleteVisible',
+  'confirmDelete'
 ]);
 
 const closeConfirmModal = () => {
@@ -113,6 +117,32 @@ const onColumnsUpdate = (val: any[]) => {
         <button class="misa-btn-primary" @click="closeConfig">Lưu</button>
       </template>
     </DxPopup>
+
+    <!-- Delete Confirmation Modal -->
+    <DxPopup
+        :visible="isDeleteVisible"
+        @update:visible="val => emit('update:isDeleteVisible', val)"
+        :width="444"
+        height="auto"
+        title="Thông báo"
+        :show-close-button="true"
+        :drag-enabled="false"
+    >
+      <div class="misa-popup-body">
+        {{ deleteMessage }}
+      </div>
+
+      <DxToolbarItem toolbar="bottom" location="after" template="deleteCancelBtn"/>
+      <DxToolbarItem toolbar="bottom" location="after" template="deleteConfirmBtn"/>
+
+      <template #deleteCancelBtn>
+        <button class="misa-btn-cancel" @click="emit('update:isDeleteVisible', false)">Hủy</button>
+      </template>
+
+      <template #deleteConfirmBtn>
+        <button class="misa-btn-danger" @click="emit('confirmDelete')">Xóa</button>
+      </template>
+    </DxPopup>
   </div>
 </template>
 
@@ -156,6 +186,23 @@ const onColumnsUpdate = (val: any[]) => {
 
 .misa-btn-primary:hover {
   background: #248b17;
+}
+
+.misa-btn-danger {
+  padding: 8px 24px;
+  border: 1px solid transparent;
+  background: #e62e2e;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.misa-btn-danger:hover {
+  background: #cc2929;
 }
 
 .config-popup-content {

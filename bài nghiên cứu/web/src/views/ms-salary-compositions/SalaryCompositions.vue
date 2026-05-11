@@ -172,15 +172,44 @@ const handleSaveForm = async (formData: any) => {
   }
 };
 
-const handleDelete = async (data: any) => {
-  if (confirm(`Bạn có chắc chắn muốn xóa thành phần lương ${data.componentName}?`)) {
-    try {
-      await salaryCompositionService.delete(data.componentId);
-      toast.success('Xóa thành công', `Xóa thành công ${data.componentName}`);
-      await fetchData();
-    } catch (error) {
-      toast.error('Xóa thất bại', 'Đã có lỗi xảy ra');
+const isDeleteModalOpen = ref(false);
+const deleteModalMessage = ref('');
+const deleteType = ref<'single' | 'multiple'>('single');
+const pendingDeleteData = ref<any>(null);
+
+const handleDelete = (data: any) => {
+  pendingDeleteData.value = data;
+  deleteType.value = 'single';
+  deleteModalMessage.value = `Bạn có chắc chắn muốn xóa thành phần lương <${data.componentName}> không?`;
+  isDeleteModalOpen.value = true;
+};
+
+const handleDeleteSelected = () => {
+  if (selectedIds.value.length === 0) return;
+  deleteType.value = 'multiple';
+  deleteModalMessage.value = 'Bạn có chắc chắn muốn xóa các thành phần lương đã chọn không?';
+  isDeleteModalOpen.value = true;
+};
+
+const confirmDelete = async () => {
+  isDeleteModalOpen.value = false;
+  isLoading.value = true;
+  try {
+    if (deleteType.value === 'single' && pendingDeleteData.value) {
+      await salaryCompositionService.delete(pendingDeleteData.value.componentId);
+      toast.success('Xóa thành công', `Đã xóa thành phần lương ${pendingDeleteData.value.componentName}`);
+    } else {
+      await salaryCompositionService.deleteMany(selectedIds.value);
+      toast.success('Xóa thành công', `Đã xóa ${selectedIds.value.length} bản ghi được chọn`);
+      selectedIds.value = [];
     }
+    fetchData();
+  } catch (error) {
+    console.error('Lỗi khi xóa:', error);
+    toast.error('Lỗi', 'Có lỗi xảy ra khi thực hiện thao tác xóa');
+  } finally {
+    isLoading.value = false;
+    pendingDeleteData.value = null;
   }
 };
 
@@ -261,6 +290,7 @@ const closeConfig = () => {
       @handleDuplicate="handleDuplicate"
       @handleEdit="handleEdit"
       @handleDelete="handleDelete"
+      @deleteSelected="handleDeleteSelected"
     />
   </section>
 
@@ -269,9 +299,18 @@ const closeConfig = () => {
     @save="handleSaveForm" />
 
   <!-- Popups (Confirm & Column Config) -->
-  <SalaryCompositionPopups v-model:isConfirmVisible="isConfirmModalOpen" v-model:isConfigVisible="isColumnConfigVisible"
-    v-model:columns="columns" :selected-composition="selectedComposition" @confirmActive="confirmActive"
-    @closeConfirm="closeConfirmModal" @closeConfig="closeConfig" />
+  <SalaryCompositionPopups 
+    v-model:isConfirmVisible="isConfirmModalOpen" 
+    v-model:isConfigVisible="isColumnConfigVisible"
+    v-model:isDeleteVisible="isDeleteModalOpen"
+    :delete-message="deleteModalMessage"
+    v-model:columns="columns" 
+    :selected-composition="selectedComposition" 
+    @confirmActive="confirmActive"
+    @confirmDelete="confirmDelete"
+    @closeConfirm="closeConfirmModal" 
+    @closeConfig="closeConfig" 
+  />
 </template>
 
 <style scoped src="./style.css"></style>
