@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DxSelectBox from "devextreme-vue/select-box";
-import DxDataGrid, {DxColumn, DxPaging, DxScrolling, DxSelection} from "devextreme-vue/data-grid";
+import DxDataGrid, {DxColumn, DxPaging, DxScrolling, DxSelection, DxHeaderFilter, DxSorting} from "devextreme-vue/data-grid";
 import CustomPagination from "@/components/ui/ms-pagination/CustomPagination.vue";
 import MSIcon from "@/components/ui/ms-icon/MSIcon.vue";
 import {DxTooltip} from "devextreme-vue";
@@ -107,9 +107,7 @@ const handlePageSizeValChange = (e: any) => {
                 :width="320" 
               />
             </div>
-            <div class="content_body_header_right_icon">
-              <div class="mi_icon_filter"></div>
-            </div>
+
             <div class="content_body_header_right_icon" @click="emit('handleOpenConfig')">
               <div class="mi_icon_setting"></div>
             </div>
@@ -138,9 +136,11 @@ const handlePageSizeValChange = (e: any) => {
               :scroll-by-thumb="true" />
             <DxPaging :enabled="false" />
             <DxSelection mode="multiple" show-check-boxes-mode="always" />
+            <DxHeaderFilter :visible="false" />
+            <DxSorting mode="none" />
             
             <!-- STT -->
-            <DxColumn caption="STT" :calculate-cell-value="calculateSTT" :width="50" alignment="center" fixed />
+            <DxColumn caption="STT" :calculate-cell-value="calculateSTT" :width="50" alignment="center" fixed :allow-filtering="false" :allow-sorting="false" />
 
             <template v-for="col in columns" :key="col.dataField">
               <DxColumn 
@@ -151,6 +151,8 @@ const handlePageSizeValChange = (e: any) => {
                 :fixed="col.dataField === 'componentName' && col.isPinned" 
                 :cell-template="col.cellTemplate"
                 :header-cell-template="col.dataField === 'componentName' ? 'nameHeaderTemplate' : undefined" 
+                :allow-filtering="false"
+                :allow-sorting="false"
               />
             </template>
 
@@ -163,6 +165,8 @@ const handlePageSizeValChange = (e: any) => {
               fixed
               fixed-position="right" 
               css-class="col-action" 
+              :allow-filtering="false"
+              :allow-sorting="false"
             />
 
             <template #nameHeaderTemplate="{ data }">
