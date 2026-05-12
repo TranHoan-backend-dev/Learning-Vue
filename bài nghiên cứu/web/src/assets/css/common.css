@@ -3,10 +3,11 @@
   --misa-amis-icon-2: url("https://amisplatform.misacdn.net/apps/recruit/navbar-bg-event.7d974ba87d2e462e.svg");
   --local-icon: url("../images/ICON.svg");
   --border-control-normal: #dddde4;
-  --border-control-hover: #2970f6;
-  --background-button-hover: #e2efff;
+  --border-control-hover: #2ca01c;
+  --background-button-hover: #ebf9eb;
   --color-default-icon: #65696e;
   --border-table: rgb(221, 221, 221);
+  --primary-green: #2ca01c;
 }
 
 * {

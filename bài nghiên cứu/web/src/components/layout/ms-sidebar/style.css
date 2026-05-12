@@ -77,8 +77,8 @@
 }
 
 .sidebar_menu_item_active {
-  background-color: #2680eb !important;
-  color: #2680eb !important;
+  background-color: var(--primary-green) !important;
+  color: var(--primary-green) !important;
 }
 
 .sidebar_menu_item_active .sidebar_menu_item_recruitment_icon,
@@ -168,7 +168,7 @@
 }
 
 :deep(.v-btn.v-btn--active) {
-  background-color: #2970f6 !important;
+  background-color: var(--primary-green) !important;
 }
 
 :deep(.v-btn.v-btn--active .sidebar_menu_item_text) {

@@ -242,7 +242,7 @@ const fullColumns = computed(() => {
           </div>
           <div class="content_body_footer_nav">
             <CustomPagination :model-value="currentPage" @update:model-value="handleCurrentPageChange"
-              :total="totalRecords" :page-size="pageSize" color="#0070f3" />
+              :total="totalRecords" :page-size="pageSize" color="var(--primary-green)" />
           </div>
         </div>
       </div>

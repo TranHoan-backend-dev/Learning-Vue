@@ -43,7 +43,7 @@
   display: flex;
   height: 36px;
   border-radius: 4px;
-  background-color: #2ca01c;
+  background-color: var(--primary-green);
   position: relative;
 }
 
@@ -260,7 +260,7 @@ tr:hover .table_action {
 }
 
 .content_body_header_right_search_input:hover {
-  border: 1px solid #4970e3;
+  border: 1px solid var(--primary-green);
 }
 
 .content_body_footer {
@@ -320,11 +320,11 @@ tr:hover .table_action {
 }
 
 .page_size_select:hover {
-  border-color: #2680eb;
+  border-color: var(--primary-green);
 }
 
 .page_size_select:focus {
-  border-color: #2680eb;
+  border-color: var(--primary-green);
 }
 
 /* Page info */
@@ -350,8 +350,8 @@ tr:hover .table_action {
 }
 
 .btn_page:hover:not(:disabled) {
-  border-color: #2680eb;
-  background-color: #f5f9ff;
+  border-color: var(--primary-green);
+  background-color: #ebf9eb;
 }
 
 .btn_page:active:not(:disabled) {
@@ -454,7 +454,7 @@ tr:hover .table_action {
 }
 
 .content_body_header_right_icon:hover {
-  border-color: #2ca01c;
+  border-color: var(--primary-green);
   background-color: #f6f6f6;
 }
 
@@ -464,7 +464,7 @@ tr:hover .table_action {
 }
 
 .misa-selectbox.dx-state-hover {
-  border-color: #2ca01c;
+  border-color: var(--primary-green);
 }
 
 .content_body_footer_pagesize {
@@ -502,7 +502,7 @@ tr:hover .table_action {
 
 .misa-search-input:hover,
 .misa-search-input:focus {
-  border-color: #2ca01c;
+  border-color: var(--primary-green);
 }
 
 /* Styles for Action Column */
@@ -631,7 +631,7 @@ tr:hover .table_action {
 
 .misa-dropdown-item:hover {
   background-color: #f5f5f5;
-  color: #2ca01c;
+  color: var(--primary-green);
 }
 /* ========== MISA CHECKBOX STYLES ========== */
 :deep(.dx-checkbox-icon) {
@@ -652,8 +652,8 @@ tr:hover .table_action {
 }
 
 :deep(.dx-checkbox-checked .dx-checkbox-icon) {
-  background-color: #2ca01c !important;
-  border-color: #2ca01c !important;
+  background-color: var(--primary-green) !important;
+  border-color: var(--primary-green) !important;
 }
 
 :deep(.dx-checkbox-checked .dx-checkbox-icon::after) {
@@ -683,7 +683,7 @@ tr:hover .table_action {
 }
 
 :deep(.dx-radiobutton-icon-dot) {
-  background-color: #2ca01c !important;
+  background-color: var(--primary-green) !important;
   width: 10px !important;
   height: 10px !important;
   margin-top: -5px !important;
@@ -692,7 +692,7 @@ tr:hover .table_action {
 }
 
 :deep(.dx-radiobutton.dx-state-hover .dx-radiobutton-icon) {
-  border-color: #2ca01c !important;
+  border-color: var(--primary-green) !important;
   box-shadow: 0 0 0 8px rgba(0, 0, 0, 0.05) !important;
 }
 
@@ -701,7 +701,7 @@ tr:hover .table_action {
 }
 
 :deep(.dx-radiobutton-checked .dx-radiobutton-icon) {
-  border-color: #2ca01c !important;
+  border-color: var(--primary-green) !important;
 }
 
 :deep(.dx-radiobutton.dx-state-disabled .dx-radiobutton-icon) {

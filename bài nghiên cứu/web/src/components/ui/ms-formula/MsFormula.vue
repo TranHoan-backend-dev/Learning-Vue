@@ -3,7 +3,6 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { PrismEditor } from 'vue-prism-editor';
 import 'vue-prism-editor/dist/prismeditor.min.css';
 import Prism from 'prismjs';
-import 'prismjs/themes/prism.css';
 
 const props = defineProps<{
   modelValue: string;
@@ -36,6 +35,19 @@ Prism.languages.formula = {
   'operator': /[+\-*/=<>&|]/,
   'punctuation': /[(),]/,
   'number': /\b\d+(\.\d+)?\b/
+};
+
+const formulaDescriptions: Record<string, string> = {
+  SUM: '(X1, X2, ...)',
+  IF: '(Logical_test, [value_if_true], [value_if_false])',
+  IFS: '(logical_test1, value_if_true1, ...)',
+  ROUND: '(number, num_digits)',
+  MIN: '(X1, X2, ...)',
+  MAX: '(X1, X2, ...)',
+};
+
+const getFormulaSignature = (name: string) => {
+  return formulaDescriptions[name] || '';
 };
 
 const editorRef = ref<any>(null);
@@ -135,142 +147,269 @@ defineExpose({ focus });
 </script>
 
 <template>
-  <div class="ms-formula-container">
-    <prism-editor
-      ref="editorRef"
-      class="ms-formula-editor"
-      :class="{ 'has-error': hasError, 'is-disabled': disabled }"
-      :model-value="modelValue"
-      :highlight="highlighter"
-      :line-numbers="false"
-      :readonly="disabled"
-      @update:model-value="handleInput"
-      @keydown="handleKeydown"
-      @blur="handleBlur"
-      :placeholder="placeholder || 'Tự động gợi ý công thức và tham số khi gõ'"
-    ></prism-editor>
+  <div class="formula-wrapper">
+    <!-- Editor -->
+    <div
+        class="formula-editor-shell"
+        :class="{ focused: showSuggestions }"
+    >
+      <prism-editor
+          ref="editorRef"
+          class="ms-formula-editor"
+          :class="{ 'has-error': hasError, 'is-disabled': disabled }"
+          :model-value="modelValue"
+          :highlight="highlighter"
+          :line-numbers="false"
+          :readonly="disabled"
+          @update:model-value="handleInput"
+          @keydown="handleKeydown"
+          @blur="handleBlur"
+          :placeholder="placeholder || 'Nhập công thức...'"
+      />
+    </div>
 
-    <!-- Dropdown gợi ý -->
-    <div v-if="showSuggestions && filteredSuggestions.length > 0 && !disabled" class="ms-formula-suggestions">
-      <div
-        v-for="(param, index) in filteredSuggestions"
-        :key="param"
-        class="ms-formula-suggestion-item"
-        :class="{ 'is-selected': index === selectedSuggestionIndex }"
-        @mousedown.prevent="insertSuggestion(param)"
-      >
-        <span class="suggestion-icon">ƒ</span>
-        <span class="suggestion-text">{{ param }}</span>
+    <!-- Suggestion Panel -->
+    <div
+        v-if="showSuggestions && !disabled"
+        class="formula-suggestion-panel"
+    >
+      <!-- Tabs -->
+      <div class="formula-tabs">
+        <div class="formula-tab active">Công thức</div>
+        <div class="formula-tab">Tham số</div>
+      </div>
+
+      <!-- List -->
+      <div class="formula-list">
+        <div
+            v-for="(param, index) in filteredSuggestions"
+            :key="param"
+            class="formula-item"
+            :class="{ active: index === selectedSuggestionIndex }"
+            @mousedown.prevent="insertSuggestion(param)"
+        >
+          <div class="formula-icon">ƒx</div>
+
+          <div class="formula-content">
+            <div class="formula-name">
+              {{ param }}
+              <span class="formula-signature">
+                {{ getFormulaSignature(param) }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<style>
-/* CSS toàn cục cho Prism Editor vì component scoped có thể không tác động sâu được */
-.ms-formula-editor .prism-editor__textarea {
-  outline: none !important;
-  padding: 8px 12px !important;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-size: 13px !important;
-  color: #111 !important;
-  min-height: 80px;
-}
-
-.ms-formula-editor .prism-editor__code {
-  padding: 8px 12px !important;
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
-  font-size: 13px !important;
-}
-
-/* Các token màu sắc cho công thức */
-.token.function { color: #1565c0; font-weight: bold; }
-.token.parameter { color: #2e7d32; }
-.token.operator { color: #c62828; }
-.token.punctuation { color: #666; }
-.token.number { color: #ef6c00; }
-</style>
-
 <style scoped>
-.ms-formula-container {
-  position: relative;
+.formula-wrapper {
   width: 100%;
+  position: relative;
+}
+
+/* =========================
+   EDITOR
+========================= */
+
+.formula-editor-shell {
+  display: flex;
+  align-items: flex-start;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+  min-height: 110px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.formula-editor-shell.focused {
+  border-color: #2ca01c;
+  box-shadow: 0 0 0 1px #2ca01c22;
 }
 
 .ms-formula-editor {
-  width: 100%;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #fff;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
+  flex: 1;
+  background: transparent;
 }
 
-.ms-formula-editor:focus-within {
-  border-color: #2ca01c;
+/* textarea thật */
+:deep(.prism-editor__textarea) {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;          /* ← đổi lại 0 */
+  right: 0 !important;
+  bottom: 0 !important;
+
+  padding-left: 10px !important;  /* ← thêm dòng này */
+  padding-top: 8px !important;    /* ← khớp với container */
+
+  color: transparent !important;
+  caret-color: #111 !important;
+  background: transparent !important;
+  resize: none !important;
+  outline: none !important;
+  border: none !important;
+  overflow: hidden !important;
+  z-index: 2;
 }
 
-.ms-formula-editor.has-error {
-  border-color: #ff4d4f;
+/* layer highlight */
+:deep(.prism-editor__code) {
+  position: relative;
+  z-index: 1;
+
+  color: #222 !important;
+
+  pointer-events: none;
 }
 
-.ms-formula-editor.is-disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
+.ms-formula-editor {
+  position: relative;
 }
 
-.ms-formula-editor.is-disabled :deep(textarea) {
-    color: #999 !important;
+:deep(pre),
+:deep(code) {
+  margin: 0 !important;
+  background: transparent !important;
+  text-shadow: none !important;
+  font-family: Consolas, Monaco, monospace !important;
 }
 
-/* Suggestion dropdown */
-.ms-formula-suggestions {
+/* fix prism default opacity */
+:deep(.token) {
+  background: none !important;
+  text-shadow: none !important;
+}
+:deep(.prism-editor__textarea::placeholder) {
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* Thêm vào sau block :deep(.token) */
+:deep(.prism-editor__container) {
+  padding-left: 10px;
+  padding-top: 8px;
+}
+
+/* =========================
+   SUGGESTION PANEL
+========================= */
+
+.formula-suggestion-panel {
+  margin-top: 12px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  border: 1px solid #e4e4e4;
+  overflow: hidden;
+}
+
+/* Tabs */
+
+.formula-tabs {
+  display: flex;
+  gap: 28px;
+  padding: 12px 24px 0;
+  background: #f7f7f7;
+}
+
+.formula-tab {
+  position: relative;
+  padding-bottom: 12px;
+  font-size: 13px;
+  color: #444;
+  cursor: pointer;
+}
+
+.formula-tab.active {
+  color: #2ca01c;
+  font-weight: 600;
+}
+
+.formula-tab.active::after {
+  content: '';
   position: absolute;
-  top: 100%;
   left: 0;
-  width: 300px;
-  max-height: 200px;
+  bottom: 0;
+
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+
+  background: #2ca01c;
+}
+
+/* List */
+
+.formula-list {
+  max-height: 260px;
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  z-index: 100;
+  padding: 10px 0;
+}
+
+.formula-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 24px;  /* từ 16px 24px → 10px 24px */
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.formula-item:hover,
+.formula-item.active {
+  background: #ececec;
+}
+
+.formula-icon {
+  font-size: 20px;
+  color: #666;
+  font-family: serif;
+  line-height: 1;
   margin-top: 2px;
 }
 
-.ms-formula-suggestion-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  cursor: pointer;
+.formula-content {
+  flex: 1;
+}
+
+.formula-name {
   font-size: 13px;
-  color: #333;
-  transition: background 0.15s;
+  color: #222;
+  font-weight: 700;
 }
 
-.ms-formula-suggestion-item:hover,
-.ms-formula-suggestion-item.is-selected {
-  background: #e8f5e9;
+.formula-signature {
+  font-weight: 400;
+  color: #444;
+  margin-left: 6px;
+  font-size: 13px;
 }
 
-.suggestion-icon {
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #e3f2fd;
-  border-radius: 4px;
+/* =========================
+   TOKENS
+========================= */
+
+:deep(.token.function) {
   color: #1565c0;
   font-weight: 700;
-  font-size: 12px;
-  margin-right: 10px;
-  flex-shrink: 0;
 }
 
-.suggestion-text {
-  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  font-size: 13px;
+:deep(.token.parameter) {
+  color: #2e7d32;
+}
+
+:deep(.token.operator) {
+  color: #c62828;
+}
+
+:deep(.token.number) {
+  color: #ef6c00;
+}
+
+:deep(.token.punctuation) {
+  color: #666;
 }
 </style>

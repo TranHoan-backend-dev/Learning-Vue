@@ -1,0 +1,375 @@
+
+.salary-form-overlay {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f5f8;
+    display: flex;
+    flex-direction: column;
+}
+
+.salary-form-container {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.salary-form-header {
+    height: 60px;
+    min-height: 60px;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.salary-form-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.back-btn {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.salary-form-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111;
+}
+
+.salary-form-header-right {
+    display: flex;
+    gap: 12px;
+}
+
+.misa-btn-cancel,
+.misa-btn-outline,
+.misa-btn-primary {
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.misa-btn-cancel {
+    background: #fff;
+    border: 1px solid transparent;
+    color: #111;
+}
+
+.misa-btn-cancel:hover {
+    background: #f5f5f5;
+}
+
+.misa-btn-outline {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    color: #111;
+}
+
+.misa-btn-outline:hover {
+    background: #f5f5f5;
+}
+
+.misa-btn-primary {
+    background: var(--primary-green);
+    border: 1px solid transparent;
+    color: #fff;
+}
+
+.misa-btn-primary:hover {
+    background: #248b17;
+}
+
+/* Body */
+.salary-form-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    background-color: #fff;
+}
+
+.form-wrapper {
+    width: 100%;
+}
+
+.form-row {
+    display: flex;
+    margin-bottom: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.form-row.align-top {
+    align-items: flex-start;
+}
+
+.form-label {
+    width: 180px;
+    min-width: 180px;
+    font-size: 14px;
+    color: #111;
+    font-weight: 500;
+}
+
+.pt-8 {
+    padding-top: 8px;
+}
+
+.required {
+    color: #ff4d4f;
+}
+
+.form-control {
+    flex: 1;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.w-full-input {
+    width: 750px;
+    max-width: 100%;
+}
+
+/* Input & Textarea */
+.misa-input,
+.misa-textarea {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #111;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.misa-input:focus,
+.misa-textarea:focus {
+    border-color: var(--primary-green);
+}
+
+.misa-textarea {
+    resize: vertical;
+}
+
+/* Validation error styles */
+.misa-input.input-error {
+    border-color: #ff4d4f;
+}
+
+.misa-input.input-error:focus {
+    border-color: #ff4d4f;
+    box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.1);
+}
+
+:deep(.select-error .dx-texteditor-container) {
+    border-color: #ff4d4f !important;
+}
+
+.error-message {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.flex-row {
+    display: flex;
+    align-items: center;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.ml-24 {
+    margin-left: 24px;
+}
+
+.ml-12 {
+    margin-left: 12px;
+}
+
+.mb-12 {
+    margin-bottom: 12px;
+}
+
+.mt-24 {
+    margin-top: 24px;
+}
+
+.pb-12 {
+    padding-bottom: 12px;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.mt-16 {
+    margin-top: 16px;
+}
+
+.radio-group,
+.radio-row {
+    display: flex;
+    align-items: center;
+}
+
+.radio-group {
+    gap: 32px;
+}
+
+.inline-selectbox-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+}
+
+.label-value {
+    font-size: 14px;
+    color: #111;
+}
+
+/* Custom Radio & Checkbox */
+.radio-label,
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #111;
+}
+
+.radio-label input,
+.checkbox-label input {
+    display: none;
+}
+
+.radio-custom,
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #afafaf;
+    margin-right: 8px;
+    display: inline-block;
+    position: relative;
+    background-color: #fff;
+    transition: all 0.2s;
+}
+
+.radio-custom {
+    border-radius: 50%;
+}
+
+.checkbox-custom {
+    border-radius: 3px;
+}
+
+.radio-label:hover .radio-custom,
+.checkbox-label:hover .checkbox-custom {
+    border-color: var(--primary-green);
+}
+
+.radio-label input:checked + .radio-custom {
+    border-color: var(--primary-green);
+}
+
+.radio-label input:checked + .radio-custom::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background-color: var(--primary-green);
+    border-radius: 50%;
+}
+
+.checkbox-label input:checked + .checkbox-custom {
+    border-color: var(--primary-green);
+    background-color: #fff;
+}
+
+.checkbox-label input:checked + .checkbox-custom::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--primary-green);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.info-icon-container {
+    display: flex;
+    align-items: center;
+    cursor: help;
+}
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #888;
+    color: #888;
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+.misa-input.w-full-input {
+    width: 750px !important;
+}
+
+:deep(.dx-selectbox) {
+    border-radius: 4px;
+}
+
+:deep(.dx-texteditor.dx-editor-outlined) {
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+:deep(.dx-texteditor.dx-state-focused.dx-editor-outlined) {
+    border-color: var(--primary-green);
+}
+
+:deep(.misa-selectbox-gray .dx-texteditor-container) {
+    background-color: #f2f2f2 !important;
+    border-color: transparent !important;
+}
+
+:deep(.misa-selectbox-gray .dx-texteditor-input) {
+    color: #111 !important;
+}
+
+:deep(.info-button-inside .dx-icon) {
+    color: #0075FF !important;
+    font-size: 16px !important;
+}

@@ -5,7 +5,7 @@ import {computed, ref, watch} from "vue";
 import {toast} from "@/services/toast.ts";
 import {type SalaryCompositions} from "@/views/ms-salary-compositions/data.ts";
 import salaryCompositionService from "@/services/salaryCompositionService.ts";
-import SalaryCompositionForm from "./components/SalaryCompositionForm.vue";
+import SalaryCompositionForm from "./components/form/SalaryCompositionForm.vue";
 import SalaryCompositionPopups from "./components/SalaryCompositionPopups.vue";
 import {onMounted} from "vue";
 import SalaryCompositionHeader from "@/views/ms-salary-compositions/components/SalaryCompositionHeader.vue";
