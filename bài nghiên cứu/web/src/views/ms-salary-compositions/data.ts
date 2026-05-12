@@ -1,3 +1,5 @@
+import {ref} from "vue";
+
 export type SalaryCompositions = {
     componentId: string,
     componentName: string,
@@ -24,3 +26,12 @@ export const pageSizeOptions = [
     { value: 25, label: "25" },
     { value: 50, label: "50" },
 ];
+
+export const systemDirectoryColumns = ref([
+    { dataField: 'componentCode', caption: 'Mã thành phần', visible: true, width: 250, isPinned: true },
+    { dataField: 'componentName', caption: 'Tên thành phần', visible: true, width: 250, isPinned: true },
+    { dataField: 'salaryComponentSystemName', caption: 'Loại thành phần', visible: true, width: 150, isPinned: false },
+    { dataField: 'attribute', caption: 'Tính chất', visible: true, width: 120, isPinned: false },
+    { dataField: 'valueType', caption: 'Kiểu giá trị', visible: true, width: 120, isPinned: false },
+    { dataField: 'value', caption: 'Giá trị', visible: true, width: 200, isPinned: false },
+]);

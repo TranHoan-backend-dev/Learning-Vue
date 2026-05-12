@@ -5,7 +5,7 @@ defineProps<{
   isAddDropdownVisible: boolean;
 }>();
 
-const emit = defineEmits(['add', 'toggle-dropdown', 'add-from-system']);
+const emit = defineEmits(['add', 'toggle-dropdown', 'add-from-system', 'open-system']);
 </script>
 
 <template>
@@ -14,7 +14,7 @@ const emit = defineEmits(['add', 'toggle-dropdown', 'add-from-system']);
       <div class="content_header_title">Thành phần lương</div>
     </div>
     <div class="content_header_right">
-      <button class="misa-btn-outline">
+      <button class="misa-btn-outline" @click="() => { console.log('Header button clicked'); emit('open-system'); }">
         <MSIcon name="edit" size="20" color="#5a5a5a" stroke-width="2.5" />
         <span>Danh mục của hệ thống</span>
       </button>

@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import 'devextreme/dist/css/dx.fluent.blue.light.css';
 
-import { computed, ref, watch } from "vue";
-import { toast } from "@/services/toast.ts";
-import { type SalaryCompositions } from "@/views/ms-salary-compositions/data.ts";
+import {computed, ref, watch} from "vue";
+import {toast} from "@/services/toast.ts";
+import {type SalaryCompositions} from "@/views/ms-salary-compositions/data.ts";
 import salaryCompositionService from "@/services/salaryCompositionService.ts";
 import SalaryCompositionForm from "./components/SalaryCompositionForm.vue";
 import SalaryCompositionPopups from "./components/SalaryCompositionPopups.vue";
-import { onMounted } from "vue";
+import {onMounted} from "vue";
 import SalaryCompositionHeader from "@/views/ms-salary-compositions/components/SalaryCompositionHeader.vue";
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
+import SalaryCompositionSystemDirectory from "./components/SalaryCompositionSystemDirectory.vue";
 
 const selectedIds = ref<string[]>([]);
 const isLoading = ref(false);
@@ -225,22 +226,46 @@ window.addEventListener('click', () => {
   isAddDropdownVisible.value = false;
 });
 
+const isSystemDirectoryVisible = ref(false);
+
 const handleAddFromSystem = () => {
-  alert('Chức năng thêm từ danh mục hệ thống đang được phát triển');
+  console.log('Switching to System Directory view...');
+  isSystemDirectoryVisible.value = true;
   isAddDropdownVisible.value = false;
+};
+
+const closeSystemDirectory = () => {
+  isSystemDirectoryVisible.value = false;
+};
+
+const addSystemComponent = async (data: any) => {
+  try {
+    // When adding from system, we create a new component for the user
+    const requestData = {
+      ...data,
+      salaryComponentId: undefined, // Let backend generate new ID
+      source: 'Hệ thống'
+    };
+    await salaryCompositionService.create(requestData);
+    toast.success('Thêm thành công', `Đã thêm thành phần ${data.componentName} từ hệ thống`);
+    await fetchData();
+  } catch (error) {
+    console.error(error);
+    toast.error('Lỗi', 'Không thể thêm thành phần từ hệ thống');
+  }
 };
 
 // Column configuration
 const columns = ref([
-  { dataField: 'componentCode', caption: 'Mã thành phần', visible: true, width: 150, isPinned: false },
-  { dataField: 'componentName', caption: 'Tên thành phần', visible: true, width: 250, isPinned: false },
-  { dataField: 'appliedUnitName', caption: 'Đơn vị áp dụng', visible: true, width: 200, isPinned: false },
-  { dataField: 'salaryComponentSystemName', caption: 'Loại thành phần', visible: true, width: 150, isPinned: false },
-  { dataField: 'attribute', caption: 'Tính chất', visible: true, width: 120, isPinned: false },
-  { dataField: 'valueType', caption: 'Kiểu giá trị', visible: true, width: 120, isPinned: false },
-  { dataField: 'value', caption: 'Giá trị', visible: true, width: 200, isPinned: false },
-  { dataField: 'source', caption: 'Nguồn tạo', visible: true, width: 150, isPinned: false },
-  { dataField: 'status', caption: 'Trạng thái', visible: true, width: 150, isPinned: false, cellTemplate: 'status-cell' },
+  {dataField: 'componentCode', caption: 'Mã thành phần', visible: true, width: 150, isPinned: false},
+  {dataField: 'componentName', caption: 'Tên thành phần', visible: true, width: 250, isPinned: false},
+  {dataField: 'appliedUnitName', caption: 'Đơn vị áp dụng', visible: true, width: 200, isPinned: false},
+  {dataField: 'salaryComponentSystemName', caption: 'Loại thành phần', visible: true, width: 150, isPinned: false},
+  {dataField: 'attribute', caption: 'Tính chất', visible: true, width: 120, isPinned: false},
+  {dataField: 'valueType', caption: 'Kiểu giá trị', visible: true, width: 120, isPinned: false},
+  {dataField: 'value', caption: 'Giá trị', visible: true, width: 200, isPinned: false},
+  {dataField: 'source', caption: 'Nguồn tạo', visible: true, width: 150, isPinned: false},
+  {dataField: 'status', caption: 'Trạng thái', visible: true, width: 150, isPinned: false, cellTemplate: 'status-cell'},
 ]);
 
 const isColumnConfigVisible = ref(false);
@@ -269,29 +294,55 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
 </script>
 
 <template>
-  <section v-if="!isFormVisible" class="content">
-    <!-- Title danh sách -->
-    <SalaryCompositionHeader :is-add-dropdown-visible="isAddDropdownVisible" @add="handleAdd"
-      @toggle-dropdown="toggleAddDropdown" @add-from-system="handleAddFromSystem" />
+  <template v-if="!isSystemDirectoryVisible">
+    <section v-if="!isFormVisible" class="content">
+      <!-- Title danh sách -->
+      <SalaryCompositionHeader
+          :is-add-dropdown-visible="isAddDropdownVisible"
+          @add="handleAdd"
+          @toggle-dropdown="toggleAddDropdown"
+          @add-from-system="handleAddFromSystem"
+          @open-system="handleAddFromSystem"/>
 
-    <!-- Nội dung bảng -->
-    <SalaryCompositionDataTable v-model:searchKeyword="searchKeyword" v-model:selectedIds="selectedIds"
-      v-model:currentPage="currentPage" v-model:pageSize="pageSize" :table-data="tableData"
-      :total-records="totalRecords" :columns="columns" :page-info="pageInfo"
-      @handlePageSizeChange="handlePageSizeChange" @handleOpenConfig="handleOpenConfig" @togglePin="togglePin"
-      @handleActive="handleActive" @handleDuplicate="handleDuplicate" @handleEdit="handleEdit"
-      @handleDelete="handleDelete" @deleteSelected="handleDeleteSelected" />
-  </section>
+      <!-- Nội dung bảng -->
+      <SalaryCompositionDataTable
+          v-model:searchKeyword="searchKeyword"
+          v-model:selectedIds="selectedIds"
+          v-model:currentPage="currentPage"
+          v-model:pageSize="pageSize"
+          :table-data="tableData"
+          :total-records="totalRecords"
+          :columns="columns"
+          :page-info="pageInfo"
+          @handlePageSizeChange="handlePageSizeChange"
+          @handleOpenConfig="handleOpenConfig"
+          @togglePin="togglePin"
+          @handleActive="handleActive"
+          @handleDuplicate="handleDuplicate"
+          @handleEdit="handleEdit"
+          @handleDelete="handleDelete"
+          @deleteSelected="handleDeleteSelected"/>
+    </section>
 
-  <!-- Form component overlay -->
-  <SalaryCompositionForm v-if="isFormVisible" :mode="formMode" :initial-data="formInitialData" @close="closeForm"
-    @save="handleSaveForm" />
+    <!-- Form component overlay -->
+    <SalaryCompositionForm v-if="isFormVisible" :mode="formMode" :initial-data="formInitialData" @close="closeForm"
+                           @save="handleSaveForm"/>
 
-  <!-- Popups (Confirm & Column Config) -->
-  <SalaryCompositionPopups v-model:isConfirmVisible="isConfirmModalOpen" v-model:isConfigVisible="isColumnConfigVisible"
-    v-model:isDeleteVisible="isDeleteModalOpen" :delete-message="deleteModalMessage" v-model:columns="columns"
-    :selected-composition="selectedComposition" @confirmActive="confirmActive" @confirmDelete="confirmDelete"
-    @closeConfirm="closeConfirmModal" @closeConfig="closeConfig" />
+    <!-- Popups (Confirm & Column Config) -->
+    <SalaryCompositionPopups v-model:isConfirmVisible="isConfirmModalOpen"
+                             v-model:isConfigVisible="isColumnConfigVisible"
+                             v-model:isDeleteVisible="isDeleteModalOpen" :delete-message="deleteModalMessage"
+                             v-model:columns="columns"
+                             :selected-composition="selectedComposition" @confirmActive="confirmActive"
+                             @confirmDelete="confirmDelete"
+                             @closeConfirm="closeConfirmModal" @closeConfig="closeConfig"/>
+  </template>
+
+  <SalaryCompositionSystemDirectory
+      v-else
+      @back="closeSystemDirectory"
+      @addSystem="addSystemComponent"
+  />
 </template>
 
 <style scoped src="./style.css"></style>
