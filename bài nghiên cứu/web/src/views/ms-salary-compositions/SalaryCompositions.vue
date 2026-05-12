@@ -245,11 +245,16 @@ const columns = ref([
 
 const isColumnConfigVisible = ref(false);
 
-const togglePin = (e: any) => {
+const togglePin = (e: any, dataField: string) => {
   e.stopPropagation();
-  const componentNameCol = columns.value.find(col => col.dataField === 'componentName');
-  if (componentNameCol) {
-    componentNameCol.isPinned = !componentNameCol.isPinned;
+  const column = columns.value.find(col => col.dataField === dataField);
+  if (column) {
+    const newState = !column.isPinned;
+    // Reset all pins first to ensure only one column is marked as the "pin point"
+    columns.value.forEach(col => {
+      col.isPinned = false;
+    });
+    column.isPinned = newState;
   }
 };
 

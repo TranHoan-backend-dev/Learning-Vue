@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import DxSelectBox from "devextreme-vue/select-box";
 import DxDataGrid, {DxColumn, DxPaging, DxScrolling, DxSelection, DxHeaderFilter, DxSorting} from "devextreme-vue/data-grid";
 import CustomPagination from "@/components/ui/ms-pagination/CustomPagination.vue";
@@ -54,6 +55,45 @@ const handlePageSizeValChange = (e: any) => {
   emit('update:pageSize', e.value);
   emit('handlePageSizeChange');
 };
+
+const isFixed = (col: any) => {
+  const pinnedIndex = props.columns.findIndex(c => c.isPinned);
+  if (pinnedIndex === -1) return false;
+  
+  const currentColIndex = props.columns.findIndex(c => c.dataField === col.dataField);
+  return currentColIndex !== -1 && currentColIndex <= pinnedIndex;
+};
+
+const handleTogglePin = (e: any, dataField: string) => {
+  emit('togglePin', e, dataField);
+};
+
+const fullColumns = computed(() => {
+  const sttColumn = {
+    dataField: '_stt',
+    caption: 'STT',
+    width: 50,
+    alignment: 'center' as const,
+    fixed: true,
+    visible: true,
+    allowFiltering: false,
+    allowSorting: false,
+    calculateCellValue: calculateSTT,
+    visibleIndex: 0,
+    isStt: true
+  };
+
+  const dataColumns = props.columns.map((col, index) => ({
+    ...col,
+    fixed: isFixed(col),
+    allowFiltering: false,
+    allowSorting: false,
+    visibleIndex: index + 1,
+    isStt: false
+  }));
+
+  return [sttColumn, ...dataColumns];
+});
 </script>
 
 <template>
@@ -139,20 +179,20 @@ const handlePageSizeValChange = (e: any) => {
             <DxHeaderFilter :visible="false" />
             <DxSorting mode="none" />
             
-            <!-- STT -->
-            <DxColumn caption="STT" :calculate-cell-value="calculateSTT" :width="50" alignment="center" fixed :allow-filtering="false" :allow-sorting="false" />
-
-            <template v-for="col in columns" :key="col.dataField">
+            <template v-for="col in fullColumns" :key="col.dataField">
               <DxColumn 
                 v-if="col.visible" 
                 :data-field="col.dataField" 
                 :caption="col.caption" 
                 :width="col.width"
-                :fixed="col.dataField === 'componentName' && col.isPinned" 
-                :cell-template="col.cellTemplate"
-                :header-cell-template="col.dataField === 'componentName' ? 'nameHeaderTemplate' : undefined" 
+                :alignment="col.alignment"
+                :fixed="col.fixed" 
+                :calculate-cell-value="col.calculateCellValue"
+                :cell-template="col.isStt ? undefined : col.cellTemplate"
+                :header-cell-template="col.isStt ? undefined : 'headerTemplate'" 
                 :allow-filtering="false"
                 :allow-sorting="false"
+                :visible-index="col.visibleIndex"
               />
             </template>
 
@@ -167,14 +207,15 @@ const handlePageSizeValChange = (e: any) => {
               css-class="col-action" 
               :allow-filtering="false"
               :allow-sorting="false"
+              :visible-index="1000"
             />
 
-            <template #nameHeaderTemplate="{ data }">
+            <template #headerTemplate="{ data }">
               <div class="header-name-container">
-                <span>{{ data.column.caption }}</span>
+                <span class="column-caption-text">{{ data.column.caption }}</span>
                 <div class="pin-icon"
-                  :class="{ 'is-pinned': columns.find(c => c.dataField === 'componentName')?.isPinned }"
-                  @click="emit('togglePin', $event)" 
+                  :class="{ 'is-pinned': columns.find(c => c.dataField === data.column.dataField)?.isPinned }"
+                  @click="handleTogglePin($event, data.column.dataField)" 
                   title="Ghim cột"
                 >
                   <MSIcon name="pin" size="16" />
