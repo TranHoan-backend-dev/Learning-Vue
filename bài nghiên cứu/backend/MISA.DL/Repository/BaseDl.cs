@@ -1,11 +1,10 @@
 using System.Data;
 using System.Reflection;
-using System.Text;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using MISA.Common.Attributes;
 using MISA.Common.Base;
-using MISA.Common.Enum;
+using MISA.Common.Exception;
 using MISA.Common.Extension;
 using MISA.Common.Procedures;
 using MISA.DL.Base;
@@ -23,23 +22,27 @@ public class BaseDl<T>(
     /// <summary>
     /// Lấy ra danh sách phân trang các bản ghi có kiểu dữ liệu generic 
     /// </summary>
-    /// <param name="parameters">Tham số truyền vào query</param>
-    /// <param name="command">Query</param>
+    /// <param name="parametersData">Tham số truyền vào query để lấy ra danh sách dữ liệu</param>
+    /// <param name="commandData">Query dùng để lấy ra danh sách dữ liệu</param>
+    /// <param name="parametersPageable">Tham số truyền vào query để lấy ra thông tin phân trang</param>
+    /// <param name="commandPageable">Query dùng để truy vấn phân trang</param>
     /// <returns></returns>
-    public async Task<IEnumerable<TReturn>> GetPagedDataListAsync<TReturn>(DynamicParameters parameters, string command)
+    public async Task<(IEnumerable<T> Data, int Pageable)> GetPagedDataListAsync<T>(
+        DynamicParameters parametersData, string commandData,
+        DynamicParameters parametersPageable, string commandPageable
+    )
     {
         log.LogInformation(
             "{Prefix} Execute query for {Entity}",
             Prefix,
-            typeof(TReturn).Name
+            typeof(T).Name
         );
 
         await using var conn = context.GetConnection();
 
-        var result = (await conn.QueryAsync<TReturn>(
-            command,
-            param: parameters,
-            commandType: CommandType.Text
+        var result = (await conn.QueryAsync<T>(
+            commandData,
+            param: parametersData
         )).ToList();
 
         log.LogDebug(
@@ -48,215 +51,129 @@ public class BaseDl<T>(
             result.Count
         );
 
-        return result;
+        log.LogInformation($"{Prefix} Get total records count");
+        var pageable = await conn.ExecuteScalarAsync<int>(
+            commandPageable,
+            param: parametersPageable
+        );
+
+        return (result, pageable);
     }
 
     /// <summary>
     /// Lấy thông tin chi tiết 1 bản ghi
     /// </summary>
     /// <param name="id">ID của bản ghi cần tìm</param>
+    /// <param name="includeJoin">Cờ cho phép dùng procedure hay không</param>
+    /// <param name="parameters">Tham số truyền vào command</param>
+    /// <param name="command">Lệnh SQL dùng để truy vấn</param>
     /// <returns></returns>
-    public async Task<TReturn?> GetByIdAsync<TReturn>(Guid id)
+    public async Task<T?> GetByIdAsync<T>(Guid? id, bool includeJoin, string? command, DynamicParameters? parameters)
     {
         log.LogInformation($"{Prefix} Get by id: {id}");
         await using var conn = context.GetConnection();
-        var storedProcedure = string.Format(ProcedureNames.GetDetails, typeof(T).GetTableNameOnly());
-        var res = await conn.QueryFirstOrDefaultAsync<TReturn>(
-            storedProcedure,
-            param: new { Id = id },
-            commandType: CommandType.StoredProcedure
+        if (!includeJoin && id is not null || parameters is null || command is null)
+        {
+            var storedProcedure = string.Format(ProcedureNames.GetDetails, typeof(T).GetTableNameOnly());
+            var res = await conn.QueryFirstOrDefaultAsync<T>(
+                storedProcedure,
+                param: new { Id = id },
+                commandType: CommandType.StoredProcedure
+            );
+            log.LogDebug(
+                "{Prefix} Found entity: {Found}",
+                Prefix,
+                res is not null
+            );
+            return res;
+        }
+
+        return await conn.QueryFirstOrDefaultAsync<T>(
+            command,
+            param: parameters
         );
-        log.LogDebug(
-            "{Prefix} Found entity: {Found}",
-            Prefix,
-            res is not null
-        );
-        return res;
     }
 
     /// <summary>
     /// Tạo lệnh INSERT để thêm nhiều bản ghi vào DB
     /// </summary>
-    /// <param name="entities">Danh sách các entity cần thêm</param>
-    public async Task CreateAsync(IEnumerable<T> entities)
+    /// <param name="entity">Entity cần thêm</param>
+    public async Task CreateAsync(T entity)
     {
         log.LogInformation($"{Prefix} Create");
-
         await using var conn = context.GetConnection();
-
         conn.Open();
-
         await using var transaction = await conn.BeginTransactionAsync();
 
         try
         {
-            var list = entities.ToList();
-
-            if (!list.Any())
-            {
-                return;
-            }
-
             var type = typeof(T);
-
             var tableName = type.GetTableNameOnly();
-
             var columns = type.GetAllColumns();
-
             var columnsList = string.Join(",", columns);
-
             var (primaryKeyModel, primaryKeyTable) = type.GetPrimaryKey();
 
-            var sql = new StringBuilder();
-
-            sql.Append($"INSERT INTO `{tableName}` ({columnsList}) VALUES ");
-
-            var param = new DynamicParameters();
-
-            var values = new List<string>();
-
-
-            // =====================================================
-            // FIX N+1 QUERY
-            // =====================================================
-
+            // Lấy ra danh sách các thuộc tính có đánh dấu cần check trùng
             var duplicatedProperties = type
                 .GetProperties()
                 .Where(p => Attribute.IsDefined(p, typeof(CheckDuplicatedAttribute)))
                 .ToList();
 
-            HashSet<string> duplicatedValues = [];
-
-            var hasDuplicateCheck = duplicatedProperties.Any();
-            PropertyInfo? duplicatedProperty = null;
-
-            if (hasDuplicateCheck)
+            // Kiểm tra bản ghi bị trùng
+            if (duplicatedProperties.Any())
             {
-                duplicatedProperty = duplicatedProperties.First();
-            }
-
-            if (hasDuplicateCheck)
-            {
-                // Hiện tại xử lý property duplicate đầu tiên
-                // Có thể mở rộng multi-column unique sau
-
-                var duplicatedColumn = duplicatedProperty!.GetColumnName();
-
-                var existingQuery =
-                    $"SELECT {duplicatedColumn} FROM `{tableName}`";
-
-                var existingValues = await conn.QueryAsync<string>(
-                    existingQuery,
-                    transaction: transaction
-                );
-
-                duplicatedValues = existingValues.ToHashSet();
-            }
-
-
-            // =====================================================
-            // BUILD BULK INSERT
-            // =====================================================
-
-            var now = DateTime.Now;
-
-            int count = 0;
-
-            foreach (var entity in list)
-            {
-                // =====================================================
-                // CHECK DUPLICATE IN MEMORY
-                // =====================================================
-
-                if (hasDuplicateCheck)
+                foreach (var property in duplicatedProperties)
                 {
-                    var duplicatedValue =
-                        duplicatedProperty!.GetValue(entity)?.ToString();
+                    var val = property.GetValue(entity)?.ToString();
+                    if (string.IsNullOrWhiteSpace(val)) continue;
 
-                    if (!string.IsNullOrWhiteSpace(duplicatedValue))
+                    var duplicatedColumn = property.GetColumnName();
+                    var checkSql = $"SELECT COUNT(*) FROM `{tableName}` WHERE {duplicatedColumn} = @val";
+                    var existsCount = await conn.ExecuteScalarAsync<int>(checkSql, new { val }, transaction);
+
+                    if (existsCount > 0)
                     {
-                        if (!duplicatedValues.Add(duplicatedValue))
-                        {
-                            continue;
-                        }
+                        var configColumn = property.GetCustomAttribute<ConfigColumnAttribute>();
+                        var fieldName = configColumn?.ColumnName ?? property.Name;
+                        throw new ExistingException($"{fieldName} <{val}> đã tồn tại trong hệ thống.");
                     }
                 }
-
-
-                // =====================================================
-                // AUDIT FIELD
-                // =====================================================
-
-                entity.CreatedAt = now;
-                entity.CreatedBy = "Administrator";
-
-                entity.ModifiedAt = now;
-                entity.ModifiedBy = "Administrator";
-
-
-                // =====================================================
-                // PRIMARY KEY
-                // =====================================================
-
-                if (!Guid.TryParse(
-                        entity.GetValue(primaryKeyModel)?.ToString(),
-                        out Guid keyValue
-                    ) || keyValue == Guid.Empty)
-                {
-                    keyValue = Guid.NewGuid();
-                }
-
-
-                // =====================================================
-                // BUILD PARAMETERS
-                // =====================================================
-
-                var parameterNames = new List<string>();
-
-                foreach (var col in columns)
-                {
-                    var paramName = $"@{col}_{count}";
-
-                    parameterNames.Add(paramName);
-
-                    var value = primaryKeyTable == col
-                        ? keyValue
-                        : entity.GetValue(col);
-
-                    param.Add(paramName, value);
-                }
-
-                values.Add($"({string.Join(",", parameterNames)})");
-
-                count++;
             }
 
+            // Audit dữ liệu
+            var now = DateTime.Now;
+            entity.CreatedAt = now;
+            entity.CreatedBy = "Administrator";
+            entity.ModifiedAt = now;
+            entity.ModifiedBy = "Administrator";
 
-            // =====================================================
-            // NOTHING TO INSERT
-            // =====================================================
-
-            if (!values.Any())
+            // Xử lý khóa chính. Nếu khóa chính không ở dạng UUID thì tạo mới
+            if (!Guid.TryParse(entity.GetValue(primaryKeyModel)?.ToString(), out Guid keyValue) ||
+                keyValue == Guid.Empty)
             {
-                log.LogDebug($"{Prefix} No valid entity to insert");
-                return;
+                keyValue = Guid.NewGuid();
+                // Gán lại giá trị cho model
+                var propInfo = type.GetProperty(primaryKeyModel);
+                if (propInfo != null && propInfo.CanWrite)
+                {
+                    propInfo.SetValue(entity, keyValue);
+                }
             }
 
+            // Build SQL
+            var paramNames = columns.Select(c => $"@{c}"); // Tạo các param cho các cột
+            var sql = $"INSERT INTO `{tableName}` ({columnsList}) VALUES ({string.Join(",", paramNames)})";
 
-            // =====================================================
-            // EXECUTE
-            // =====================================================
+            var param = new DynamicParameters();
+            foreach (var col in columns)
+            {
+                var value = primaryKeyTable == col ? keyValue : entity.GetValue(col);
+                param.Add($"@{col}", value);
+            }
 
-            sql.Append(string.Join(",", values));
+            log.LogDebug($"{Prefix} Execute command: {sql}");
 
-            log.LogDebug($"{Prefix} Build command: {sql}");
-
-            var result = await conn.ExecuteAsync(
-                sql.ToString(),
-                param,
-                transaction
-            );
-
+            var result = await conn.ExecuteAsync(sql, param, transaction);
             await transaction.CommitAsync();
 
             log.LogDebug($"{Prefix} Output: {result}");
@@ -292,6 +209,7 @@ public class BaseDl<T>(
             var tableName = type.GetTableNameOnly();
             var (primaryKeyModel, primaryKeyTable) = type.GetPrimaryKey();
 
+            // Lấy ra cc thuộc tính không phải khóa chính
             var columns = type
                 .GetAllColumns()
                 .Where(c => c != primaryKeyTable)
@@ -355,6 +273,10 @@ public class BaseDl<T>(
         }
     }
 
+    /// <summary>
+    /// Cho phép xóa nhiều bản ghi
+    /// </summary>
+    /// <param name="ids">Danh sách các id cần xóa</param>
     public async Task DeleteAsync(List<string> ids)
     {
         log.LogInformation(
@@ -369,17 +291,13 @@ public class BaseDl<T>(
         }
 
         await using var conn = context.GetConnection();
-
         await conn.OpenAsync();
-
         await using var transaction = await conn.BeginTransactionAsync();
 
         try
         {
             var type = typeof(T);
-
             var tableName = type.GetTableNameOnly();
-
             var (_, primaryKeyTable) = type.GetPrimaryKey();
 
             var sql = $"""
@@ -407,26 +325,25 @@ public class BaseDl<T>(
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-
             log.LogError(
                 ex,
                 "{Prefix} Exception while deleting",
                 Prefix
             );
-
             throw;
         }
     }
 
+    /// <summary>
+    /// Đếm toàn bộ số bản ghi của bảng 
+    /// </summary>
+    /// <param name="parameters">Param truyền vào query</param>
+    /// <param name="command">Lệnh SQL</param>
+    /// <returns></returns>
     public async Task<int> CountTotalElements(DynamicParameters parameters, string command)
     {
         log.LogInformation($"{Prefix} Get total records count");
         await using var conn = context.GetConnection();
         return await conn.ExecuteScalarAsync<int>(command, param: parameters);
     }
-
-    // public async Task<object> ExecuteCommandText(string commandText, DynamicParameters parameters)
-    // {
-    //     throw new NotImplementedException();
-    // }
 }

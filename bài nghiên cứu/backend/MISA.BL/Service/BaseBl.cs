@@ -17,82 +17,89 @@ public class BaseBl<T>(
 ) : IBaseBl<T> where T : BaseModel
 {
     private readonly string _logPrefix = "[BaseBl]";
-
     protected virtual string GetJoinColumns() => "";
     protected virtual string GetJoinSql() => "";
-    
-    public async Task<PagingData<T>> GetAllAsync(Pageable pageable, FilterRequest request)
-    {
-        return await GetAllAsyncInternal<T>(pageable, request);
-    }
 
-    protected async Task<PagingData<TReturn>> GetAllAsyncInternal<TReturn>(Pageable pageable, FilterRequest request)
+    /// <summary>
+    /// Lấy ra danh sách các đối tượng T kèm phân trang, filter và tìm kiếm
+    /// theo keyword
+    /// </summary>
+    /// <param name="pageable">Thông tin phân trang</param>
+    /// <param name="request">Dữ liệu bộ lọc và từ khóa tìm kiếm</param>
+    /// <returns></returns>
+    public virtual async Task<PagingData<T>> GetAllAsync(Pageable pageable, FilterRequest request)
     {
         log.LogInformation($"{_logPrefix} Get data with pageable: {pageable}, keyword: {request.Keyword}");
         var parameter = new DynamicParameters();
-        var (sql, paginationSql) = BuildQueryStringWithCondition(request, pageable.PageIndex, pageable.PageSize, ref parameter);
-        
-        var data = await baseDl.GetPagedDataListAsync<TReturn>(parameter, sql);
-        var totalElements = await baseDl.CountTotalElements(parameter, paginationSql);
+        var (sql, paginationSql) = BuildQueryStringWithCondition(
+            request, pageable.PageIndex,
+            pageable.PageSize, ref parameter
+        );
 
-        return new PagingData<TReturn>
+        var data = await baseDl.GetPagedDataListAsync<T>(
+            parameter, sql,
+            parameter, paginationSql
+        );
+
+        return new PagingData<T>
         {
-            Data = data,
+            Data = data.Data,
             Pageable = new Pageable
             {
                 PageIndex = pageable.PageIndex,
                 PageSize = pageable.PageSize,
-                TotalElements = totalElements
+                TotalElements = data.Pageable
             }
         };
     }
 
-    public async Task<T?> GetByIdAsync(Guid id)
-    {
-        return await GetByIdAsyncInternal<T>(id);
-    }
-
-    protected async Task<TReturn?> GetByIdAsyncInternal<TReturn>(Guid id)
+    /// <summary>
+    /// Lấy thông tin chi tiết của 1 obj
+    /// </summary>
+    /// <param name="id">ID của bản ghi cần tìm</param>
+    /// <returns>Đối tượng T hoặc null</returns>
+    public virtual async Task<T?> GetByIdAsync(Guid id)
     {
         log.LogInformation("Get by ID {Id} for entity: {Entity}", id, typeof(T).Name);
-        
+
         var joinSql = GetJoinSql();
-        if (string.IsNullOrEmpty(joinSql))
-        {
-            return await baseDl.GetByIdAsync<TReturn>(id);
-        }
-
-        // Nếu có Join, ta tự build query SELECT thay vì dùng SP mặc định
-        var type = typeof(T);
-        var tableName = type.GetTableNameOnly();
-        var columns = type.GetAllColumns();
-        var (_, primaryKeyTable) = type.GetPrimaryKey();
-
-        var selectColumns = string.Join(", ", columns.Select(c => $"t1.{c}"));
         var extraColumns = GetJoinColumns();
-        if (!string.IsNullOrEmpty(extraColumns))
+
+        // Nếu không có Join và không có cột mở rộng, sử dụng Stored Procedure mặc định
+        if (string.IsNullOrEmpty(joinSql) && string.IsNullOrEmpty(extraColumns))
         {
-            selectColumns += ", " + extraColumns;
+            return await baseDl.GetByIdAsync<T>(id, false, null, null);
         }
 
-        var sql = $"SELECT {selectColumns} FROM `{tableName}` t1 {joinSql} WHERE t1.{primaryKeyTable} = @id";
+        var (_, primaryKeyTable) = typeof(T).GetPrimaryKey();
+        var sql = $"SELECT {GetSelectColumns()} FROM {GetBaseFromSql()} WHERE t1.{primaryKeyTable} = @id";
+
         var parameters = new DynamicParameters();
         parameters.Add("@id", id);
 
-        var result = await baseDl.GetPagedDataListAsync<TReturn>(parameters, sql);
-        return result.FirstOrDefault();
+        return await baseDl.GetByIdAsync<T>(null, true, sql, parameters);
     }
 
+    /// <summary>
+    /// Tạo mới đối tượng
+    /// </summary>
+    /// <param name="model">Dữ liệu bản ghi cần thêm</param>
     public async Task AddAsync(T model)
     {
         log.LogInformation("Add new record for entity: {Entity}", typeof(T).Name);
-        await baseDl.CreateAsync(new List<T> { model });
+        await baseDl.CreateAsync(model);
     }
 
+    /// <summary>
+    /// Cập nhật bản ghi có sẵn
+    /// </summary>
+    /// <param name="model">Dữ liệu cần cập nhật</param>
+    /// <param name="id">Id của bản ghi cần cập nhật</param>
+    /// <returns></returns>
     public async Task<int> UpdateAsync(T model, Guid id)
     {
         log.LogInformation("Update record {Id} for entity: {Entity}", id, typeof(T).Name);
-        
+
         // Gán ID cho model trước khi update
         var (primaryKeyModel, _) = typeof(T).GetPrimaryKey();
         if (!string.IsNullOrEmpty(primaryKeyModel))
@@ -103,43 +110,38 @@ public class BaseBl<T>(
                 propInfo.SetValue(model, id);
             }
         }
-        
+
         await baseDl.UpdateAsync(model);
         return 1;
     }
 
+    /// <summary>
+    /// Xóa nhiều bản ghi
+    /// </summary>
+    /// <param name="ids">Danh sách các id cần xóa</param>
     public async Task DeleteAsync(List<string> ids)
     {
         log.LogInformation("Delete records {Ids} for entity: {Entity}", string.Join(", ", ids), typeof(T).Name);
         await baseDl.DeleteAsync(ids);
     }
-    
-    private (string, string) BuildQueryStringWithCondition(FilterRequest request, int pageIndex, decimal pageSize,
-        ref DynamicParameters parameters)
+
+    /// <summary>
+    /// Xây dựng query truy vấn dữ liệu đi kèm với các điều kiện lọc/tìm kiếm nếu có
+    /// </summary>
+    /// <param name="request">Yêu cầu lọc/tìm kiếm</param>
+    /// <param name="pageIndex">Trang hiện tại</param>
+    /// <param name="pageSize">Cỡ bảng</param>
+    /// <param name="parameters">Các tham số truyền vào query</param>
+    /// <returns></returns>
+    private (string, string) BuildQueryStringWithCondition(
+        FilterRequest request, int pageIndex,
+        decimal pageSize, ref DynamicParameters parameters
+    )
     {
         var type = typeof(T);
-        var tableName = type.GetTableNameOnly();
-        var columns = type.GetAllColumns();
-
-        // 1. Build select columns with alias t1
-        var selectColumns = string.Join(", ", columns.Select(c => $"t1.{c}"));
-        var extraColumns = GetJoinColumns();
-        if (!string.IsNullOrEmpty(extraColumns))
-        {
-            selectColumns += ", " + extraColumns;
-        }
-
-        var query = new StringBuilder($"SELECT {selectColumns} FROM `{tableName}` t1");
-        
-        // 2. Add Join SQL
-        var joinSql = GetJoinSql();
-        if (!string.IsNullOrEmpty(joinSql))
-        {
-            query.Append(" " + joinSql);
-        }
-
+        var baseFromSql = GetBaseFromSql();
+        var query = new StringBuilder($"SELECT {GetSelectColumns()} FROM {baseFromSql}");
         var conditions = new List<string>();
-
         var subQuery = new StringBuilder();
 
         // 1. Search by keyword
@@ -167,22 +169,31 @@ public class BaseBl<T>(
 
                 if (dataType == DataType.String)
                 {
-                    var pattern = item.FilterType switch
+                    if (item.FilterType == FilterType.Equals || item.FilterType == FilterType.NotEquals)
                     {
-                        FilterType.Contains or FilterType.NotContains
-                            => $"%{item.Value}%",
-                        FilterType.StartWith => $"{item.Value}%",
-                        FilterType.EndWith => $"%{item.Value}",
-                        _ => null
-                    };
-
-                    if (pattern is not null)
-                    {
-                        var operand = item.FilterType == FilterType.NotContains
-                            ? Operand.NotLike
-                            : Operand.Like;
+                        var operand = item.FilterType == FilterType.Equals ? Operand.Equal : Operand.NotEqual;
                         condition.Append($"t1.{columnName} {operand} @filter_{columnName}");
-                        parameters.Add($"@filter_{columnName}", pattern);
+                        parameters.Add($"@filter_{columnName}", item.Value);
+                    }
+                    else
+                    {
+                        var pattern = item.FilterType switch
+                        {
+                            FilterType.Contains or FilterType.NotContains
+                                => $"%{item.Value}%",
+                            FilterType.StartWith => $"{item.Value}%",
+                            FilterType.EndWith => $"%{item.Value}",
+                            _ => null
+                        };
+
+                        if (pattern is not null)
+                        {
+                            var operand = item.FilterType == FilterType.NotContains
+                                ? Operand.NotLike
+                                : Operand.Like;
+                            condition.Append($"t1.{columnName} {operand} @filter_{columnName}");
+                            parameters.Add($"@filter_{columnName}", pattern);
+                        }
                     }
                 }
                 else if (dataType == DataType.DateTime)
@@ -216,11 +227,8 @@ public class BaseBl<T>(
             subQuery.Append(" WHERE ");
             subQuery.Append(string.Join(Operand.And, conditions));
         }
-        var pagination = new StringBuilder($"SELECT COUNT(*) FROM `{tableName}` t1");
-        if (!string.IsNullOrEmpty(joinSql))
-        {
-            pagination.Append(" " + joinSql);
-        }
+
+        var pagination = new StringBuilder($"SELECT COUNT(*) FROM {baseFromSql}");
         pagination.Append(subQuery);
 
         // Them limit offset
@@ -232,5 +240,33 @@ public class BaseBl<T>(
 
         log.LogInformation($"{_logPrefix} Final query: {query}");
         return (query.ToString(), pagination.ToString());
+    }
+
+    /// <summary>
+    /// Build chuỗi SELECT các cột (bao gồm cả các cột từ Join nếu có)
+    /// </summary>
+    private string GetSelectColumns()
+    {
+        var type = typeof(T);
+        var columns = type.GetAllColumns();
+        var selectColumns = string.Join(", ", columns.Select(c => $"t1.{c}"));
+
+        var extraColumns = GetJoinColumns();
+        return !string.IsNullOrEmpty(extraColumns)
+            ? $"{selectColumns}, {extraColumns}"
+            : selectColumns;
+    }
+
+    /// <summary>
+    /// Build chuỗi FROM kèm Join SQL
+    /// </summary>
+    private string GetBaseFromSql()
+    {
+        var tableName = typeof(T).GetTableNameOnly();
+        var joinSql = GetJoinSql();
+
+        return string.IsNullOrEmpty(joinSql)
+            ? $"`{tableName}` t1"
+            : $"`{tableName}` t1 {joinSql}";
     }
 }

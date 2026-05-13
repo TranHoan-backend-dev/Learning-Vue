@@ -2,8 +2,10 @@
 import {ref, onMounted, computed, watch} from 'vue';
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
 import salaryCompositionService from "@/services/salaryCompositionService.ts";
+import salaryCompositionSystemService from "@/services/salaryCompositionSystemService.ts";
 import {toast} from "@/services/toast.ts";
-import {systemDirectoryColumns} from "@/views/ms-salary-compositions/data.ts";
+import gridConfigService from "@/services/gridConfigService.ts";
+import {getAttributeName, getValueTypeName} from "@/views/ms-salary-compositions/data.ts";
 
 const emit = defineEmits(['back', 'addSystem']);
 
@@ -14,6 +16,8 @@ const totalRecords = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(25);
 const selectedIds = ref<string[]>([]);
+const systems = ref<any[]>([]);
+const selectedSystemId = ref("all");
 
 const mockData = [
   {
@@ -21,8 +25,8 @@ const mockData = [
     salaryComponentCode: 'TY_LE_HOAN_THANH_KPI',
     salaryComponentName: 'Tỷ lệ hoàn thành KPI',
     salaryComponentSystemName: 'KPI',
-    attribute: 'Khác',
-    valueType: 'Phần trăm',
+    attribute: 0,
+    valueType: 0,
     value: '-',
     source: 'Hệ thống'
   },
@@ -31,8 +35,8 @@ const mockData = [
     salaryComponentCode: 'TY_LE_HOAN_THANH_DOANH_SO',
     salaryComponentName: 'Tỷ lệ hoàn thành doanh số',
     salaryComponentSystemName: 'Doanh số',
-    attribute: 'Khác',
-    valueType: 'Phần trăm',
+    attribute: 0,
+    valueType: 0,
     value: '=DOANH_SO_THUC_T...',
     source: 'Hệ thống'
   },
@@ -41,8 +45,8 @@ const mockData = [
     salaryComponentCode: 'TONG_GIO_LAM_THEM_HUONG_LUONG_THU_VIEC',
     salaryComponentName: 'Tổng giờ làm thêm hưởng lương thử việc',
     salaryComponentSystemName: 'Chấm công',
-    attribute: 'Khác',
-    valueType: 'Số',
+    attribute: 0,
+    valueType: 0,
     value: '-',
     source: 'Hệ thống'
   },
@@ -51,8 +55,8 @@ const mockData = [
     salaryComponentCode: 'TONG_GIO_LAM_THEM_HUONG_LUONG_KHAC',
     salaryComponentName: 'Tổng giờ làm thêm hưởng lương khác',
     salaryComponentSystemName: 'Chấm công',
-    attribute: 'Khác',
-    valueType: 'Số',
+    attribute: 0,
+    valueType: 0,
     value: '-',
     source: 'Hệ thống'
   },
@@ -61,8 +65,8 @@ const mockData = [
     salaryComponentCode: 'TONG_GIO_LAM_THEM_HUONG_LUONG_HOC_VIEC',
     salaryComponentName: 'Tổng giờ làm thêm hưởng lương học việc',
     salaryComponentSystemName: 'Chấm công',
-    attribute: 'Khác',
-    valueType: 'Số',
+    attribute: 0,
+    valueType: 0,
     value: '-',
     source: 'Hệ thống'
   },
@@ -71,12 +75,26 @@ const mockData = [
     salaryComponentCode: 'TONG_CONG_HUONG_LUONG_THEO_GIO',
     salaryComponentName: 'Tổng công hưởng lương theo giờ',
     salaryComponentSystemName: 'Chấm công',
-    attribute: 'Khác',
-    valueType: 'Số',
+    attribute: 0,
+    valueType: 0,
     value: '-',
     source: 'Hệ thống'
   }
 ];
+
+const fetchSystems = async () => {
+  try {
+    const response = await salaryCompositionSystemService.getAll();
+    if (response.data) {
+      systems.value = [
+        { salaryComponentSystemId: 'all', salaryComponentSystemName: 'Tất cả thành phần' },
+        ...response.data
+      ];
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy danh mục hệ thống:', error);
+  }
+};
 
 const fetchData = async () => {
   isLoading.value = true;
@@ -85,55 +103,106 @@ const fetchData = async () => {
       pageIndex: currentPage.value - 1,
       pageSize: pageSize.value
     };
+    
+    const columnFilters: any[] = [
+      { Column: 'Source', Value: 'Hệ thống' }
+    ];
+
+    if (selectedSystemId.value !== 'all') {
+      columnFilters.push({ 
+        Column: 'SalaryComponentSystemId', 
+        Value: selectedSystemId.value 
+      });
+    }
+
     const filterRequest = {
-      keyword: searchKeyword.value,
-      columnFilters: [
-        {column: 'Source', value: 'Hệ thống'}
-      ]
+      Keyword: searchKeyword.value,
+      ColumnFilters: columnFilters
     };
+
     const response = await salaryCompositionService.getFilter(pageable, filterRequest);
-    if (response.data && response.data.data && response.data.data.length > 0) {
+    
+    if (response.data && response.data.data) {
       tableData.value = response.data.data.map((item: any) => ({
         componentId: item.salaryComponentId,
         componentCode: item.salaryComponentCode,
         componentName: item.salaryComponentName,
-        appliedUnitId: item.appliedUnitId,
-        appliedUnitName: item.appliedUnitName,
         salaryComponentSystemId: item.salaryComponentSystemId,
         salaryComponentSystemName: item.salaryComponentSystemName,
         attribute: item.attribute,
         valueType: item.valueType,
         value: item.value || '-',
-        status: item.status,
-        source: item.source || 'Hệ thống'
+        source: 'Hệ thống'
       }));
       totalRecords.value = response.data.pageable.totalElements;
+      
+      // Nếu API trả về trống, ta dùng mockData để hiển thị (tùy chọn)
+      if (tableData.value.length === 0 && !searchKeyword.value && selectedSystemId.value === 'all') {
+         useMockData();
+      }
     } else {
-      // Sử dụng mock data nếu API trả về trống hoặc lỗi
-      tableData.value = mockData.map(item => ({
-        ...item,
-        componentId: item.salaryComponentId,
-        componentCode: item.salaryComponentCode,
-        componentName: item.salaryComponentName
-      }));
-      totalRecords.value = mockData.length;
+      useMockData();
     }
   } catch (error) {
-    // Dự phòng dữ liệu mẫu khi lỗi API
-    tableData.value = mockData.map(item => ({
-      ...item,
-      componentId: item.salaryComponentId,
-      componentCode: item.salaryComponentCode,
-      componentName: item.salaryComponentName
-    }));
-    totalRecords.value = mockData.length;
+    useMockData();
     console.error(error);
   } finally {
     isLoading.value = false;
   }
 };
 
-onMounted(fetchData);
+const useMockData = () => {
+  tableData.value = mockData.map(item => ({
+    ...item,
+    componentId: item.salaryComponentId,
+    componentCode: item.salaryComponentCode,
+    componentName: item.salaryComponentName
+  }));
+  totalRecords.value = mockData.length;
+};
+
+const fetchColumns = async () => {
+  try {
+    const response = await gridConfigService.getByGridId('SalaryComponentSystemGrid');
+    if (response.data && response.data.length > 0) {
+      columns.value = response.data.map((col: any) => ({
+        dataField: col.columnId === 'salary_component_code' ? 'componentCode' : 
+                   (col.columnId === 'salary_component_name' ? 'componentName' : 
+                    (col.columnId === 'salary_component_system_name' ? 'salaryComponentSystemName' : 
+                     (col.columnId === 'value_type' ? 'valueType' : col.columnId))),
+        caption: col.columnName,
+        visible: col.isVisible === 1,
+        width: col.width,
+        isPinned: col.isPinned === 1,
+        calculateCellValue: col.columnId === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
+                            col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
+      }));
+    } else {
+      // Fallback columns if not found in DB
+      columns.value = [
+        { dataField: 'componentCode', caption: 'Mã thành phần', visible: true, width: 250, isPinned: true },
+        { dataField: 'componentName', caption: 'Tên thành phần', visible: true, width: 250, isPinned: true },
+        { dataField: 'salaryComponentSystemName', caption: 'Loại thành phần', visible: true, width: 150, isPinned: false },
+        { dataField: 'attribute', caption: 'Tính chất', visible: true, width: 120, isPinned: false, calculateCellValue: (data: any) => getAttributeName(data.attribute) },
+        { dataField: 'valueType', caption: 'Kiểu giá trị', visible: true, width: 120, isPinned: false, calculateCellValue: (data: any) => getValueTypeName(data.valueType) },
+        { dataField: 'value', caption: 'Giá trị', visible: true, width: 200, isPinned: false },
+      ];
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải cấu hình cột hệ thống:', error);
+  }
+};
+
+onMounted(() => {
+  fetchSystems();
+  fetchColumns();
+  fetchData();
+});
+
+watch(selectedSystemId, () => {
+  currentPage.value = 1;
+  fetchData();
+});
 
 watch([currentPage, pageSize], fetchData);
 
@@ -147,7 +216,7 @@ const handlePageSizeChange = () => {
   fetchData();
 };
 
-const columns = ref(systemDirectoryColumns);
+const columns = ref<any[]>([]);
 
 const pageInfo = computed(() => {
   const start = totalRecords.value > 0 ? (currentPage.value - 1) * pageSize.value + 1 : 0;
@@ -189,6 +258,8 @@ const handleAddSystem = (data: any) => {
         :columns="columns"
         :page-info="pageInfo"
         :is-system-mode="true"
+        :system-items="systems"
+        v-model:selectedSystemId="selectedSystemId"
         @handlePageSizeChange="handlePageSizeChange"
         @togglePin="togglePin"
         @addSystem="handleAddSystem"/>

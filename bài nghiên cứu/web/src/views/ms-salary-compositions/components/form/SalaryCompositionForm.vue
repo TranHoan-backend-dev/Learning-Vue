@@ -5,12 +5,12 @@ import MsFormula from '@/components/ui/ms-formula/MsFormula.vue';
 import organizationService from '@/services/organizationService.ts';
 import salaryCompositionSystemService from '@/services/salaryCompositionSystemService.ts';
 import {
-  attributeOptions, calculationTargetOptions,
+  calculationTargetOptions,
   defaultData, showOnPayslipOptions,
   taxOptions,
-  valueTypeOptions
 } from "@/views/ms-salary-compositions/components/form/data.ts";
 import InfoIcon from "@/components/ui/ms-icon/InfoIcon.vue";
+import {attributeOptions, valueTypeOptions} from "@/views/ms-salary-compositions/data.ts";
 
 const emit = defineEmits(['close', 'save']);
 const props = defineProps<{

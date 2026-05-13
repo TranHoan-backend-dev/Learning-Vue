@@ -1,6 +1,6 @@
 ﻿namespace MISA.Common.Enum;
 
-public enum StatusCode
+public enum ApiStatusCode : int
 {
     Success = 200,
     BadRequest = 400,

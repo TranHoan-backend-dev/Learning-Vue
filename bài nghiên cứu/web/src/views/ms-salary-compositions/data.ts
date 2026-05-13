@@ -1,5 +1,3 @@
-import {ref} from "vue";
-
 export type SalaryCompositions = {
     componentId: string,
     componentName: string,
@@ -27,11 +25,44 @@ export const pageSizeOptions = [
     { value: 50, label: "50" },
 ];
 
-export const systemDirectoryColumns = ref([
-    { dataField: 'componentCode', caption: 'Mã thành phần', visible: true, width: 250, isPinned: true },
-    { dataField: 'componentName', caption: 'Tên thành phần', visible: true, width: 250, isPinned: true },
-    { dataField: 'salaryComponentSystemName', caption: 'Loại thành phần', visible: true, width: 150, isPinned: false },
-    { dataField: 'attribute', caption: 'Tính chất', visible: true, width: 120, isPinned: false },
-    { dataField: 'valueType', caption: 'Kiểu giá trị', visible: true, width: 120, isPinned: false },
-    { dataField: 'value', caption: 'Giá trị', visible: true, width: 200, isPinned: false },
-]);
+export type DataTableAttributes = {
+    tableData: any[];
+    totalRecords: number;
+    pageSize: number;
+    currentPage: number;
+    columns: any[];
+    pageInfo: string;
+    selectedIds: string[];
+    searchKeyword: string;
+    isSystemMode?: boolean;
+    systemItems?: any[];
+    selectedSystemId?: string;
+    statusFilter: any;
+};
+
+export const salaryCompositionStatus = [
+    { text: 'Tất cả trạng thái', value: 'all' },
+    { text: 'Đang theo dõi', value: 1 },
+    { text: 'Ngừng theo dõi', value: 0 }
+];
+
+export const attributeOptions = [
+    { id: 0, name: 'Khác' },
+    { id: 1, name: 'Thu nhập' },
+    { id: 2, name: 'Khấu trừ' }
+];
+export const valueTypeOptions = [
+    { id: 0, name: 'Số' },
+    { id: 1, name: 'Tiền tệ' },
+    { id: 2, name: 'Chữ' },
+    { id: 3, name: 'Ngày' },
+    { id: 4, name: 'Phần trăm' }
+];
+
+export const getAttributeName = (id: number) => {
+    return attributeOptions.find(opt => opt.id === id)?.name || 'Khác';
+};
+
+export const getValueTypeName = (id: number) => {
+    return valueTypeOptions.find(opt => opt.id === id)?.name || '-';
+};

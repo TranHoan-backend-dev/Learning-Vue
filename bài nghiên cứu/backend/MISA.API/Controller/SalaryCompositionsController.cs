@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using MISA.BL.Base;
 using MISA.BL.DTO.Request;
-using MISA.BL.DTO.Response;
 using MISA.BL.Service;
+using MISA.Common.Enum;
 using MISA.Common.Model;
 using MISA.Common.Model.Pageable;
 
@@ -22,35 +21,6 @@ public class SalaryCompositionsController(ISalaryCompositionBl baseBl) : Control
     public async Task<IActionResult> GetAllAsync([FromQuery] Pageable pageable, [FromBody] FilterRequest request)
     {
         var result = await baseBl.GetAllAsync(pageable, request);
-        if (result?.Data != null)
-        {
-            var responses = result.Data.Select(s => new SalaryCompositionResponse
-            {
-                SalaryComponentId = s.SalaryComponentId,
-                SalaryComponentCode = s.SalaryComponentCode,
-                SalaryComponentName = s.SalaryComponentName,
-                AppliedUnitId = s.AppliedUnitId,
-                SalaryComponentSystemId = s.SalaryComponentSystemId,
-                Attribute = s.Attribute,
-                ValueType = s.ValueType,
-                Value = s.Value,
-                Status = s.Status,
-                Source = s.Source,
-                AppliedUnitName = s.AppliedUnitName,
-                SalaryComponentSystemName = s.SalaryComponentSystemName,
-                CreatedAt = s.CreatedAt,
-                CreatedBy = s.CreatedBy,
-                ModifiedAt = s.ModifiedAt,
-                ModifiedBy = s.ModifiedBy
-            }).ToList();
-
-            var pagingResponse = new PagingData<SalaryCompositionResponse>
-            {
-                Data = responses,
-                Pageable = result.Pageable
-            };
-            return Ok(pagingResponse);
-        }
         return Ok(result);
     }
 
@@ -68,27 +38,7 @@ public class SalaryCompositionsController(ISalaryCompositionBl baseBl) : Control
             return NotFound();
         }
 
-        var response = new SalaryCompositionResponse
-        {
-            SalaryComponentId = result.SalaryComponentId,
-            SalaryComponentCode = result.SalaryComponentCode,
-            SalaryComponentName = result.SalaryComponentName,
-            AppliedUnitId = result.AppliedUnitId,
-            SalaryComponentSystemId = result.SalaryComponentSystemId,
-            Attribute = result.Attribute,
-            ValueType = result.ValueType,
-            Value = result.Value,
-            Status = result.Status,
-            Source = result.Source,
-            AppliedUnitName = result.AppliedUnitName,
-            SalaryComponentSystemName = result.SalaryComponentSystemName,
-            CreatedAt = result.CreatedAt,
-            CreatedBy = result.CreatedBy,
-            ModifiedAt = result.ModifiedAt,
-            ModifiedBy = result.ModifiedBy
-        };
-
-        return Ok(response);
+        return Ok(result);
     }
 
     /// <summary>
@@ -97,24 +47,10 @@ public class SalaryCompositionsController(ISalaryCompositionBl baseBl) : Control
     /// <param name="request">Dữ liệu thêm mới</param>
     /// <returns>Kết quả thêm mới</returns>
     [HttpPost]
-    public async Task<IActionResult> AddAsync([FromBody] SalaryCompositionCreateRequest request)
+    public async Task<IActionResult> AddAsync([FromBody] SalaryComposition request)
     {
-        var entity = new SalaryComposition
-        {
-            SalaryComponentId = Guid.NewGuid(),
-            SalaryComponentCode = request.SalaryComponentCode,
-            SalaryComponentName = request.SalaryComponentName,
-            AppliedUnitId = request.AppliedUnitId,
-            SalaryComponentSystemId = request.SalaryComponentSystemId,
-            Attribute = request.Attribute,
-            ValueType = request.ValueType,
-            Value = request.Value,
-            Status = request.Status,
-            Source = request.Source ?? "Tự thêm"
-        };
-
-        await baseBl.AddAsync(entity);
-        return StatusCode(201, entity.SalaryComponentId);
+        await baseBl.AddAsync(request);
+        return StatusCode((int)ApiStatusCode.Created, request.SalaryComponentId);
     }
 
     /// <summary>
@@ -124,23 +60,9 @@ public class SalaryCompositionsController(ISalaryCompositionBl baseBl) : Control
     /// <param name="request">Dữ liệu cập nhật</param>
     /// <returns>Kết quả cập nhật</returns>
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] SalaryCompositionUpdateRequest request)
+    public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] SalaryComposition request)
     {
-        var entity = new SalaryComposition
-        {
-            SalaryComponentId = id,
-            SalaryComponentCode = request.SalaryComponentCode,
-            SalaryComponentName = request.SalaryComponentName,
-            AppliedUnitId = request.AppliedUnitId,
-            SalaryComponentSystemId = request.SalaryComponentSystemId,
-            Attribute = request.Attribute,
-            ValueType = request.ValueType,
-            Value = request.Value,
-            Status = request.Status,
-            Source = request.Source ?? "Tự thêm"
-        };
-
-        var result = await baseBl.UpdateAsync(entity, id);
+        var result = await baseBl.UpdateAsync(request, id);
         return Ok(result);
     }
 

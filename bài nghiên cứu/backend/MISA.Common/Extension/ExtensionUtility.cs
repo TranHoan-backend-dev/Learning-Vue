@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using MISA.Common.Attributes;
@@ -210,9 +210,19 @@ public static class ExtensionUtility
     public static string? GetPropertyInModel(this Type type, string column)
     {
         var properties = type.GetProperties();
-        return properties.Where(p => p.Name.Equals(column, StringComparison.OrdinalIgnoreCase))
+        
+        // 1. Tìm theo tên thuộc tính C# (Property Name)
+        var colName = properties
+            .Where(p => p.Name.Equals(column, StringComparison.OrdinalIgnoreCase))
             .Select(p => p.GetCustomAttribute<ConfigColumnAttribute>()?.ColumnName)
             .FirstOrDefault();
+            
+        if (!string.IsNullOrEmpty(colName)) return colName;
+        
+        // 2. Nếu không thấy, tìm trực tiếp theo tên cột DB (ConfigColumnAttribute)
+        return properties
+            .Select(p => p.GetCustomAttribute<ConfigColumnAttribute>()?.ColumnName)
+            .FirstOrDefault(c => c != null && c.Equals(column, StringComparison.OrdinalIgnoreCase));
     }
 
     public static string GetColumnName(this PropertyInfo property)

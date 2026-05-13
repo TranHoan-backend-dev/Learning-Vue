@@ -14,14 +14,4 @@ public class SalaryCompositionBl(IBaseDl<SalaryComposition> baseDl, ILogger<Sala
     protected override string GetJoinSql() => 
         "LEFT JOIN pa_organization t2 ON t1.applied_unit_id = t2.organization_id " +
         "LEFT JOIN pa_salary_composition_system t3 ON t1.salary_component_system_id = t3.salary_component_system_id";
-
-    public new async Task<PagingData<SalaryCompositionDto>> GetAllAsync(Pageable pageable, FilterRequest request)
-    {
-        return await GetAllAsyncInternal<SalaryCompositionDto>(pageable, request);
-    }
-
-    public new async Task<SalaryCompositionDto?> GetByIdAsync(Guid id)
-    {
-        return await GetByIdAsyncInternal<SalaryCompositionDto>(id);
-    }
 }

@@ -16,15 +16,6 @@ export const defaultData = {
     sourceType: 'Tự thêm'
 }
 
-export const attributeOptions = [
-    { id: 1, name: 'Thu nhập' },
-    { id: 2, name: 'Khấu trừ' }
-];
-export const valueTypeOptions = [
-    { id: 1, name: 'Tiền tệ' },
-    { id: 2, name: 'Phần trăm' },
-    { id: 3, name: 'Hệ số' }
-];
 export const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn công ty'];
 export const showOnPayslipOptions = [
     { value: 'Có', label: 'Có', tabindex: 16 },

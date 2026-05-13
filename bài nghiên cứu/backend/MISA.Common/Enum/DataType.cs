@@ -1,4 +1,4 @@
-﻿namespace MISA.Common.Enum;
+namespace MISA.Common.Enum;
 
 public enum DataType : int
 {

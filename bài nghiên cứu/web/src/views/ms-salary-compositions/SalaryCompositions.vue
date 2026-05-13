@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import 'devextreme/dist/css/dx.fluent.blue.light.css';
 
-import {computed, ref, watch} from "vue";
-import {toast} from "@/services/toast.ts";
-import {type SalaryCompositions} from "@/views/ms-salary-compositions/data.ts";
+import { computed, ref, watch } from "vue";
+import { toast } from "@/services/toast.ts";
+import { type SalaryCompositions, getAttributeName, getValueTypeName } from "@/views/ms-salary-compositions/data.ts";
 import salaryCompositionService from "@/services/salaryCompositionService.ts";
 import SalaryCompositionForm from "./components/form/SalaryCompositionForm.vue";
 import SalaryCompositionPopups from "./components/SalaryCompositionPopups.vue";
-import {onMounted} from "vue";
+import { onMounted } from "vue";
 import SalaryCompositionHeader from "@/views/ms-salary-compositions/components/SalaryCompositionHeader.vue";
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
 import SalaryCompositionSystemDirectory from "./components/SalaryCompositionSystemDirectory.vue";
+import gridConfigService from "@/services/gridConfigService.ts";
 
 const selectedIds = ref<string[]>([]);
 const isLoading = ref(false);
@@ -20,6 +21,7 @@ const tableData = ref<SalaryCompositions[]>([]);
 const totalRecords = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
+const statusFilter = ref("all");
 
 const fetchData = async () => {
   isLoading.value = true;
@@ -29,11 +31,26 @@ const fetchData = async () => {
       pageSize: pageSize.value
     };
     const filterRequest = {
-      keyword: searchKeyword.value,
-      columnFilters: []
+      Keyword: searchKeyword.value,
+      ColumnFilters: [] as any[]
     };
+
+    // Log để kiểm tra giá trị filter
+    console.log("Current statusFilter value:", statusFilter.value);
+
+    if (statusFilter.value !== "all" && statusFilter.value !== null && statusFilter.value !== undefined) {
+      filterRequest.ColumnFilters.push({
+        Column: "Status",
+        Value: statusFilter.value.toString(),
+        DataType: 0,
+        FilterType: 4
+      });
+    }
+
+    console.log("Sending filterRequest:", JSON.stringify(filterRequest, null, 2));
     const response = await salaryCompositionService.getFilter(pageable, filterRequest);
     if (response.data) {
+      console.log(response.data)
       // Backend trả về PagingData { Data: [], Pageable: { TotalRecords: ... } }
       tableData.value = response.data.data.map((item: any) => ({
         componentId: item.salaryComponentId,
@@ -59,16 +76,44 @@ const fetchData = async () => {
   }
 };
 
+const fetchColumns = async () => {
+  try {
+    const response = await gridConfigService.getByGridId('SalaryComponentGrid');
+    if (response.data && response.data.length > 0) {
+      columns.value = response.data.map((col: any) => ({
+        dataField: col.columnId === 'salary_component_code' ? 'componentCode' :
+          (col.columnId === 'salary_component_name' ? 'componentName' :
+            (col.columnId === 'applied_unit_name' ? 'appliedUnitName' :
+              (col.columnId === 'salary_component_system_name' ? 'salaryComponentSystemName' :
+                (col.columnId === 'value_type' ? 'valueType' : 
+                  (col.columnId === 'attribute' ? 'attribute' : col.columnId))))),
+        caption: col.columnName,
+        visible: col.isVisible === 1,
+        width: col.width,
+        isPinned: col.isPinned === 1,
+        cellTemplate: col.columnId === 'status' ? 'status-cell' : undefined,
+        calculateCellValue: col.columnId === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
+                            col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
+      }));
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải cấu hình cột:', error);
+  }
+};
+
 onMounted(() => {
+  fetchColumns();
   fetchData();
 });
 
-watch([currentPage, pageSize], () => {
-  fetchData();
-});
-
-watch(searchKeyword, () => {
-  currentPage.value = 1;
+watch([currentPage, pageSize, searchKeyword, statusFilter], (newValues, oldValues) => {
+  // Nếu statusFilter hoặc searchKeyword thay đổi, reset về trang 1
+  if (oldValues && (newValues[2] !== oldValues[2] || newValues[3] !== oldValues[3])) {
+    if (currentPage.value !== 1) {
+      currentPage.value = 1;
+      return;
+    }
+  }
   fetchData();
 });
 
@@ -140,17 +185,17 @@ const closeForm = () => {
 const handleSaveForm = async (formData: any) => {
   isLoading.value = true;
   try {
-    // Map dữ liệu từ form sang DTO của Backend
+    // Map dữ liệu từ form sang đúng Model của Backend (PascalCase)
     const requestData = {
-      salaryComponentCode: formData.componentId,
-      salaryComponentName: formData.componentName,
-      appliedUnitId: formData.appliedUnitId,
-      salaryComponentSystemId: formData.salaryComponentSystemId,
-      attribute: formData.attribute,
-      valueType: formData.valueType,
-      value: formData.valueFormula,
-      status: 1, // Mặc định: Đang sử dụng
-      source: 'Tự thêm'
+      SalaryComponentCode: formData.componentId,
+      SalaryComponentName: formData.componentName,
+      AppliedUnitId: formData.appliedUnitId,
+      SalaryComponentSystemId: formData.salaryComponentSystemId,
+      Attribute: formData.attribute,
+      ValueType: formData.valueType,
+      Value: formData.valueFormula,
+      Status: 1, // Mặc định: Đang sử dụng
+      Source: 'Tự thêm'
     };
 
     if (formMode.value === 'add' || formMode.value === 'copy') {
@@ -240,11 +285,16 @@ const closeSystemDirectory = () => {
 
 const addSystemComponent = async (data: any) => {
   try {
-    // When adding from system, we create a new component for the user
+    // Khi thêm từ hệ thống, ta cần map lại các trường cho đúng với Model của Backend (PascalCase)
     const requestData = {
-      ...data,
-      salaryComponentId: undefined, // Let backend generate new ID
-      source: 'Hệ thống'
+      SalaryComponentCode: data.componentCode,
+      SalaryComponentName: data.componentName,
+      SalaryComponentSystemId: data.salaryComponentSystemId,
+      Attribute: data.attribute,
+      ValueType: data.valueType,
+      Value: data.value,
+      Status: 1,
+      Source: 'Hệ thống'
     };
     await salaryCompositionService.create(requestData);
     toast.success('Thêm thành công', `Đã thêm thành phần ${data.componentName} từ hệ thống`);
@@ -256,17 +306,7 @@ const addSystemComponent = async (data: any) => {
 };
 
 // Column configuration
-const columns = ref([
-  {dataField: 'componentCode', caption: 'Mã thành phần', visible: true, width: 150, isPinned: false},
-  {dataField: 'componentName', caption: 'Tên thành phần', visible: true, width: 250, isPinned: false},
-  {dataField: 'appliedUnitName', caption: 'Đơn vị áp dụng', visible: true, width: 200, isPinned: false},
-  {dataField: 'salaryComponentSystemName', caption: 'Loại thành phần', visible: true, width: 150, isPinned: false},
-  {dataField: 'attribute', caption: 'Tính chất', visible: true, width: 120, isPinned: false},
-  {dataField: 'valueType', caption: 'Kiểu giá trị', visible: true, width: 120, isPinned: false},
-  {dataField: 'value', caption: 'Giá trị', visible: true, width: 200, isPinned: false},
-  {dataField: 'source', caption: 'Nguồn tạo', visible: true, width: 150, isPinned: false},
-  {dataField: 'status', caption: 'Trạng thái', visible: true, width: 150, isPinned: false, cellTemplate: 'status-cell'},
-]);
+const columns = ref<any[]>([]);
 
 const isColumnConfigVisible = ref(false);
 
@@ -297,52 +337,32 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
   <template v-if="!isSystemDirectoryVisible">
     <section v-if="!isFormVisible" class="content">
       <!-- Title danh sách -->
-      <SalaryCompositionHeader
-          :is-add-dropdown-visible="isAddDropdownVisible"
-          @add="handleAdd"
-          @toggle-dropdown="toggleAddDropdown"
-          @add-from-system="handleAddFromSystem"
-          @open-system="handleAddFromSystem"/>
+      <SalaryCompositionHeader :is-add-dropdown-visible="isAddDropdownVisible" @add="handleAdd"
+        @toggle-dropdown="toggleAddDropdown" @add-from-system="handleAddFromSystem"
+        @open-system="handleAddFromSystem" />
 
       <!-- Nội dung bảng -->
-      <SalaryCompositionDataTable
-          v-model:searchKeyword="searchKeyword"
-          v-model:selectedIds="selectedIds"
-          v-model:currentPage="currentPage"
-          v-model:pageSize="pageSize"
-          :table-data="tableData"
-          :total-records="totalRecords"
-          :columns="columns"
-          :page-info="pageInfo"
-          @handlePageSizeChange="handlePageSizeChange"
-          @handleOpenConfig="handleOpenConfig"
-          @togglePin="togglePin"
-          @handleActive="handleActive"
-          @handleDuplicate="handleDuplicate"
-          @handleEdit="handleEdit"
-          @handleDelete="handleDelete"
-          @deleteSelected="handleDeleteSelected"/>
+      <SalaryCompositionDataTable v-model:searchKeyword="searchKeyword" v-model:selectedIds="selectedIds"
+        v-model:currentPage="currentPage" v-model:pageSize="pageSize" :table-data="tableData"
+        :total-records="totalRecords" :columns="columns" :page-info="pageInfo" v-model:statusFilter="statusFilter"
+        @handlePageSizeChange="handlePageSizeChange" @handleOpenConfig="handleOpenConfig" @togglePin="togglePin"
+        @handleActive="handleActive" @handleDuplicate="handleDuplicate" @handleEdit="handleEdit"
+        @handleDelete="handleDelete" @deleteSelected="handleDeleteSelected" />
     </section>
 
     <!-- Form component overlay -->
     <SalaryCompositionForm v-if="isFormVisible" :mode="formMode" :initial-data="formInitialData" @close="closeForm"
-                           @save="handleSaveForm"/>
+      @save="handleSaveForm" />
 
     <!-- Popups (Confirm & Column Config) -->
     <SalaryCompositionPopups v-model:isConfirmVisible="isConfirmModalOpen"
-                             v-model:isConfigVisible="isColumnConfigVisible"
-                             v-model:isDeleteVisible="isDeleteModalOpen" :delete-message="deleteModalMessage"
-                             v-model:columns="columns"
-                             :selected-composition="selectedComposition" @confirmActive="confirmActive"
-                             @confirmDelete="confirmDelete"
-                             @closeConfirm="closeConfirmModal" @closeConfig="closeConfig"/>
+      v-model:isConfigVisible="isColumnConfigVisible" v-model:isDeleteVisible="isDeleteModalOpen"
+      :delete-message="deleteModalMessage" v-model:columns="columns" :selected-composition="selectedComposition"
+      @confirmActive="confirmActive" @confirmDelete="confirmDelete" @closeConfirm="closeConfirmModal"
+      @closeConfig="closeConfig" />
   </template>
 
-  <SalaryCompositionSystemDirectory
-      v-else
-      @back="closeSystemDirectory"
-      @addSystem="addSystemComponent"
-  />
+  <SalaryCompositionSystemDirectory v-else @back="closeSystemDirectory" @addSystem="addSystemComponent" />
 </template>
 
 <style scoped src="./style.css"></style>

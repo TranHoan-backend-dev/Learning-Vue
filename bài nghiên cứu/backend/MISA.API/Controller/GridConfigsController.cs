@@ -17,7 +17,7 @@ public class GridConfigsController(IBaseBl<GridConfig> baseBl) : ControllerBase
         { 
             ColumnFilters = new List<FilterRequest.FilterColumn> 
             { 
-                new FilterRequest.FilterColumn { Column = "grid_id", Value = gridId } 
+                new() { Column = "grid_id", Value = gridId } 
             } 
         };
         var result = await baseBl.GetAllAsync(new Pageable { PageSize = 1000 }, filter);

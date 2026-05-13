@@ -4,6 +4,7 @@ import DxSelectBox, { DxButton } from 'devextreme-vue/select-box';
 import MsFormula from '@/components/ui/ms-formula/MsFormula.vue';
 import organizationService from '@/services/organizationService.ts';
 import salaryCompositionSystemService from '@/services/salaryCompositionSystemService.ts';
+import {attributeOptions, valueTypeOptions} from "@/views/ms-salary-compositions/data.ts";
 
 const emit = defineEmits(['close', 'save']);
 const props = defineProps<{
@@ -76,20 +77,6 @@ const validateField = (field: string): boolean => {
         errors.value.componentId = 'Mã thành phần chỉ gồm chữ, số và dấu gạch dưới';
         return false;
       }
-      // Kiểm tra mã duy nhất (trừ trường hợp edit chính bản ghi đó)
-      // TODO: Kiểm tra mã duy nhất qua API hoặc props nếu cần
-      /*
-      const isDuplicate = salaryCompositionsData.some(item => {
-        if (props.mode === 'edit' && props.initialData?.componentId === item.componentId) {
-          return false;
-        }
-        return item.componentId === value;
-      });
-      if (isDuplicate) {
-        errors.value.componentId = 'Mã thành phần đã tồn tại trong hệ thống';
-        return false;
-      }
-      */
       break;
 
     case 'salaryComponentSystemId':
@@ -166,7 +153,7 @@ const showTaxOptions = computed(() => {
 const attributeLabel = computed(() => {
   if (formData.value.attribute === 1) return 'Thu nhập';
   if (formData.value.attribute === 2) return 'Khấu trừ';
-  return '';
+  return 'Khác';
 });
 
 watch(() => formData.value.attribute, (newVal, oldVal) => {
@@ -272,19 +259,6 @@ const handleSaveAndAdd = async () => {
   errors.value = {};
   nextTick(() => componentNameRef.value?.focus());
 };
-
-// ============================================================
-// 7. SelectBox options
-// ============================================================
-const attributeOptions = [
-  { id: 1, name: 'Thu nhập' },
-  { id: 2, name: 'Khấu trừ' }
-];
-const valueTypeOptions = [
-  { id: 1, name: 'Tiền tệ' },
-  { id: 2, name: 'Phần trăm' },
-  { id: 3, name: 'Hệ số' }
-];
 const calculationTargetOptions = ['Trong cùng đơn vị công tác', 'Toàn công ty'];
 </script>
 

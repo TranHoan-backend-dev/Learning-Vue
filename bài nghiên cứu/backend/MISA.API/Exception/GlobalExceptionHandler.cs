@@ -15,10 +15,10 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log) : IExce
 
         var (status, message) = exception switch
         {
-            ExistingException => (StatusCode.BadRequest, exception.Message),
-            NotFoundException => (StatusCode.NotFound, exception.Message),
-            UnauthorizedAccessException => (StatusCode.UnAuthorized, exception.Message),
-            _ => (StatusCode.InternalServerError, exception.Message)
+            ExistingException => (ApiStatusCode.BadRequest, exception.Message),
+            NotFoundException => (ApiStatusCode.NotFound, exception.Message),
+            UnauthorizedAccessException => (ApiStatusCode.UnAuthorized, exception.Message),
+            _ => (ApiStatusCode.InternalServerError, exception.Message)
         };
 
         var response = new ErrorResult()

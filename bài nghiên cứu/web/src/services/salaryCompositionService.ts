@@ -12,10 +12,12 @@ export interface Pageable {
  * Interface cho tham số lọc
  */
 export interface FilterRequest {
-    keyword?: string;
-    columnFilters?: Array<{
-        column: string;
-        value: string;
+    Keyword?: string;
+    ColumnFilters?: Array<{
+        Column: string;
+        Value: string;
+        DataType?: number;
+        FilterType?: number;
     }>;
 }
 
