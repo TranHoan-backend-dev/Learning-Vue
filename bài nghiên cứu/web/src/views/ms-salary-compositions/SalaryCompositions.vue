@@ -12,6 +12,7 @@ import SalaryCompositionHeader from "@/views/ms-salary-compositions/components/S
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
 import SalaryCompositionSystemDirectory from "./components/SalaryCompositionSystemDirectory.vue";
 import gridConfigService from "@/services/gridConfigService.ts";
+import { mockSalaryCompositions, mockSalaryCompositionColumns } from "./mock.ts";
 
 const selectedIds = ref<string[]>([]);
 const isLoading = ref(false);
@@ -67,14 +68,64 @@ const fetchData = async () => {
         source: item.source || 'Hệ thống'
       }));
       totalRecords.value = response.data.pageable.totalElements;
+    } else {
+      useMockData();
     }
   } catch (error) {
-    toast.error('Lỗi khi tải dữ liệu', 'Đã có lỗi xảy ra');
-    console.error(error);
+    console.error('Lỗi khi tải dữ liệu từ backend, sử dụng mock data:', error);
+    useMockData();
   } finally {
     isLoading.value = false;
   }
 };
+
+// <editor-fold> desc="Dùng mock data
+const useMockData = () => {
+  let data = [...mockSalaryCompositions];
+
+  // Áp dụng tìm kiếm
+  if (searchKeyword.value) {
+    const kw = searchKeyword.value.toLowerCase();
+    data = data.filter(item =>
+      item.salaryComponentCode.toLowerCase().includes(kw) ||
+      item.salaryComponentName.toLowerCase().includes(kw)
+    );
+  }
+
+  // Áp dụng lọc trạng thái
+  if (statusFilter.value !== 'all') {
+    data = data.filter(item => item.status === Number(statusFilter.value));
+  }
+
+  totalRecords.value = data.length;
+
+  // Áp dụng phân trang
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  tableData.value = data.slice(start, end).map(item => ({
+    componentId: item.salaryComponentId,
+    componentCode: item.salaryComponentCode,
+    componentName: item.salaryComponentName,
+    appliedUnitId: item.appliedUnitId,
+    appliedUnitName: item.appliedUnitName,
+    salaryComponentSystemId: item.salaryComponentSystemId,
+    salaryComponentSystemName: item.salaryComponentSystemName,
+    attribute: item.attribute,
+    valueType: item.valueType,
+    value: item.value,
+    status: item.status,
+    source: item.source
+  }));
+};
+
+const useMockColumns = () => {
+  columns.value = mockSalaryCompositionColumns.map(col => ({
+    ...col,
+    calculateCellValue: col.dataField === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
+      col.dataField === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
+  }));
+};
+// </editor-fold>
 
 const fetchColumns = async () => {
   try {
@@ -85,7 +136,7 @@ const fetchColumns = async () => {
           (col.columnId === 'salary_component_name' ? 'componentName' :
             (col.columnId === 'applied_unit_name' ? 'appliedUnitName' :
               (col.columnId === 'salary_component_system_name' ? 'salaryComponentSystemName' :
-                (col.columnId === 'value_type' ? 'valueType' : 
+                (col.columnId === 'value_type' ? 'valueType' :
                   (col.columnId === 'attribute' ? 'attribute' : col.columnId))))),
         caption: col.columnName,
         visible: col.isVisible === 1,
@@ -93,11 +144,14 @@ const fetchColumns = async () => {
         isPinned: col.isPinned === 1,
         cellTemplate: col.columnId === 'status' ? 'status-cell' : undefined,
         calculateCellValue: col.columnId === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
-                            col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
+          col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
       }));
+    } else {
+      useMockColumns();
     }
   } catch (error) {
     console.error('Lỗi khi tải cấu hình cột:', error);
+    useMockColumns();
   }
 };
 
@@ -150,8 +204,10 @@ const isFormVisible = ref(false);
 const formMode = ref<'add' | 'edit' | 'copy'>('add');
 const formInitialData = ref<any>(null);
 const selectedRowId = ref<string | null>(null);
+const formKey = ref(0);
 
 const handleAdd = () => {
+  formKey.value = Date.now();
   formMode.value = 'add';
   formInitialData.value = null;
   selectedRowId.value = null;
@@ -159,20 +215,22 @@ const handleAdd = () => {
 };
 
 const handleEdit = (data: any) => {
+  formKey.value = Date.now();
   formMode.value = 'edit';
   selectedRowId.value = data.componentId;
   formInitialData.value = {
     ...data,
-    componentId: data.componentCode // Map componentCode to componentId for Form
+    componentCode: data.componentCode
   };
   isFormVisible.value = true;
 };
 
 const handleDuplicate = (data: any) => {
+  formKey.value = Date.now();
   formMode.value = 'copy';
   formInitialData.value = {
     ...data,
-    componentId: data.componentCode // Map componentCode to componentId for Form
+    componentCode: data.componentCode
   };
   isFormVisible.value = true;
 };
@@ -182,18 +240,18 @@ const closeForm = () => {
   formInitialData.value = null;
 };
 
-const handleSaveForm = async (formData: any) => {
+const handleSaveForm = async (formData: any, stayOpen = false) => {
   isLoading.value = true;
   try {
     // Map dữ liệu từ form sang đúng Model của Backend (PascalCase)
     const requestData = {
-      SalaryComponentCode: formData.componentId,
+      SalaryComponentCode: formData.componentCode,
       SalaryComponentName: formData.componentName,
       AppliedUnitId: formData.appliedUnitId,
       SalaryComponentSystemId: formData.salaryComponentSystemId,
       Attribute: formData.attribute,
       ValueType: formData.valueType,
-      Value: formData.valueFormula,
+      Value: formData.valueFormula || formData.quota,
       Status: 1, // Mặc định: Đang sử dụng
       Source: 'Tự thêm'
     };
@@ -208,7 +266,13 @@ const handleSaveForm = async (formData: any) => {
       await salaryCompositionService.update(id, requestData);
       toast.success('Cập nhật thành công', `Cập nhật thành công ${requestData.salaryComponentName}`);
     }
-    isFormVisible.value = false;
+    if (!stayOpen) {
+      isFormVisible.value = false;
+      formInitialData.value = null;
+      selectedRowId.value = null;
+    } else {
+      formKey.value = Date.now();
+    }
     await fetchData();
   } catch (error) {
     console.error(error);
@@ -351,8 +415,8 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
     </section>
 
     <!-- Form component overlay -->
-    <SalaryCompositionForm v-if="isFormVisible" :mode="formMode" :initial-data="formInitialData" @close="closeForm"
-      @save="handleSaveForm" />
+    <SalaryCompositionForm v-if="isFormVisible" :key="formKey" :mode="formMode" :initial-data="formInitialData"
+      @close="closeForm" @save="handleSaveForm" />
 
     <!-- Popups (Confirm & Column Config) -->
     <SalaryCompositionPopups v-model:isConfirmVisible="isConfirmModalOpen"

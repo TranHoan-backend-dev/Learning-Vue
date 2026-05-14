@@ -18,26 +18,30 @@ const props = defineProps<{
   initialData?: any;
 }>();
 
-// ============================================================
-// 1. Form Data & Defaults
-// ============================================================
-const getDefaultData = () => (defaultData);
+// <editor-fold> desc="Khoi tao cau truc du lieu"
+const getDefaultData = () => ({...defaultData});
 
 const formData = ref(getDefaultData());
+// </editor-fold>
 
-// ============================================================
-// 2. Refs cho auto-focus & tab navigation
-// ============================================================
+// Refs cho auto-focus & tab navigation
 const componentNameRef = ref<HTMLInputElement | null>(null);
-const componentIdRef = ref<HTMLInputElement | null>(null);
+const componentCodeRef = ref<HTMLInputElement | null>(null);
 const quotaFormulaRef = ref<InstanceType<typeof MsFormula> | null>(null);
 const valueFormulaRef = ref<InstanceType<typeof MsFormula> | null>(null);
 
-// ============================================================
-// 3. Validation
-// ============================================================
+// Validation
 const errors = ref<Record<string, string>>({});
 
+// <editor-fold> desc="Validation"
+/**
+ * Validate cac thuoc tinh trong form
+ * ComponentName: khong duoc de trong, khong dai qua 255 ky tu
+ * ComponentCode: khong duoc de trong, khong dai qua 255 ky tu, khong ky tu dac biet (chỉ có chu, số, dấu gạch dưới)
+ * SalaryComponentSystemId: khong duoc de trong
+ * Attribute: khong duoc de trong
+ * @param field
+ */
 const validateField = (field: string): boolean => {
   const value = (formData.value as any)[field];
 
@@ -53,34 +57,20 @@ const validateField = (field: string): boolean => {
       }
       break;
 
-    case 'componentId':
+    case 'componentCode':
       if (!value || !value.trim()) {
-        errors.value.componentId = 'Mã thành phần không được để trống';
+        errors.value.componentCode = 'Mã thành phần không được để trống';
         return false;
       }
       if (value.length > 255) {
-        errors.value.componentId = 'Mã thành phần không nên quá dài';
+        errors.value.componentCode = 'Mã thành phần không nên quá dài';
         return false;
       }
       // Kiểm tra định dạng: chỉ chữ, số, gạch dưới
       if (!/^[A-Za-z0-9_]+$/.test(value)) {
-        errors.value.componentId = 'Mã thành phần chỉ gồm chữ, số và dấu gạch dưới';
+        errors.value.componentCode = 'Mã thành phần chỉ gồm chữ, số và dấu gạch dưới';
         return false;
       }
-      // Kiểm tra mã duy nhất (trừ trường hợp edit chính bản ghi đó)
-      // TODO: Kiểm tra mã duy nhất qua API hoặc props nếu cần
-      /*
-      const isDuplicate = salaryCompositionsData.some(item => {
-        if (props.mode === 'edit' && props.initialData?.componentId === item.componentId) {
-          return false;
-        }
-        return item.componentId === value;
-      });
-      if (isDuplicate) {
-        errors.value.componentId = 'Mã thành phần đã tồn tại trong hệ thống';
-        return false;
-      }
-      */
       break;
 
     case 'salaryComponentSystemId':
@@ -104,7 +94,7 @@ const validateField = (field: string): boolean => {
 };
 
 const validateAll = (): boolean => {
-  const fields = ['componentName', 'componentId', 'salaryComponentSystemId', 'attribute'];
+  const fields = ['componentName', 'componentCode', 'salaryComponentSystemId', 'attribute'];
   let isValid = true;
 
   // Validate tất cả các trường
@@ -116,19 +106,20 @@ const validateAll = (): boolean => {
 
   return isValid;
 };
+// </editor-fold>
 
 // Focus vào ô lỗi đầu tiên
 const focusFirstError = () => {
   nextTick(() => {
-    const errorFields = ['componentName', 'componentId', 'salaryComponentSystemId', 'attribute'];
+    const errorFields = ['componentName', 'componentCode', 'salaryComponentSystemId', 'attribute'];
     for (const field of errorFields) {
       if (errors.value[field]) {
         switch (field) {
           case 'componentName':
             componentNameRef.value?.focus();
             return;
-          case 'componentId':
-            componentIdRef.value?.focus();
+          case 'componentCode':
+            componentCodeRef.value?.focus();
             return;
           case 'salaryComponentSystemId':
           case 'attribute':
@@ -147,9 +138,7 @@ const clearError = (field: string) => {
   delete errors.value[field];
 };
 
-// ============================================================
-// 4. Xử lý giao diện khi thay đổi "Tính chất"
-// ============================================================
+// Xử lý giao diện khi thay đổi "Tính chất"
 const showTaxOptions = computed(() => {
   return formData.value.attribute === 1 || formData.value.attribute === 2;
 });
@@ -167,9 +156,7 @@ watch(() => formData.value.attribute, (newVal, oldVal) => {
   }
 });
 
-// ============================================================
-// 5. Form Init
-// ============================================================
+// Khởi tạo form
 const initForm = () => {
   errors.value = {};
   if (props.mode === 'edit' || props.mode === 'copy') {
@@ -186,7 +173,7 @@ const initForm = () => {
       }
 
       if (props.mode === 'copy') {
-        formData.value.componentId = `${formData.value.componentId}_COPY`;
+        formData.value.componentCode = `${formData.value.componentCode}_COPY`;
       }
     }
   } else {
@@ -234,16 +221,16 @@ watch(() => props.mode, () => {
   nextTick(() => componentNameRef.value?.focus());
 });
 
-// ============================================================
-// 6. Save handlers
-// ============================================================
+// Ban su kien luu ban ghi len component cha
 const handleSave = () => {
   if (!validateAll()) {
     focusFirstError();
     return;
   }
-  emit('save', formData.value);
+  emit('save', formData.value, false); // stayOpen = false
   emit('close');
+  formData.value = getDefaultData();
+  console.log(formData.value);
 };
 
 const handleSaveAndAdd = async () => {
@@ -251,11 +238,12 @@ const handleSaveAndAdd = async () => {
     focusFirstError();
     return;
   }
-  emit('save', formData.value);
+  emit('save', formData.value, true); // stayOpen = true
   // Reset form cho lần thêm tiếp theo
   formData.value = getDefaultData();
   errors.value = {};
-  nextTick(() => componentNameRef.value?.focus());
+  // nextTick(() => componentNameRef.value?.focus());
+  await nextTick(() => componentNameRef.value?.focus());
 };
 </script>
 
@@ -301,19 +289,19 @@ const handleSaveAndAdd = async () => {
           </div>
 
           <!-- Mã thành phần -->
-          <div class="form-row" :class="{ 'has-error': errors.componentId }">
+          <div class="form-row" :class="{ 'has-error': errors.componentCode }">
             <div class="form-label">Mã thành phần <span class="required">*</span></div>
             <div class="form-control">
-              <input ref="componentIdRef"
+              <input ref="componentCodeRef"
                      type="text"
                      class="misa-input w-full-input"
-                     :class="{ 'input-error': errors.componentId }"
-                     v-model="formData.componentId"
+                     :class="{ 'input-error': errors.componentCode }"
+                     v-model="formData.componentCode"
                      placeholder="Nhập mã viết liền"
-                     @input="clearError('componentId')"
-                     @blur="validateField('componentId')"
+                     @input="clearError('componentCode')"
+                     @blur="validateField('componentCode')"
                      maxlength="255" tabindex="2"/>
-              <div v-if="errors.componentId" class="error-message">{{ errors.componentId }}</div>
+              <div v-if="errors.componentCode" class="error-message">{{ errors.componentCode }}</div>
             </div>
           </div>
 

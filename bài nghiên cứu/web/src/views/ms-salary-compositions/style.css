@@ -1,3 +1,7 @@
+:root {
+  /* Reuse global variables from common.css */
+}
+
 .content_header {
   height: 64px;
   padding: 0 24px;
@@ -9,8 +13,8 @@
 
 .content_header_title {
   font-weight: 700;
-  font-size: 20px;
-  color: #111;
+  font-size: var(--misa-font-size-title);
+  color: var(--misa-text-primary);
 }
 
 .content_header_right {
@@ -22,16 +26,16 @@
 .misa-btn-outline {
   display: flex;
   align-items: center;
-  background-color: #fff;
-  height: 36px;
-  border-radius: 4px;
+  background-color: var(--misa-white);
+  height: var(--misa-control-height);
+  border-radius: var(--misa-border-radius);
   padding: 0 16px;
   border: 1px solid #dddde4;
   font-weight: 500;
   color: #111;
   gap: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--misa-transition);
 }
 
 .misa-btn-outline:hover {
@@ -54,7 +58,7 @@
   padding: 0 16px;
   height: 100%;
   background-color: transparent;
-  color: #fff;
+  color: var(--misa-white);
   font-weight: 600;
   gap: 8px;
   cursor: pointer;
@@ -62,7 +66,7 @@
 }
 
 .misa-btn-primary-left:hover {
-  background-color: #248a18;
+  background-color: var(--primary-green-hover);
 }
 
 .split_button_arrow {
@@ -71,11 +75,11 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--misa-transition);
 }
 
 .split_button_arrow:hover {
-  background-color: #248a18;
+  background-color: var(--primary-green-hover);
 }
 
 .mi_icon_system_category {
@@ -110,7 +114,7 @@
 }
 
 .content_body_container {
-  background-color: white;
+  background-color: var(--misa-white);
   border-radius: 4px;
   height: 100%;
 }
@@ -121,7 +125,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 16px;
-  background-color: #fff;
+  background-color: var(--misa-white);
 }
 
 .content_body_footer {
@@ -251,9 +255,9 @@ tr:hover .table_action {
 }
 
 .content_body_header_right_search_input {
-  height: 36px;
+  height: var(--misa-control-height);
   padding-left: 40px;
-  border-radius: 4px;
+  border-radius: var(--misa-border-radius);
   outline: none;
   border: 1px solid #dddde4;
   width: 300px;
@@ -276,7 +280,7 @@ tr:hover .table_action {
 
 /* Total records (left side) */
 .content_body_footer_total {
-  font-size: 13px;
+  font-size: var(--misa-font-size-small);
   color: #111;
 }
 
@@ -300,23 +304,23 @@ tr:hover .table_action {
 }
 
 .paging_label {
-  font-size: 13px;
-  color: #666;
+  font-size: var(--misa-font-size-small);
+  color: var(--misa-text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 /* Page size select */
 .page_size_select {
-  height: 32px;
+  height: var(--misa-control-height-small);
   padding: 0 8px;
   border: 1px solid #dddde4;
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--misa-border-radius);
+  font-size: var(--misa-font-size-small);
   color: #111;
   outline: none;
   cursor: pointer;
-  background-color: #fff;
+  background-color: var(--misa-white);
 }
 
 .page_size_select:hover {
@@ -329,7 +333,7 @@ tr:hover .table_action {
 
 /* Page info */
 .page_info {
-  font-size: 13px;
+  font-size: var(--misa-font-size-small);
   color: #111;
   min-width: 120px;
   text-align: center;
@@ -344,9 +348,9 @@ tr:hover .table_action {
   justify-content: center;
   border: 1px solid #dddde4;
   border-radius: 4px;
-  background-color: #fff;
+  background-color: var(--misa-white);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--misa-transition);
 }
 
 .btn_page:hover:not(:disabled) {
@@ -409,13 +413,13 @@ tr:hover .table_action {
   height: 20px;
   -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
   -webkit-mask-position: -20px -656px;
-  background-color: #fff;
+  background-color: var(--misa-white);
   margin-right: 4px;
 }
 
 .content_header_action_add_icon_text {
   font-weight: 500;
-  color: #fff;
+  color: var(--misa-white);
   cursor: pointer;
 }
 
@@ -432,7 +436,7 @@ tr:hover .table_action {
   height: 16px;
   -webkit-mask-image: url(https://amisplatform.misacdn.net/apps/recruit/assets/images/ICON.svg);
   -webkit-mask-position: -32px -48px;
-  background-color: #fff;
+  background-color: var(--misa-white);
 }
 
 .content_header_right_action_delete {
@@ -448,8 +452,8 @@ tr:hover .table_action {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background-color: #fff;
-  transition: all 0.2s;
+  background-color: var(--misa-white);
+  transition: var(--misa-transition);
   flex-shrink: 0;
 }
 
@@ -478,15 +482,15 @@ tr:hover .table_action {
 }
 
 .misa-search-input {
-  height: 32px;
+  height: var(--misa-control-height-small);
   padding: 0 12px 0 32px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border: 1px solid var(--misa-border-color);
+  border-radius: var(--misa-border-radius);
   font-family: inherit;
-  font-size: 13px;
+  font-size: var(--misa-font-size-small);
   color: #111;
   outline: none;
-  background-color: #fff;
+  background-color: var(--misa-white);
   transition: border-color 0.2s;
 
   /* Icon kính lúp trực tiếp làm background cho thẻ input */
@@ -562,7 +566,7 @@ tr:hover .table_action {
   border-right: 1px solid #dddde4 !important;
   background-color: #f4f5f8 !important;
   font-weight: 700 !important;
-  color: #111 !important;
+  color: var(--misa-text-primary) !important;
   vertical-align: middle !important;
 }
 
@@ -610,10 +614,10 @@ tr:hover .table_action {
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  background: #fff;
+  background: var(--misa-white);
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--misa-shadow-dropdown);
   min-width: 240px;
   z-index: 1000;
   padding: 4px 0;
@@ -621,7 +625,7 @@ tr:hover .table_action {
 
 .misa-dropdown-item {
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: var(--misa-font-size-base);
   color: #111;
   cursor: pointer;
   white-space: nowrap;
@@ -637,7 +641,7 @@ tr:hover .table_action {
 :deep(.dx-checkbox-icon) {
   border-radius: 4px !important;
   border: 1px solid #ababab !important;
-  background-color: #fff !important;
+  background-color: var(--misa-white) !important;
   width: 18px !important;
   height: 18px !important;
   transition: all 0.2s ease !important;
@@ -657,7 +661,7 @@ tr:hover .table_action {
 }
 
 :deep(.dx-checkbox-checked .dx-checkbox-icon::after) {
-  color: #fff !important;
+  color: var(--misa-white) !important;
 }
 
 :deep(.dx-checkbox.dx-state-disabled .dx-checkbox-icon) {
@@ -676,7 +680,7 @@ tr:hover .table_action {
   width: 18px !important;
   height: 18px !important;
   border: 1px solid #ababab !important;
-  background-color: #fff !important;
+  background-color: var(--misa-white) !important;
   border-radius: 50% !important;
   transition: all 0.2s ease !important;
   position: relative !important;

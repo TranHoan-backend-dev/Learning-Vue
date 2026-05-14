@@ -8,6 +8,30 @@
   --color-default-icon: #65696e;
   --border-table: rgb(221, 221, 221);
   --primary-green: #2ca01c;
+  --primary-green-hover: #248b17;
+  --misa-danger: #e62e2e;
+  --misa-danger-hover: #cc2929;
+  --misa-error: #ff4d4f;
+  --misa-warning: #f5a623;
+  --misa-white: #ffffff;
+  --misa-background-gray: #f4f5f8;
+  --misa-border-color: #e0e0e0;
+  --misa-text-primary: #111111;
+  --misa-text-body: #333333;
+  --misa-text-secondary: #666666;
+  --misa-border-radius: 4px;
+  --misa-control-height: 36px;
+  --misa-control-height-small: 32px;
+  --misa-transition: all 0.2s ease;
+  --misa-padding-button: 8px 24px;
+  --misa-padding-control: 8px 12px;
+  --misa-width-form-label: 180px;
+  --misa-width-standard-control: 250px;
+  --misa-width-full-input: 750px;
+  --misa-font-size-base: 14px;
+  --misa-font-size-small: 13px;
+  --misa-font-size-title: 20px;
+  --misa-shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 * {

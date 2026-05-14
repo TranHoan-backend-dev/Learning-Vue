@@ -10,6 +10,11 @@ namespace MISA.API.Controller;
 [Route("api/v1/[controller]")]
 public class GridConfigsController(IBaseBl<GridConfig> baseBl) : ControllerBase
 {
+    /// <summary>
+    /// Lấy ra thông tin chi tiết của 1 grid
+    /// </summary>
+    /// <param name="gridId">Id của grid</param>
+    /// <returns></returns>
     [HttpGet("{gridId}")]
     public async Task<IActionResult> GetByGridIdAsync(string gridId)
     {
@@ -24,6 +29,11 @@ public class GridConfigsController(IBaseBl<GridConfig> baseBl) : ControllerBase
         return Ok(result.Data);
     }
 
+    /// <summary>
+    /// Cập nhật kích cỡ cột
+    /// </summary>
+    /// <param name="configs">Danh sách các cột đã được cập nhật</param>
+    /// <returns></returns>
     [HttpPut]
     public async Task<IActionResult> UpdateRangeAsync([FromBody] List<GridConfig> configs)
     {

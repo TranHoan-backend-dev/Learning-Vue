@@ -13,7 +13,7 @@ interface Props {
   deleteMessage: string;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const emit = defineEmits([
   'update:isConfirmVisible',
@@ -149,22 +149,22 @@ const onColumnsUpdate = (val: any[]) => {
 <style scoped>
 .misa-popup-body {
   font-size: 15px;
-  color: #333;
+  color: var(--misa-text-body);
   line-height: 1.5;
   padding: 8px 0;
 }
 
 .misa-btn-cancel {
-  padding: 8px 24px;
-  border: 1px solid #e0e0e0;
-  background: #fff;
-  border-radius: 4px;
-  color: #111;
+  padding: var(--misa-padding-button);
+  border: 1px solid var(--misa-border-color);
+  background: var(--misa-white);
+  border-radius: var(--misa-border-radius);
+  color: var(--misa-text-primary);
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: var(--misa-font-size-base);
+  transition: var(--misa-transition);
 }
 
 .misa-btn-cancel:hover {
@@ -172,37 +172,37 @@ const onColumnsUpdate = (val: any[]) => {
 }
 
 .misa-btn-primary {
-  padding: 8px 24px;
+  padding: var(--misa-padding-button);
   border: 1px solid transparent;
-  background: #2ca01c;
-  border-radius: 4px;
-  color: #fff;
+  background: var(--primary-green);
+  border-radius: var(--misa-border-radius);
+  color: var(--misa-white);
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: var(--misa-font-size-base);
+  transition: var(--misa-transition);
 }
 
 .misa-btn-primary:hover {
-  background: #248b17;
+  background: var(--primary-green-hover);
 }
 
 .misa-btn-danger {
-  padding: 8px 24px;
+  padding: var(--misa-padding-button);
   border: 1px solid transparent;
-  background: #e62e2e;
-  border-radius: 4px;
-  color: #fff;
+  background: var(--misa-danger);
+  border-radius: var(--misa-border-radius);
+  color: var(--misa-white);
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: var(--misa-font-size-base);
+  transition: var(--misa-transition);
 }
 
 .misa-btn-danger:hover {
-  background: #cc2929;
+  background: var(--misa-danger-hover);
 }
 
 .config-popup-content {
@@ -219,8 +219,8 @@ const onColumnsUpdate = (val: any[]) => {
 .column-list-wrapper {
   flex: 1;
   overflow-y: auto;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border: 1px solid var(--misa-border-color);
+  border-radius: var(--misa-border-radius);
   padding: 8px 0;
 }
 
@@ -228,7 +228,7 @@ const onColumnsUpdate = (val: any[]) => {
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  background: #fff;
+  background: var(--misa-white);
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s;
 }
@@ -254,20 +254,20 @@ const onColumnsUpdate = (val: any[]) => {
 }
 
 .column-caption {
-  font-size: 14px;
-  color: #333;
+  font-size: var(--misa-font-size-base);
+  color: var(--misa-text-body);
 }
 
 .misa-search-input {
-  height: 32px;
+  height: var(--misa-control-height-small);
   padding: 0 12px 0 32px;
   border: 1px solid #e0e0e0;
-  border-radius: 4px;
+  border-radius: var(--misa-border-radius);
   font-family: inherit;
-  font-size: 13px;
-  color: #111;
+  font-size: var(--misa-font-size-small);
+  color: var(--misa-text-primary);
   outline: none;
-  background-color: #fff;
+  background-color: var(--misa-white);
   transition: border-color 0.2s;
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='6'%3E%3C/circle%3E%3Cline x1='20' y1='20' x2='15.24' y2='15.24'%3E%3C/line%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -277,6 +277,6 @@ const onColumnsUpdate = (val: any[]) => {
 
 .misa-search-input:hover,
 .misa-search-input:focus {
-  border-color: #2ca01c;
+  border-color: var(--primary-green);
 }
 </style>

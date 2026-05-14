@@ -10,10 +10,17 @@ namespace MISA.API.Controller;
 [Route("api/v1/[controller]")]
 public class OrganizationsController(IBaseBl<Organization> baseBl) : ControllerBase
 {
+    /// <summary>
+    /// Lấy ra danh sách các bản ghi Đơn vị áp dụng kèm phân trang
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {
-        var result = await baseBl.GetAllAsync(new Pageable { PageSize = 1000 }, new FilterRequest());
+        var result = await baseBl.GetAllAsync(
+            new Pageable { PageSize = 1000 },
+            new FilterRequest()
+        );
         return Ok(result.Data);
     }
 }

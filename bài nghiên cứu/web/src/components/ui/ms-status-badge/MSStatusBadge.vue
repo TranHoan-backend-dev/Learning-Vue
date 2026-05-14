@@ -43,19 +43,19 @@ const statusClass = computed(() => {
 
 /* Đang theo dõi */
 .status-active .status-dot {
-  background-color: #2ca01c;
+  background-color: var(--primary-green);
 }
 
 .status-active .status-text {
-  color: #2ca01c;
+  color: var(--primary-green);
 }
 
 /* Ngừng theo dõi */
 .status-inactive .status-dot {
-  background-color: #f5a623;
+  background-color: var(--misa-warning);
 }
 
 .status-inactive .status-text {
-  color: #f5a623;
+  color: var(--misa-warning);
 }
 </style>

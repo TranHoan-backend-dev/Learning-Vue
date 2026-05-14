@@ -6,6 +6,7 @@ import salaryCompositionSystemService from "@/services/salaryCompositionSystemSe
 import {toast} from "@/services/toast.ts";
 import gridConfigService from "@/services/gridConfigService.ts";
 import {getAttributeName, getValueTypeName} from "@/views/ms-salary-compositions/data.ts";
+import { mockSystemCompositions, mockSystems, mockSystemCompositionColumns } from "../mock.ts";
 
 const emit = defineEmits(['back', 'addSystem']);
 
@@ -19,69 +20,6 @@ const selectedIds = ref<string[]>([]);
 const systems = ref<any[]>([]);
 const selectedSystemId = ref("all");
 
-const mockData = [
-  {
-    salaryComponentId: 'sys-1',
-    salaryComponentCode: 'TY_LE_HOAN_THANH_KPI',
-    salaryComponentName: 'Tỷ lệ hoàn thành KPI',
-    salaryComponentSystemName: 'KPI',
-    attribute: 0,
-    valueType: 0,
-    value: '-',
-    source: 'Hệ thống'
-  },
-  {
-    salaryComponentId: 'sys-2',
-    salaryComponentCode: 'TY_LE_HOAN_THANH_DOANH_SO',
-    salaryComponentName: 'Tỷ lệ hoàn thành doanh số',
-    salaryComponentSystemName: 'Doanh số',
-    attribute: 0,
-    valueType: 0,
-    value: '=DOANH_SO_THUC_T...',
-    source: 'Hệ thống'
-  },
-  {
-    salaryComponentId: 'sys-3',
-    salaryComponentCode: 'TONG_GIO_LAM_THEM_HUONG_LUONG_THU_VIEC',
-    salaryComponentName: 'Tổng giờ làm thêm hưởng lương thử việc',
-    salaryComponentSystemName: 'Chấm công',
-    attribute: 0,
-    valueType: 0,
-    value: '-',
-    source: 'Hệ thống'
-  },
-  {
-    salaryComponentId: 'sys-4',
-    salaryComponentCode: 'TONG_GIO_LAM_THEM_HUONG_LUONG_KHAC',
-    salaryComponentName: 'Tổng giờ làm thêm hưởng lương khác',
-    salaryComponentSystemName: 'Chấm công',
-    attribute: 0,
-    valueType: 0,
-    value: '-',
-    source: 'Hệ thống'
-  },
-  {
-    salaryComponentId: 'sys-5',
-    salaryComponentCode: 'TONG_GIO_LAM_THEM_HUONG_LUONG_HOC_VIEC',
-    salaryComponentName: 'Tổng giờ làm thêm hưởng lương học việc',
-    salaryComponentSystemName: 'Chấm công',
-    attribute: 0,
-    valueType: 0,
-    value: '-',
-    source: 'Hệ thống'
-  },
-  {
-    salaryComponentId: 'sys-6',
-    salaryComponentCode: 'TONG_CONG_HUONG_LUONG_THEO_GIO',
-    salaryComponentName: 'Tổng công hưởng lương theo giờ',
-    salaryComponentSystemName: 'Chấm công',
-    attribute: 0,
-    valueType: 0,
-    value: '-',
-    source: 'Hệ thống'
-  }
-];
-
 const fetchSystems = async () => {
   try {
     const response = await salaryCompositionSystemService.getAll();
@@ -90,10 +28,20 @@ const fetchSystems = async () => {
         { salaryComponentSystemId: 'all', salaryComponentSystemName: 'Tất cả thành phần' },
         ...response.data
       ];
+    } else {
+      useMockSystems();
     }
   } catch (error) {
-    console.error('Lỗi khi lấy danh mục hệ thống:', error);
+    console.error('Lỗi khi lấy danh mục hệ thống, sử dụng mock:', error);
+    useMockSystems();
   }
+};
+
+const useMockSystems = () => {
+  systems.value = [
+    { salaryComponentSystemId: 'all', salaryComponentSystemName: 'Tất cả thành phần' },
+    ...mockSystems
+  ];
 };
 
 const fetchData = async () => {
@@ -152,13 +100,34 @@ const fetchData = async () => {
 };
 
 const useMockData = () => {
-  tableData.value = mockData.map(item => ({
+  let data = [...mockSystemCompositions];
+  
+  // Áp dụng tìm kiếm
+  if (searchKeyword.value) {
+    const kw = searchKeyword.value.toLowerCase();
+    data = data.filter(item => 
+      item.salaryComponentCode.toLowerCase().includes(kw) || 
+      item.salaryComponentName.toLowerCase().includes(kw)
+    );
+  }
+  
+  // Áp dụng lọc theo loại hệ thống
+  if (selectedSystemId.value !== 'all') {
+    data = data.filter(item => item.salaryComponentSystemId === selectedSystemId.value);
+  }
+  
+  totalRecords.value = data.length;
+  
+  // Áp dụng phân trang
+  const start = (currentPage.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  
+  tableData.value = data.slice(start, end).map(item => ({
     ...item,
     componentId: item.salaryComponentId,
     componentCode: item.salaryComponentCode,
     componentName: item.salaryComponentName
   }));
-  totalRecords.value = mockData.length;
 };
 
 const fetchColumns = async () => {
@@ -178,19 +147,20 @@ const fetchColumns = async () => {
                             col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
       }));
     } else {
-      // Fallback columns if not found in DB
-      columns.value = [
-        { dataField: 'componentCode', caption: 'Mã thành phần', visible: true, width: 250, isPinned: true },
-        { dataField: 'componentName', caption: 'Tên thành phần', visible: true, width: 250, isPinned: true },
-        { dataField: 'salaryComponentSystemName', caption: 'Loại thành phần', visible: true, width: 150, isPinned: false },
-        { dataField: 'attribute', caption: 'Tính chất', visible: true, width: 120, isPinned: false, calculateCellValue: (data: any) => getAttributeName(data.attribute) },
-        { dataField: 'valueType', caption: 'Kiểu giá trị', visible: true, width: 120, isPinned: false, calculateCellValue: (data: any) => getValueTypeName(data.valueType) },
-        { dataField: 'value', caption: 'Giá trị', visible: true, width: 200, isPinned: false },
-      ];
+      useMockColumns();
     }
   } catch (error) {
     console.error('Lỗi khi tải cấu hình cột hệ thống:', error);
+    useMockColumns();
   }
+};
+
+const useMockColumns = () => {
+  columns.value = mockSystemCompositionColumns.map(col => ({
+    ...col,
+    calculateCellValue: col.dataField === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
+                        col.dataField === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
+  }));
 };
 
 onMounted(() => {

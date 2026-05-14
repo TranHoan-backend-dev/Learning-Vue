@@ -217,17 +217,17 @@ defineExpose({ focus });
 .formula-editor-shell {
   display: flex;
   align-items: flex-start;
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--misa-border-color);
   border-radius: 4px;
-  background: #fff;
+  background: var(--misa-white);
   min-height: 110px;
   overflow: hidden;
   transition: all 0.2s ease;
 }
 
 .formula-editor-shell.focused {
-  border-color: #2ca01c;
-  box-shadow: 0 0 0 1px #2ca01c22;
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 1px rgba(44, 160, 28, 0.13);
 }
 
 .ms-formula-editor {
@@ -247,7 +247,7 @@ defineExpose({ focus });
   padding-top: 8px !important;    /* ← khớp với container */
 
   color: transparent !important;
-  caret-color: #111 !important;
+  caret-color: var(--misa-text-primary) !important;
   background: transparent !important;
   resize: none !important;
   outline: none !important;
@@ -319,12 +319,12 @@ defineExpose({ focus });
   position: relative;
   padding-bottom: 12px;
   font-size: 13px;
-  color: #444;
+  color: var(--misa-text-secondary);
   cursor: pointer;
 }
 
 .formula-tab.active {
-  color: #2ca01c;
+  color: var(--primary-green);
   font-weight: 600;
 }
 
@@ -338,7 +338,7 @@ defineExpose({ focus });
   height: 3px;
   border-radius: 999px;
 
-  background: #2ca01c;
+  background: var(--primary-green);
 }
 
 /* List */
@@ -365,7 +365,7 @@ defineExpose({ focus });
 
 .formula-icon {
   font-size: 20px;
-  color: #666;
+  color: var(--misa-text-secondary);
   font-family: serif;
   line-height: 1;
   margin-top: 2px;
@@ -377,13 +377,13 @@ defineExpose({ focus });
 
 .formula-name {
   font-size: 13px;
-  color: #222;
+  color: var(--misa-text-primary);
   font-weight: 700;
 }
 
 .formula-signature {
   font-weight: 400;
-  color: #444;
+  color: var(--misa-text-secondary);
   margin-left: 6px;
   font-size: 13px;
 }
@@ -410,6 +410,6 @@ defineExpose({ focus });
 }
 
 :deep(.token.punctuation) {
-  color: #666;
+  color: var(--misa-text-secondary);
 }
 </style>

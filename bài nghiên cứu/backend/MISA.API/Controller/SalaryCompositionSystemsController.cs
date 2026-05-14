@@ -10,6 +10,10 @@ namespace MISA.API.Controller;
 [Route("api/v1/[controller]")]
 public class SalaryCompositionSystemsController(IBaseBl<SalaryCompositionSystem> baseBl) : ControllerBase
 {
+    /// <summary>
+    /// Lấy ra danh sách các bản ghi Danh mục hệ thống
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {

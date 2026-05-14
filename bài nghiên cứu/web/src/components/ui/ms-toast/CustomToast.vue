@@ -19,15 +19,15 @@ const closeToast = (id: number) => {
 const getToastConfig = (type: string) => {
   switch (type) {
     case 'success':
-      return { icon: 'check-circle', color: '#2ca01c', bg: '#ebf9eb' };
+      return { icon: 'check-circle', color: 'var(--primary-green)', bg: '#ebf9eb' };
     case 'error':
-      return { icon: 'error', color: '#e53935', bg: '#fff0f0' };
+      return { icon: 'error', color: 'var(--misa-error)', bg: '#fff0f0' };
     case 'warning':
-      return { icon: 'warning', color: '#f9a825', bg: '#fff9eb' };
+      return { icon: 'warning', color: 'var(--misa-warning)', bg: '#fff9eb' };
     case 'info':
-      return { icon: 'info', color: '#2ca01c', bg: '#ebf9eb' }; // Based on image, info is also green
+      return { icon: 'info', color: 'var(--primary-green)', bg: '#ebf9eb' }; // Based on image, info is also green
     default:
-      return { icon: 'info', color: '#2ca01c', bg: '#ebf9eb' };
+      return { icon: 'info', color: 'var(--primary-green)', bg: '#ebf9eb' };
   }
 };
 

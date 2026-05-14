@@ -1,6 +1,6 @@
 export const defaultData = {
     componentName: '',
-    componentId: '',
+    componentCode: '',
     appliedUnitId: null as string | null,
     salaryComponentSystemId: null as string | null,
     attribute: 1, // Default: Thu nhập (1)

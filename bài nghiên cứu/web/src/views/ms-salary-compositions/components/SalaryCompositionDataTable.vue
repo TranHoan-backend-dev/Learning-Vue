@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed} from "vue";
+import {computed, ref, onMounted} from "vue";
 import DxSelectBox from "devextreme-vue/select-box";
 import DxDataGrid, {
   DxColumn,
@@ -19,8 +19,10 @@ import {
   pageSizeOptions,
   salaryCompositionStatus
 } from "@/views/ms-salary-compositions/data.ts";
+import organizationService from "@/services/organizationService.ts";
 
 const props = defineProps<DataTableAttributes>();
+const organization = ref<any[]>([]);
 
 const emit = defineEmits([
   'update:selectedIds',
@@ -39,23 +41,46 @@ const emit = defineEmits([
   'update:statusFilter'
 ]);
 
+/**
+ * Phat su kien khi nguoi dung click vao cac checkbox. Truyen mang checkbox active nay ra ngoai
+ * component cha
+ * @param val
+ */
 const handleSelectedIdsChange = (val: string[]) => {
   emit('update:selectedIds', val);
 };
 
+// <editor-fold> desc="Xu ly phan trang + tim kiem"
+/**
+ * Phat su kien tim kiem dua tren keyword
+ * @param e
+ */
 const handleSearchChange = (e: any) => {
   emit('update:searchKeyword', e.target.value);
 };
 
+/**
+ * Phat su kien khi page index thay doi
+ * @param val
+ */
 const handleCurrentPageChange = (val: number) => {
   emit('update:currentPage', val);
 };
 
+/**
+ * Phat su kien page size thay doi
+ * @param e
+ */
 const handlePageSizeValChange = (e: any) => {
   emit('update:pageSize', e.value);
   emit('handlePageSizeChange');
 };
+// </editor-fold>
 
+// <editor-fold> desc="Xu ly viec ghim cot"
+/*
+ * Tinh toan cac cot can ghim
+ */
 const isFixed = (col: any) => {
   const pinnedIndex = props.columns.findIndex(c => c.isPinned);
   if (pinnedIndex === -1) return false;
@@ -64,10 +89,15 @@ const isFixed = (col: any) => {
   return currentColIndex !== -1 && currentColIndex <= pinnedIndex;
 };
 
+// Phat su kien togglePin
 const handleTogglePin = (e: any, dataField: string) => {
   emit('togglePin', e, dataField);
 };
+// </editor-fold>
 
+/**
+ * Tinh toan va cap nhat data khi co thay doi
+ */
 const fullColumns = computed(() => {
   return props.columns.map((col, index) => ({
     ...col,
@@ -78,7 +108,31 @@ const fullColumns = computed(() => {
     isStt: false
   }));
 });
-// TODO: mau #ff4d4f bi lap lai hoi nhieu
+
+/**
+ * Fetch danh sach cac Don vi ap dung
+ */
+const loadAllOrganization = async () => {
+  try {
+    let res = await organizationService.getAll();
+    if (res.data) {
+      // Map lại dữ liệu để khớp với text/value của DxSelectBox
+      organization.value = [
+        {text: 'Tất cả đơn vị', value: 'all'},
+        ...res.data.map((org: any) => ({
+          text: org.organizationName,
+          value: org.organizationId
+        }))
+      ];
+    }
+  } catch (error) {
+    console.error("Error loading organizations:", error);
+  }
+}
+
+onMounted(() => {
+  loadAllOrganization();
+});
 </script>
 
 <template>
@@ -94,7 +148,7 @@ const fullColumns = computed(() => {
               <span class="unselect-link" @click="emit('update:selectedIds', [])">Bỏ chọn</span>
             </div>
             <button class="misa-btn-delete-bulk" @click="emit('deleteSelected')">
-              <MSIcon name="trash" color="#ff4d4f"/>
+              <MSIcon name="trash" color="var(--misa-danger)"/>
               <span>Xóa</span>
             </button>
           </div>
@@ -107,15 +161,20 @@ const fullColumns = computed(() => {
           <div class="content_body_header_left">
             <div class="content_body_header_left_search">
               <input
-                  type="text" class="misa-search-input"
-                  :value="searchKeyword" @input="handleSearchChange"
-                  placeholder="Tìm kiếm" style="width: 250px;"/>
+                  type="text"
+                  class="misa-search-input"
+                  :value="searchKeyword"
+                  @input="handleSearchChange"
+                  placeholder="Tìm kiếm"
+                  style="width: var(--misa-width-standard-control);"
+              />
             </div>
           </div>
 
           <div class="content_body_header_right">
             <div class="content_body_header_right_filters">
               <template v-if="!isSystemMode">
+                <!-- Lọc theo trạng thái -->
                 <DxSelectBox
                     class="misa-selectbox"
                     :items="salaryCompositionStatus"
@@ -123,21 +182,23 @@ const fullColumns = computed(() => {
                     value-expr="value"
                     :value="statusFilter"
                     @value-changed="(e) => emit('update:statusFilter', e.value)"
-                    :width="160"/>
+                    :width="160"
+                />
+                <!-- Lọc theo đơn vi áp dung -->
                 <DxSelectBox
                     class="misa-selectbox"
-                    :items="[{ text: 'Tất cả đơn vị', value: 'all' }]"
+                    :items="organization"
                     display-expr="text"
                     value-expr="value"
                     value="all"
-                    :width="320"/>
+                    :width="320"
+                />
               </template>
 
               <template v-else>
                 <DxSelectBox
                     class="misa-selectbox"
-                    :items="systemItems || []"
-                    display-expr="salaryComponentSystemName"
+                    :items="systemItems || []" display-expr="salaryComponentSystemName"
                     value-expr="salaryComponentSystemId"
                     :value="selectedSystemId"
                     @value-changed="(e) => emit('update:selectedSystemId', e.value)"
@@ -156,12 +217,15 @@ const fullColumns = computed(() => {
       <!-- Content table -->
       <div class="content_body_table">
         <div class="table_wrapper">
+          <!-- Cho phép thay dổi co cot bằng thuoc tinh allow-column-resizing -->
+          <!-- column-resizing-mode="widget": Width cua bang cung thay doi dua tren viec thay doi kich co cot -->
           <DxDataGrid
               :data-source="tableData"
               :show-borders="true"
               :row-alternation-enabled="true"
               :show-column-lines="false"
-              :show-row-lines="false" key-expr="componentId"
+              :show-row-lines="false"
+              key-expr="componentId"
               :selected-row-keys="selectedIds"
               @update:selected-row-keys="handleSelectedIdsChange"
               :column-auto-width="false"
@@ -174,11 +238,12 @@ const fullColumns = computed(() => {
                 show-scrollbar="always"
                 :use-native="true"
                 :scroll-by-content="true"
-                :scroll-by-thumb="true"/>
+                :scroll-by-thumb="true"
+            />
 
             <DxPaging :enabled="false"/>
             <DxSelection mode="multiple" show-check-boxes-mode="always"/>
-            <DxHeaderFilter :visible="false"/>
+            <DxHeaderFilter :visible="false"/> <!-- Không cho filter tu dong-->
             <DxSorting mode="none"/>
 
             <template v-for="col in fullColumns" :key="col.dataField">
@@ -194,7 +259,8 @@ const fullColumns = computed(() => {
                   :header-cell-template="col.isStt ? undefined : 'headerTemplate'"
                   :allow-filtering="false"
                   :allow-sorting="false"
-                  :visible-index="col.visibleIndex"/>
+                  :visible-index="col.visibleIndex"
+              />
             </template>
 
             <template #valueTemplate="{ data }">
@@ -203,35 +269,42 @@ const fullColumns = computed(() => {
               </div>
             </template>
 
-            <!-- Cột Chức năng (Ẩn trong mode Hệ thống) -->
+            <!-- Cột Chức năng (Ẩn trong mode Danh muc hệ thống) -->
             <DxColumn
                 v-if="!isSystemMode"
                 caption="Chức năng"
                 cell-template="actionTemplate"
                 alignment="center"
                 :width="160"
-                fixed fixed-position="right"
+                fixed
+                fixed-position="right"
                 css-class="col-action"
                 :allow-filtering="false"
                 :allow-sorting="false"
-                :visible-index="1000"/>
+                :visible-index="1000"
+            />
 
-            <!-- Cột Thêm (Chỉ hiện trong mode Hệ thống) -->
+            <!-- Cột Thêm (Chỉ hiện trong mode Danh muc hệ thống) -->
             <DxColumn
                 v-if="isSystemMode"
                 caption=""
                 cell-template="addSystemTemplate"
                 alignment="center"
                 :width="50"
-                fixed fixed-position="right"
-                :visible-index="1000"/>
+                fixed
+                fixed-position="right"
+                :visible-index="1000"
+            />
 
             <template #headerTemplate="{ data }">
               <div class="header-name-container">
                 <span class="column-caption-text">{{ data.column.caption }}</span>
-                <div class="pin-icon"
-                     :class="{ 'is-pinned': columns.find(c => c.dataField === data.column.dataField)?.isPinned }"
-                     @click="handleTogglePin($event, data.column.dataField)" title="Ghim cột">
+                <div
+                    class="pin-icon"
+                    :class="{ 'is-pinned': columns.find(c => c.dataField === data.column.dataField)?.isPinned }"
+                    @click="handleTogglePin($event, data.column.dataField)"
+                    title="Ghim cột"
+                >
                   <MSIcon name="pin" size="16"/>
                 </div>
               </div>
@@ -242,15 +315,19 @@ const fullColumns = computed(() => {
             </template>
 
             <template #addSystemTemplate="{ data }">
-              <div :id="`add-sys-${data.data.componentId}`" class="add-system-btn"
-                   @click="emit('addSystem', data.data)">
-                <MSIcon name="check-circle" size="20" color="#2ca01c"/>
+              <div
+                  :id="`add-sys-${data.data.componentId}`"
+                  class="add-system-btn"
+                  @click="emit('addSystem', data.data)"
+              >
+                <MSIcon name="check-circle" size="20" color="var(--primary-green)"/>
               </div>
               <DxTooltip
                   :target="`#add-sys-${data.data.componentId}`"
                   show-event="dxhoverstart"
                   hide-event="dxhoverend"
-                  position="top">
+                  position="top"
+              >
                 <template #content>
                   <p class="p_content">Đưa vào danh sách sử dụng</p>
                 </template>
@@ -267,7 +344,8 @@ const fullColumns = computed(() => {
                       @click="btn.id === 'active' ? emit('handleActive', data.data) :
                         btn.id === 'copy' ? emit('handleDuplicate', data.data) :
                         btn.id === 'edit' ? emit('handleEdit', data.data) :
-                        emit('handleDelete', data.data)">
+                        emit('handleDelete', data.data)"
+                  >
                     <MSIcon :name="btn.icon" :color="btn.color"/>
                   </div>
                 </template>
@@ -279,7 +357,8 @@ const fullColumns = computed(() => {
                     :target="`#btn-${btn.id}-${data.data.componentId}`"
                     show-event="dxhoverstart"
                     hide-event="dxhoverend"
-                    position="top">
+                    position="top"
+                >
                   <template #content>
                     <p class="p_content">{{ btn.title }}</p>
                   </template>
@@ -301,8 +380,15 @@ const fullColumns = computed(() => {
           <div class="content_body_footer_pagesize">
             <span class="paging_label">Số bản ghi trên trang</span>
             <div class="page_size_custom_select">
-              <DxSelectBox class="misa-selectbox" :value="pageSize" :items="pageSizeOptions" display-expr="label"
-                           value-expr="value" :width="70" @value-changed="handlePageSizeValChange"/>
+              <DxSelectBox
+                  class="misa-selectbox"
+                  :value="pageSize"
+                  :items="pageSizeOptions"
+                  display-expr="label"
+                  value-expr="value"
+                  :width="70"
+                  @value-changed="handlePageSizeValChange"
+              />
             </div>
           </div>
           <div class="content_body_footer_info">
@@ -313,7 +399,9 @@ const fullColumns = computed(() => {
                 :model-value="currentPage"
                 @update:model-value="handleCurrentPageChange"
                 :total="totalRecords"
-                :page-size="pageSize" color="var(--primary-green)"/>
+                :page-size="pageSize"
+                color="var(--primary-green)"
+            />
           </div>
         </div>
       </div>
@@ -326,11 +414,11 @@ const fullColumns = computed(() => {
 .selected-info {
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: var(--misa-font-size-base);
 }
 
 .unselect-link {
-  color: #2ca01c;
+  color: var(--primary-green);
   cursor: pointer;
   margin-left: 16px;
   font-weight: 500;
@@ -345,11 +433,11 @@ const fullColumns = computed(() => {
   align-items: center;
   gap: 8px;
   padding: 0 16px;
-  height: 36px;
-  border: 1px solid #ff4d4f;
-  border-radius: 4px;
-  background-color: #fff;
-  color: #ff4d4f;
+  height: var(--misa-control-height);
+  border: 1px solid var(--misa-danger);
+  border-radius: var(--misa-border-radius);
+  background-color: var(--misa-white);
+  color: var(--misa-danger);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -360,22 +448,22 @@ const fullColumns = computed(() => {
 }
 
 .dx-datagrid-headers .dx-header-row > td {
-  border-bottom: 1px solid #e0e0e0 !important;
-  border-right: 1px solid #e0e0e0 !important;
+  border-bottom: 1px solid var(--misa-border-color) !important;
+  border-right: 1px solid var(--misa-border-color) !important;
 }
 
 .dx-datagrid-rowsview .dx-data-row > td {
-  border-bottom: 1px solid #e0e0e0 !important;
-  border-right: 1px solid #e0e0e0 !important;
+  border-bottom: 1px solid var(--misa-border-color) !important;
+  border-right: 1px solid var(--misa-border-color) !important;
 }
 
 /* Đảm bảo cột STT và cột checkbox cũng có border */
 .dx-datagrid-rowsview .dx-data-row > td:first-child {
-  border-left: 1px solid #e0e0e0 !important;
+  border-left: 1px solid var(--misa-border-color) !important;
 }
 
 .dx-datagrid-headers .dx-header-row > td:first-child {
-  border-left: 1px solid #e0e0e0 !important;
+  border-left: 1px solid var(--misa-border-color) !important;
 }
 
 .formula-cell {
@@ -393,6 +481,6 @@ const fullColumns = computed(() => {
 
 .p_content {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--misa-font-size-small);
 }
 </style>
