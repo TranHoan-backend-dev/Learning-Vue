@@ -200,27 +200,7 @@ const handleAddSystem = (data: any) => {
   background-repeat: no-repeat;
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-}
 
-:deep(.content_body) {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.content_header {
-  height: 57px !important;
-  /* Cố định chiều cao thấp hơn để nâng tiêu đề lên */
-  padding-top: 0;
-  padding-bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
 
 .content_header_left {
   display: flex;

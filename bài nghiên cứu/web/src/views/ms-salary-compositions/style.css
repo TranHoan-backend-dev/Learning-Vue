@@ -3,8 +3,9 @@
 }
 
 .content_header {
-  height: 64px;
-  padding: 0 24px;
+  height: auto;
+  min-height: 48px;
+  padding: 24px 24px 12px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -107,10 +108,19 @@
   filter: brightness(0) invert(1);
 }
 
+.content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .content_body {
-  height: calc(100% - 64px);
-  padding: 16px 24px;
+  flex: 1;
+  padding: 12px 24px 24px 24px;
   background-color: #f4f5f8;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .content_body_container {
