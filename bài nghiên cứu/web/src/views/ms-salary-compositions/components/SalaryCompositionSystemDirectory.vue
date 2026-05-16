@@ -24,8 +24,8 @@ const fetchData = async () => {
   isLoading.value = true;
   try {
     const pageable = {
-      PageIndex: currentPage.value - 1,
-      PageSize: pageSize.value
+      pageIndex: currentPage.value - 1,
+      pageSize: pageSize.value
     };
 
     const filterRequest = {
@@ -33,19 +33,18 @@ const fetchData = async () => {
       ColumnFilters: []
     };
 
-    debugger;
-    const response = await salaryCompositionSystemService.getAll(pageable, filterRequest);
+    const response = await salaryCompositionService.getFilter(pageable, filterRequest, false);
     
     if (response.data && response.data.data) {
       tableData.value = response.data.data.map((item: any) => ({
         ...item,
-        componentId: item.salaryComponentSystemId,
+        componentId: item.salaryComponentId,
+        componentCode: item.salaryComponentCode,
+        salaryComponentSystemName: item.salaryComponentName,
         categoryName: 'Hệ thống',
         source: 'Hệ thống'
       }));
       totalRecords.value = response.data.pageable?.totalElements || response.data.data.length;
-      console.log(response.data);
-      debugger;
     }
   } catch (error) {
     console.error(error);

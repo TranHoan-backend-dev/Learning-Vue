@@ -29,10 +29,14 @@ const salaryCompositionService = {
      * Lấy danh sách thành phần lương có phân trang và lọc
      * @param pageable Tham số phân trang (pageIndex, pageSize)
      * @param filterRequest Tham số lọc và tìm kiếm
+     * @param isUsed
      */
-    getFilter(pageable: Pageable, filterRequest: FilterRequest) {
+    getFilter(pageable: Pageable, filterRequest: FilterRequest, isUsed: boolean) {
         return api.post('/SalaryCompositions/filter', filterRequest, {
-            params: pageable
+            params: {
+                ...pageable,
+                isUsed: isUsed
+            }
         });
     },
 

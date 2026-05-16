@@ -116,7 +116,6 @@
 
 .content_body {
   flex: 1;
-  padding: 12px 24px 24px 24px;
   background-color: #f4f5f8;
   overflow: hidden;
   display: flex;

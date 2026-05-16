@@ -53,7 +53,7 @@ const fetchData = async () => {
     }
 
     console.log("Sending filterRequest:", JSON.stringify(filterRequest, null, 2));
-    const response = await salaryCompositionService.getFilter(pageable, filterRequest);
+    const response = await salaryCompositionService.getFilter(pageable, filterRequest, true);
     if (response.data) {
       console.log(response.data)
       // map response body
@@ -81,7 +81,7 @@ const handleSearchByKeyword = async () => {
       Keyword: searchKeyword.value,
       ColumnFilters: [] as any[]
     };
-    let response = await salaryCompositionService.getFilter(pageable, filterRequest);
+    let response = await salaryCompositionService.getFilter(pageable, filterRequest, true);
     debugger;
     if (response.data) {
       debugger;
@@ -145,6 +145,9 @@ const fetchColumns = async () => {
   }
 };
 
+/**
+ * Khoi tao lan dau du lieu
+ */
 onMounted(() => {
   fetchColumns();
   fetchData();
@@ -185,16 +188,20 @@ const pageInfo = computed(() => {
 const isConfirmModalOpen = ref(false);
 const selectedComposition = ref<any>(null);
 
+// <editor-fold> desc="Xu ly nghiep vu thay doi status cua ban ghi"
+/**
+ * Xu ly dong mo modal
+ * @param data
+ */
 const handleActive = (data: any) => {
   selectedComposition.value = data;
   isConfirmModalOpen.value = true;
 };
 
-const closeConfirmModal = () => {
-  isConfirmModalOpen.value = false;
-  selectedComposition.value = null;
-};
-
+/**
+ * Xu ly su thay doi trang thai theo doi (Dang theo doi <-> Ngung theo doi)
+ * @param data
+ */
 const handleChangeStatus = async (data: any) => {
   if (!data) return;
   try {
@@ -219,6 +226,12 @@ const handleChangeStatus = async (data: any) => {
     toast.error('Có lỗi xảy ra', `Có lỗi xảy ra khi cập nhật trạng thái: ${e.message}`);
   }
   closeConfirmModal();
+};
+// </editor-fold>
+
+const closeConfirmModal = () => {
+  isConfirmModalOpen.value = false;
+  selectedComposition.value = null;
 };
 
 const isFormVisible = ref(false);
@@ -261,10 +274,15 @@ const closeForm = () => {
   formInitialData.value = null;
 };
 
+/**
+ * Luu du lieu ve backend
+ * @param formData
+ * @param stayOpen
+ */
 const handleSaveForm = async (formData: any, stayOpen = false) => {
   isLoading.value = true;
   try {
-    // Map dữ liệu từ form sang đúng Model của Backend (PascalCase)
+    // Map dữ liệu
     const requestData = {
       SalaryComponentCode: formData.componentCode,
       SalaryComponentName: formData.componentName,
