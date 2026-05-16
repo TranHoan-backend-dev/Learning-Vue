@@ -212,7 +212,7 @@ public class BaseDl<T>(
             // Lấy ra cc thuộc tính không phải khóa chính
             var columns = type
                 .GetAllColumns()
-                .Where(c => c != primaryKeyTable)
+                .Where(c => c != primaryKeyTable && c != "created_at" && c != "created_by")
                 .ToList();
 
             entity.ModifiedAt = DateTime.Now;
