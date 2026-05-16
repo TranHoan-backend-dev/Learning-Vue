@@ -517,12 +517,25 @@ onMounted(() => {
 /* Cột action cố định theo thiết kế mới */
 :deep(.dx-datagrid-rowsview .dx-data-row .col-action) {
   background-color: transparent !important;
-  /* Mặc định trong suốt để nhìn xuyên qua */
   border-left: none !important;
   border-right: none !important;
   z-index: 10;
-  pointer-events: none;
-  /* Không ngăn cản tương tác với cột bên dưới */
+  pointer-events: auto;
+}
+
+/* Đảm bảo nội dung hàng bên dưới hiển thị màu so le */
+:deep(.dx-datagrid-rowsview .dx-data-row) {
+  background-color: #ffffff;
+}
+
+:deep(.dx-datagrid-rowsview .dx-data-row.dx-row-alt) {
+  background-color: #f8f8f8;
+}
+
+/* Đảm bảo container chính luôn có màu so le chạy dài ra hết bảng */
+:deep(.dx-datagrid-rowsview .dx-datagrid-content) {
+  background-image: linear-gradient(#ffffff 50%, #f8f8f8 50%);
+  background-size: 100% 96px; /* Giả định chiều cao 2 hàng là 96px (48px mỗi hàng) */
 }
 
 /* Chỉ làm ẩn nội dung (nút) bên trong, không làm ẩn cả ô */
@@ -553,14 +566,17 @@ onMounted(() => {
   opacity: 1;
 }
 
-/* Loại bỏ fix màu nền cho hàng xen kẽ và hàng thường để giữ tính trong suốt */
-
-/* Header của cột action - làm trong suốt */
+/* Header của cột action - TRONG SUỐT để nhìn xuyên qua khi scroll */
 :deep(.dx-datagrid-headers .dx-header-row > td.col-action) {
   background-color: transparent !important;
   border-left: none !important;
   border-right: none !important;
   border-bottom: 1px solid var(--misa-border-color) !important;
+}
+
+/* Áp dụng màu xám cho container header để ô action vẫn có màu khi ở vùng trống */
+:deep(.dx-datagrid-headers) {
+  background-color: #f2f2f2 !important;
 }
 
 /* Căn giữa tiêu đề cho các cột khác */
