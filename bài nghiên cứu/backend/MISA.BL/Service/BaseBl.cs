@@ -132,8 +132,11 @@ public class BaseBl<T>(
     /// <param name="pageIndex">Trang hiện tại</param>
     /// <param name="pageSize">Cỡ bảng</param>
     /// <param name="parameters">Các tham số truyền vào query</param>
-    /// <returns></returns>
-    private (string, string) BuildQueryStringWithCondition(
+    /// <returns>
+    ///     query: Chuoi query co dieu kien<br/>
+    ///     pagination: Chuoi query phan trang
+    /// </returns>
+    protected (string, string) BuildQueryStringWithCondition(
         FilterRequest request, int pageIndex,
         long pageSize, ref DynamicParameters parameters
     )
@@ -245,7 +248,7 @@ public class BaseBl<T>(
     /// <summary>
     /// Build chuỗi SELECT các cột (bao gồm cả các cột từ Join nếu có)
     /// </summary>
-    private string GetSelectColumns()
+    protected string GetSelectColumns()
     {
         var type = typeof(T);
         var columns = type.GetAllColumns();
@@ -260,7 +263,7 @@ public class BaseBl<T>(
     /// <summary>
     /// Build chuỗi FROM kèm Join SQL
     /// </summary>
-    private string GetBaseFromSql()
+    protected string GetBaseFromSql()
     {
         var tableName = typeof(T).GetTableNameOnly();
         var joinSql = GetJoinSql();

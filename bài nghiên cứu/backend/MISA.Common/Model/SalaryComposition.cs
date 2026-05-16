@@ -89,6 +89,9 @@ public class SalaryComposition : BaseModel
     [ConfigColumn("source")]
     [MaxLength(50)]
     public string Source { get; set; } = "Tự thêm";
+    
+    [ConfigColumn("is_used")]
+    public bool IsUsed { get; set; } = false;
 
     /// <summary>
     /// Tên đơn vị áp dụng.<br/>

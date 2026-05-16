@@ -16,11 +16,12 @@ public class SalaryCompositionsController(ISalaryCompositionBl baseBl) : Control
     /// </summary>
     /// <param name="pageable">Thông tin phân trang</param>
     /// <param name="request">Điều kiện lọc</param>
+    /// <param name="isUsed">Trang thai da duoc su dung trong "Thanh phan luong" hay chua</param>
     /// <returns>Danh sách bản ghi</returns>
     [HttpPost("filter")]
-    public async Task<IActionResult> GetAllAsync([FromQuery] Pageable pageable, [FromBody] FilterRequest request)
+    public async Task<IActionResult> GetAllAsync([FromQuery] Pageable pageable, [FromBody] FilterRequest request, bool isUsed)
     {
-        var result = await baseBl.GetAllAsync(pageable, request);
+        var result = await baseBl.GetAllUsedCompositions(request, pageable, isUsed);
         return Ok(result);
     }
 
