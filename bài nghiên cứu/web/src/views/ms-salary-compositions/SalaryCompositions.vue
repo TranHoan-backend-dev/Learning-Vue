@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import 'devextreme/dist/css/dx.fluent.blue.light.css';
 
-import { computed, ref, watch } from "vue";
-import { toast } from "@/services/toast.ts";
-import { type SalaryCompositions, getAttributeName, getValueTypeName } from "@/views/ms-salary-compositions/data.ts";
+import {computed, ref, watch} from "vue";
+import {toast} from "@/services/toast.ts";
+import {type SalaryCompositions, getAttributeName, getValueTypeName} from "@/views/ms-salary-compositions/data.ts";
 import salaryCompositionService from "@/services/salaryCompositionService.ts";
 import SalaryCompositionForm from "./components/form/SalaryCompositionForm.vue";
 import SalaryCompositionPopups from "./components/SalaryCompositionPopups.vue";
-import { onMounted } from "vue";
+import {onMounted} from "vue";
 import SalaryCompositionHeader from "@/views/ms-salary-compositions/components/SalaryCompositionHeader.vue";
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
 import SalaryCompositionSystemDirectory from "./components/SalaryCompositionSystemDirectory.vue";
 import gridConfigService from "@/services/gridConfigService.ts";
-import { mockSalaryCompositions, mockSalaryCompositionColumns } from "./mock.ts";
 
 const selectedIds = ref<string[]>([]);
 const isLoading = ref(false);
@@ -24,6 +23,11 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const statusFilter = ref("all");
 
+// <editor-fold> desc="Xu ly logic bang"
+// <editor-fold desc="Fetch data"
+/**
+ * Fetch data tu backend len va trinhh bay du lieu
+ */
 const fetchData = async () => {
   isLoading.value = true;
   try {
@@ -36,9 +40,9 @@ const fetchData = async () => {
       ColumnFilters: [] as any[]
     };
 
-    // Log để kiểm tra giá trị filter
+    // Log kiểm tra giá trị filter
     console.log("Current statusFilter value:", statusFilter.value);
-
+    // Mac dinh luc dau fetch toan bo cac trang thai
     if (statusFilter.value !== "all" && statusFilter.value !== null && statusFilter.value !== undefined) {
       filterRequest.ColumnFilters.push({
         Column: "Status",
@@ -52,7 +56,7 @@ const fetchData = async () => {
     const response = await salaryCompositionService.getFilter(pageable, filterRequest);
     if (response.data) {
       console.log(response.data)
-      // Backend trả về PagingData { Data: [], Pageable: { TotalRecords: ... } }
+      // map response body
       tableData.value = response.data.data.map((item: any) => ({
         componentId: item.salaryComponentId,
         componentCode: item.salaryComponentCode,
@@ -68,90 +72,39 @@ const fetchData = async () => {
         source: item.source || 'Hệ thống'
       }));
       totalRecords.value = response.data.pageable.totalElements;
-    } else {
-      useMockData();
     }
   } catch (error) {
     console.error('Lỗi khi tải dữ liệu từ backend, sử dụng mock data:', error);
-    useMockData();
   } finally {
     isLoading.value = false;
   }
 };
 
-// <editor-fold> desc="Dùng mock data
-const useMockData = () => {
-  let data = [...mockSalaryCompositions];
-
-  // Áp dụng tìm kiếm
-  if (searchKeyword.value) {
-    const kw = searchKeyword.value.toLowerCase();
-    data = data.filter(item =>
-      item.salaryComponentCode.toLowerCase().includes(kw) ||
-      item.salaryComponentName.toLowerCase().includes(kw)
-    );
-  }
-
-  // Áp dụng lọc trạng thái
-  if (statusFilter.value !== 'all') {
-    data = data.filter(item => item.status === Number(statusFilter.value));
-  }
-
-  totalRecords.value = data.length;
-
-  // Áp dụng phân trang
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  tableData.value = data.slice(start, end).map(item => ({
-    componentId: item.salaryComponentId,
-    componentCode: item.salaryComponentCode,
-    componentName: item.salaryComponentName,
-    appliedUnitId: item.appliedUnitId,
-    appliedUnitName: item.appliedUnitName,
-    salaryComponentSystemId: item.salaryComponentSystemId,
-    salaryComponentSystemName: item.salaryComponentSystemName,
-    attribute: item.attribute,
-    valueType: item.valueType,
-    value: item.value,
-    status: item.status,
-    source: item.source
-  }));
-};
-
-const useMockColumns = () => {
-  columns.value = mockSalaryCompositionColumns.map(col => ({
-    ...col,
-    calculateCellValue: col.dataField === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
-      col.dataField === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
-  }));
-};
-// </editor-fold>
-
+/**
+ * Fetch danh sac cac column cua trang Thanh phan luong
+ */
 const fetchColumns = async () => {
   try {
     const response = await gridConfigService.getByGridId('SalaryComponentGrid');
     if (response.data && response.data.length > 0) {
       columns.value = response.data.map((col: any) => ({
         dataField: col.columnId === 'salary_component_code' ? 'componentCode' :
-          (col.columnId === 'salary_component_name' ? 'componentName' :
-            (col.columnId === 'applied_unit_name' ? 'appliedUnitName' :
-              (col.columnId === 'salary_component_system_name' ? 'salaryComponentSystemName' :
-                (col.columnId === 'value_type' ? 'valueType' :
-                  (col.columnId === 'attribute' ? 'attribute' : col.columnId))))),
+            (col.columnId === 'salary_component_name' ? 'componentName' :
+                (col.columnId === 'applied_unit_name' ? 'appliedUnitName' :
+                    (col.columnId === 'salary_component_system_name' ? 'salaryComponentSystemName' :
+                        (col.columnId === 'value_type' ? 'valueType' :
+                            (col.columnId === 'attribute' ? 'attribute' : col.columnId))))),
         caption: col.columnName,
         visible: col.isVisible === 1,
         width: col.width,
         isPinned: col.isPinned === 1,
         cellTemplate: col.columnId === 'status' ? 'status-cell' : undefined,
         calculateCellValue: col.columnId === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
-          col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
+            col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
       }));
-    } else {
-      useMockColumns();
     }
   } catch (error) {
     console.error('Lỗi khi tải cấu hình cột:', error);
-    useMockColumns();
   }
 };
 
@@ -159,7 +112,11 @@ onMounted(() => {
   fetchColumns();
   fetchData();
 });
+// </editor-fold>
 
+/**
+ * Theo doi trang thai cua cac bo loc va phan tim kiem
+ */
 watch([currentPage, pageSize, searchKeyword, statusFilter], (newValues, oldValues) => {
   // Nếu statusFilter hoặc searchKeyword thay đổi, reset về trang 1
   if (oldValues && (newValues[2] !== oldValues[2] || newValues[3] !== oldValues[3])) {
@@ -171,16 +128,22 @@ watch([currentPage, pageSize, searchKeyword, statusFilter], (newValues, oldValue
   fetchData();
 });
 
+// reset ve trang 1
 const handlePageSizeChange = () => {
   currentPage.value = 1;
   fetchData();
 };
 
+/**
+ * Tinh toan index cua ban ghi trong trang hien tai
+ * VD: Trang 2 => Ban ghi tu 11-20
+ */
 const pageInfo = computed(() => {
   const start = totalRecords.value > 0 ? (currentPage.value - 1) * pageSize.value + 1 : 0;
   const end = Math.min(currentPage.value * pageSize.value, totalRecords.value);
   return `${start} - ${end} / ${totalRecords.value} bản ghi`;
 });
+// </editor-fold>
 
 const isConfirmModalOpen = ref(false);
 const selectedComposition = ref<any>(null);
@@ -255,16 +218,15 @@ const handleSaveForm = async (formData: any, stayOpen = false) => {
       Status: 1, // Mặc định: Đang sử dụng
       Source: 'Tự thêm'
     };
-
     if (formMode.value === 'add' || formMode.value === 'copy') {
       await salaryCompositionService.create(requestData);
       var content = formMode.value === 'copy' ? 'Nhân bản' : 'Thêm mới';
-      toast.success(`${content} thành công`, `${content} thành công ${requestData.salaryComponentName}`);
+      toast.success(`${content} thành công`, `${content} thành công ${requestData.SalaryComponentName}`);
     } else {
       // Khi sửa, dùng ID thực của bản ghi (nếu có trong formData hoặc state)
       const id = selectedRowId.value || formData.salaryComponentId;
       await salaryCompositionService.update(id, requestData);
-      toast.success('Cập nhật thành công', `Cập nhật thành công ${requestData.salaryComponentName}`);
+      toast.success('Cập nhật thành công', `Cập nhật thành công ${requestData.SalaryComponentName}`);
     }
     if (!stayOpen) {
       isFormVisible.value = false;
@@ -304,8 +266,10 @@ const handleDeleteSelected = () => {
 const confirmDelete = async () => {
   isDeleteModalOpen.value = false;
   isLoading.value = true;
+  debugger;
   try {
     if (deleteType.value === 'single' && pendingDeleteData.value) {
+      debugger;
       await salaryCompositionService.delete(pendingDeleteData.value.componentId);
       toast.success('Xóa thành công', `Đã xóa thành phần lương ${pendingDeleteData.value.componentName}`);
     } else {
@@ -347,9 +311,9 @@ const closeSystemDirectory = () => {
   isSystemDirectoryVisible.value = false;
 };
 
-const addSystemComponent = async (data: any) => {
+const addSystemComposition = async (data: any) => {
   try {
-    // Khi thêm từ hệ thống, ta cần map lại các trường cho đúng với Model của Backend (PascalCase)
+    // Map du lieu vao request payload
     const requestData = {
       SalaryComponentCode: data.componentCode,
       SalaryComponentName: data.componentName,
@@ -401,32 +365,66 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
   <template v-if="!isSystemDirectoryVisible">
     <section v-if="!isFormVisible" class="content">
       <!-- Title danh sách -->
-      <SalaryCompositionHeader :is-add-dropdown-visible="isAddDropdownVisible" @add="handleAdd"
-        @toggle-dropdown="toggleAddDropdown" @add-from-system="handleAddFromSystem"
-        @open-system="handleAddFromSystem" />
+      <SalaryCompositionHeader
+          :is-add-dropdown-visible="isAddDropdownVisible"
+          @add="handleAdd"
+          @toggle-dropdown="toggleAddDropdown"
+          @add-from-system="handleAddFromSystem"
+          @open-system="handleAddFromSystem"
+      />
 
       <!-- Nội dung bảng -->
-      <SalaryCompositionDataTable v-model:searchKeyword="searchKeyword" v-model:selectedIds="selectedIds"
-        v-model:currentPage="currentPage" v-model:pageSize="pageSize" :table-data="tableData"
-        :total-records="totalRecords" :columns="columns" :page-info="pageInfo" v-model:statusFilter="statusFilter"
-        @handlePageSizeChange="handlePageSizeChange" @handleOpenConfig="handleOpenConfig" @togglePin="togglePin"
-        @handleActive="handleActive" @handleDuplicate="handleDuplicate" @handleEdit="handleEdit"
-        @handleDelete="handleDelete" @deleteSelected="handleDeleteSelected" />
+      <SalaryCompositionDataTable
+          v-model:searchKeyword="searchKeyword"
+          v-model:selectedIds="selectedIds"
+          v-model:currentPage="currentPage"
+          v-model:pageSize="pageSize"
+          :table-data="tableData"
+          :total-records="totalRecords"
+          :columns="columns"
+          :page-info="pageInfo"
+          v-model:statusFilter="statusFilter"
+          @handlePageSizeChange="handlePageSizeChange"
+          @handleOpenConfig="handleOpenConfig"
+          @togglePin="togglePin"
+          @handleActive="handleActive"
+          @handleDuplicate="handleDuplicate"
+          @handleEdit="handleEdit"
+          @handleDelete="handleDelete"
+          @deleteSelected="handleDeleteSelected"
+      />
     </section>
 
     <!-- Form component overlay -->
-    <SalaryCompositionForm v-if="isFormVisible" :key="formKey" :mode="formMode" :initial-data="formInitialData"
-      @close="closeForm" @save="handleSaveForm" />
+    <SalaryCompositionForm
+        v-if="isFormVisible"
+        :key="formKey"
+        :mode="formMode"
+        :initial-data="formInitialData"
+        @close="closeForm"
+        @save="handleSaveForm"
+    />
 
     <!-- Popups (Confirm & Column Config) -->
-    <SalaryCompositionPopups v-model:isConfirmVisible="isConfirmModalOpen"
-      v-model:isConfigVisible="isColumnConfigVisible" v-model:isDeleteVisible="isDeleteModalOpen"
-      :delete-message="deleteModalMessage" v-model:columns="columns" :selected-composition="selectedComposition"
-      @confirmActive="confirmActive" @confirmDelete="confirmDelete" @closeConfirm="closeConfirmModal"
-      @closeConfig="closeConfig" />
+    <SalaryCompositionPopups
+        v-model:isConfirmVisible="isConfirmModalOpen"
+        v-model:isConfigVisible="isColumnConfigVisible"
+        v-model:isDeleteVisible="isDeleteModalOpen"
+        :delete-message="deleteModalMessage"
+        v-model:columns="columns"
+        :selected-composition="selectedComposition"
+        @confirmActive="confirmActive"
+        @confirmDelete="confirmDelete"
+        @closeConfirm="closeConfirmModal"
+        @closeConfig="closeConfig"
+    />
   </template>
 
-  <SalaryCompositionSystemDirectory v-else @back="closeSystemDirectory" @addSystem="addSystemComponent" />
+  <SalaryCompositionSystemDirectory
+      v-else
+      @back="closeSystemDirectory"
+      @addSystem="addSystemComposition"
+  />
 </template>
 
 <style scoped src="./style.css"></style>

@@ -15,7 +15,6 @@ import {DxTooltip} from "devextreme-vue";
 import MSStatusBadge from "@/components/ui/ms-status-badge/MSStatusBadge.vue";
 import {
   type DataTableAttributes,
-  gridActions,
   pageSizeOptions,
   salaryCompositionStatus
 } from "@/views/ms-salary-compositions/data.ts";
@@ -38,7 +37,8 @@ const emit = defineEmits([
   'handleEdit',
   'handleDelete',
   'deleteSelected',
-  'update:statusFilter'
+  'update:statusFilter',
+  'addSystem'
 ]);
 
 /**
@@ -104,7 +104,7 @@ const fullColumns = computed(() => {
     fixed: isFixed(col),
     allowFiltering: false,
     allowSorting: false,
-    visibleIndex: index,
+    visibleIndex: index + 1, // Dành vị trí 0 cho Checkbox
     isStt: false
   }));
 });
@@ -191,14 +191,14 @@ onMounted(() => {
                     display-expr="text"
                     value-expr="value"
                     value="all"
-                    :width="320"
-                />
+                    :width="320"/>
               </template>
 
               <template v-else>
                 <DxSelectBox
                     class="misa-selectbox"
-                    :items="systemItems || []" display-expr="salaryComponentSystemName"
+                    :items="systemItems || []"
+                    display-expr="salaryComponentSystemName"
                     value-expr="salaryComponentSystemId"
                     :value="selectedSystemId"
                     @value-changed="(e) => emit('update:selectedSystemId', e.value)"
@@ -217,8 +217,6 @@ onMounted(() => {
       <!-- Content table -->
       <div class="content_body_table">
         <div class="table_wrapper">
-          <!-- Cho phép thay dổi co cot bằng thuoc tinh allow-column-resizing -->
-          <!-- column-resizing-mode="widget": Width cua bang cung thay doi dua tren viec thay doi kich co cot -->
           <DxDataGrid
               :data-source="tableData"
               :show-borders="true"
@@ -230,11 +228,12 @@ onMounted(() => {
               @update:selected-row-keys="handleSelectedIdsChange"
               :column-auto-width="false"
               :allow-column-resizing="true"
-              column-resizing-mode="widget"
+              column-resizing-mode="nextColumn"
               width="100%"
-              height="100%">
+              height="100%"
+          >
             <DxScrolling
-                mode="standard"
+                mode="virtual"
                 show-scrollbar="always"
                 :use-native="true"
                 :scroll-by-content="true"
@@ -242,11 +241,15 @@ onMounted(() => {
             />
 
             <DxPaging :enabled="false"/>
+
+            <!-- Ghim cột Checkbox bên trái -->
+            <DxColumn type="selection" :fixed="true" fixed-position="left" :visible-index="0" :width="50"/>
             <DxSelection mode="multiple" show-check-boxes-mode="always"/>
-            <DxHeaderFilter :visible="false"/> <!-- Không cho filter tu dong-->
+
+            <DxHeaderFilter :visible="false"/>
             <DxSorting mode="none"/>
 
-            <template v-for="col in fullColumns" :key="col.dataField">
+            <template v-for="(col, index) in fullColumns" :key="col.dataField || index">
               <DxColumn
                   v-if="col.visible"
                   :data-field="col.dataField"
@@ -269,14 +272,13 @@ onMounted(() => {
               </div>
             </template>
 
-            <!-- Cột Chức năng (Ẩn trong mode Danh muc hệ thống) -->
+            <!-- Cột Chức năng: Ghim phải, hiện khi hover -->
             <DxColumn
                 v-if="!isSystemMode"
-                caption="Chức năng"
+                caption=""
                 cell-template="actionTemplate"
-                alignment="center"
-                :width="160"
-                fixed
+                alignment="right" :width="140"
+                :fixed="true"
                 fixed-position="right"
                 css-class="col-action"
                 :allow-filtering="false"
@@ -301,7 +303,7 @@ onMounted(() => {
                 <span class="column-caption-text">{{ data.column.caption }}</span>
                 <div
                     class="pin-icon"
-                    :class="{ 'is-pinned': columns.find(c => c.dataField === data.column.dataField)?.isPinned }"
+                    :class="{ 'is-pinned': props.columns.find(c => c.dataField === data.column.dataField)?.isPinned }"
                     @click="handleTogglePin($event, data.column.dataField)"
                     title="Ghim cột"
                 >
@@ -321,49 +323,87 @@ onMounted(() => {
                   @click="emit('addSystem', data.data)"
               >
                 <MSIcon name="check-circle" size="20" color="var(--primary-green)"/>
+                <DxTooltip
+                    :target="`#add-sys-${data.data.componentId}`"
+                    show-event="mouseenter"
+                    hide-event="mouseleave"
+                    position="top"
+                >
+                  Sử dụng
+                </DxTooltip>
               </div>
-              <DxTooltip
-                  :target="`#add-sys-${data.data.componentId}`"
-                  show-event="dxhoverstart"
-                  hide-event="dxhoverend"
-                  position="top"
-              >
-                <template #content>
-                  <p class="p_content">Đưa vào danh sách sử dụng</p>
-                </template>
-              </DxTooltip>
             </template>
 
             <template #actionTemplate="{ data }">
               <div class="action-buttons">
-                <template v-for="btn in gridActions" :key="btn.id">
-                  <div
-                      class="action-btn"
-                      :id="`btn-${btn.id}-${data.data.componentId}`"
-                      :class="btn.class"
-                      @click="btn.id === 'active' ? emit('handleActive', data.data) :
-                        btn.id === 'copy' ? emit('handleDuplicate', data.data) :
-                        btn.id === 'edit' ? emit('handleEdit', data.data) :
-                        emit('handleDelete', data.data)"
-                  >
-                    <MSIcon :name="btn.icon" :color="btn.color"/>
-                  </div>
-                </template>
-              </div>
-
-              <!-- Tooltips -->
-              <template v-for="btn in gridActions" :key="`tooltip-${btn.id}-${data.data.componentId}`">
-                <DxTooltip
-                    :target="`#btn-${btn.id}-${data.data.componentId}`"
-                    show-event="dxhoverstart"
-                    hide-event="dxhoverend"
-                    position="top"
+                <!-- Nút Sử dụng (Tạm thời để tích xanh cho tất cả bản ghi) -->
+                <div
+                    :id="`active-${data.data.componentId}`"
+                    class="action-btn action-active"
+                    @click="emit('handleActive', data.data)"
                 >
-                  <template #content>
-                    <p class="p_content">{{ btn.title }}</p>
-                  </template>
-                </DxTooltip>
-              </template>
+                  <MSIcon name="check-circle" color="var(--primary-green)"/>
+                  <DxTooltip
+                      :target="`#active-${data.data.componentId}`"
+                      show-event="mouseenter"
+                      hide-event="mouseleave"
+                      position="top"
+                  >
+                    Sử dụng
+                  </DxTooltip>
+                </div>
+
+                <!-- Nút Nhân bản -->
+                <div
+                    :id="`copy-${data.data.componentId}`"
+                    class="action-btn action-copy"
+                    @click="emit('handleDuplicate', data.data)"
+                >
+                  <MSIcon name="copy" color="#5a5a5a"/>
+                  <DxTooltip
+                      :target="`#copy-${data.data.componentId}`"
+                      show-event="mouseenter"
+                      hide-event="mouseleave"
+                      position="top"
+                  >
+                    Nhân bản
+                  </DxTooltip>
+                </div>
+
+                <!-- Nút Sửa -->
+                <div
+                    :id="`edit-${data.data.componentId}`"
+                    class="action-btn action-edit"
+                    @click="emit('handleEdit', data.data)"
+                >
+                  <MSIcon name="edit" color="#5a5a5a"/>
+                  <DxTooltip
+                      :target="`#edit-${data.data.componentId}`"
+                      show-event="mouseenter"
+                      hide-event="mouseleave"
+                      position="top"
+                  >
+                    Sửa
+                  </DxTooltip>
+                </div>
+
+                <!-- Nút Xóa -->
+                <div
+                    :id="`delete-${data.data.componentId}`"
+                    class="action-btn action-delete"
+                    @click="emit('handleDelete', data.data)"
+                >
+                  <MSIcon name="trash" color="var(--misa-danger)"/>
+                  <DxTooltip
+                      :target="`#delete-${data.data.componentId}`"
+                      show-event="mouseenter"
+                      hide-event="mouseleave"
+                      position="top"
+                  >
+                    Xóa
+                  </DxTooltip>
+                </div>
+              </div>
             </template>
           </DxDataGrid>
         </div>
@@ -474,13 +514,77 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 
-/* Căn giữa tiêu đề cho cột Chức năng */
-:deep(.dx-datagrid-headers .col-action .dx-datagrid-text-content) {
-  justify-content: center !important;
+/* Cột action cố định theo thiết kế mới */
+:deep(.dx-datagrid-rowsview .dx-data-row .col-action) {
+  background-color: transparent !important;
+  /* Mặc định trong suốt để nhìn xuyên qua */
+  border-left: none !important;
+  border-right: none !important;
+  z-index: 10;
+  pointer-events: none;
+  /* Không ngăn cản tương tác với cột bên dưới */
 }
 
-.p_content {
-  margin: 0;
-  font-size: var(--misa-font-size-small);
+/* Chỉ làm ẩn nội dung (nút) bên trong, không làm ẩn cả ô */
+:deep(.dx-datagrid-rowsview .dx-data-row .col-action .action-buttons) {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+/* Hiện nội dung và màu nền khi hover hàng */
+:deep(.dx-datagrid-rowsview .dx-data-row:hover .col-action),
+:deep(.dx-datagrid-rowsview .dx-data-row.dx-state-hover .col-action) {
+  background-color: #ebf9eb !important;
+  pointer-events: auto;
+}
+
+:deep(.dx-datagrid-rowsview .dx-data-row:hover .col-action .action-buttons),
+:deep(.dx-datagrid-rowsview .dx-data-row.dx-state-hover .col-action .action-buttons) {
+  opacity: 1;
+}
+
+/* Khi hàng được chọn */
+:deep(.dx-datagrid-rowsview .dx-data-row.dx-selection .col-action) {
+  background-color: #e5f3ff !important;
+  pointer-events: auto;
+}
+
+:deep(.dx-datagrid-rowsview .dx-data-row.dx-selection .col-action .action-buttons) {
+  opacity: 1;
+}
+
+/* Loại bỏ fix màu nền cho hàng xen kẽ và hàng thường để giữ tính trong suốt */
+
+/* Header của cột action - làm trong suốt */
+:deep(.dx-datagrid-headers .dx-header-row > td.col-action) {
+  background-color: transparent !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: 1px solid var(--misa-border-color) !important;
+}
+
+/* Căn giữa tiêu đề cho các cột khác */
+:deep(.dx-datagrid-headers .dx-datagrid-text-content) {
+  justify-content: flex-start;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  height: 100%;
+}
+
+.action-btn {
+  cursor: pointer !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+  opacity: 0.7;
 }
 </style>

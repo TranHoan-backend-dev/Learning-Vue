@@ -2,7 +2,6 @@ import api from './api';
 
 /**
  * Service xử lý các nghiệp vụ liên quan đến Cấu hình Grid (pa_grid_config)
- * @author: xuan hoan (12/05/2026)
  */
 const gridConfigService = {
     /**

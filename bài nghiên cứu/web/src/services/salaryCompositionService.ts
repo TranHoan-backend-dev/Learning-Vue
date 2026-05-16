@@ -23,7 +23,6 @@ export interface FilterRequest {
 
 /**
  * Service xử lý các nghiệp vụ liên quan đến Thành phần lương (Salary Composition)
- * @author: xuan hoan (11/05/2026)
  */
 const salaryCompositionService = {
     /**
@@ -55,7 +54,7 @@ const salaryCompositionService = {
      * Xóa thành phần lương
      */
     delete(id: string) {
-        return api.delete(`/SalaryCompositions/${id}`);
+        return api.delete(`/SalaryCompositions`, { data: [id] });
     },
 
     /**

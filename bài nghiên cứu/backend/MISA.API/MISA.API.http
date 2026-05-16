@@ -1,6 +1,66 @@
-@MISA.API_HostAddress = http://localhost:5148
+@MISA.API_HostAddress = http://localhost:8000
 
-GET {{MISA.API_HostAddress}}/weatherforecast/
+### 1. Lấy danh sách thành phần lương (Phân trang và lọc)
+POST {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/filter?PageIndex=0&PageSize=10
+Content-Type: application/json
+
+{
+  "SearchKeyword": "",
+  "ColumnFilters": []
+}
+
+###
+
+### 2. Thêm mới thành phần lương
+# @name createRecord
+POST {{MISA.API_HostAddress}}/api/v1/SalaryCompositions
+Content-Type: application/json
+
+{
+  "SalaryComponentCode": "TEST_CODE_{{$guid}}",
+  "SalaryComponentName": "Thành phần lương Test",
+  "SalaryComponentSystemId": "00000000-0000-0000-0000-000000000000",
+  "Attribute": 1,
+  "ValueType": 1,
+  "Value": "1000000",
+  "Status": 1,
+  "Source": "Test API"
+}
+
+###
+
+@newId = {{createRecord.response.body.$}}
+
+### 3. Lấy thành phần lương theo ID
+GET {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
 Accept: application/json
+
+###
+
+### 4. Cập nhật thành phần lương
+PUT {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
+Content-Type: application/json
+
+{
+  "SalaryComponentId": "{{newId}}",
+  "SalaryComponentCode": "UPDATED_CODE",
+  "SalaryComponentName": "Thành phần lương Updated",
+  "SalaryComponentSystemId": "00000000-0000-0000-0000-000000000000",
+  "Attribute": 2,
+  "ValueType": 2,
+  "Value": "2000000",
+  "Status": 0,
+  "Source": "Test API Updated"
+}
+
+###
+
+### 5. Xóa nhiều thành phần lương
+DELETE {{MISA.API_HostAddress}}/api/v1/SalaryCompositions
+Content-Type: application/json
+
+[
+  "{{newId}}"
+]
 
 ###
