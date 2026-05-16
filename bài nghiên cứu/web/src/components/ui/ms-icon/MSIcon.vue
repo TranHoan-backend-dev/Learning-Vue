@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 interface Props {
-  name: 'pin' | 'check-circle' | 'copy' | 'edit' | 'trash' | 'drag-handle' | 'info' | 'warning' | 'error' | 'close';
+  name: 'pin' | 'check-circle' | 'minus-circle' | 'copy' | 'edit' | 'trash' | 'drag-handle' | 'info' | 'warning' | 'error' | 'close';
   size?: string | number;
   color?: string;
   strokeWidth?: string | number;
@@ -25,6 +25,11 @@ const isFillIcon = computed(() => ['pin', 'drag-handle'].includes(props.name));
       <template v-if="name === 'check-circle'">
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="8 12 11 15 16 9"></polyline>
+      </template>
+      <!-- minus-circle -->
+      <template v-else-if="name === 'minus-circle'">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
       </template>
 
       <!-- info -->

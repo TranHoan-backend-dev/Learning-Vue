@@ -30,7 +30,6 @@ const isCollapsed = ref(false);
 }
 
 .content_view {
-  padding: 24px;
   height: calc(100vh - 48px);
   overflow-y: auto;
 }

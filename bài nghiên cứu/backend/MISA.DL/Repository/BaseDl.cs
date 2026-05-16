@@ -250,7 +250,6 @@ public class BaseDl<T>(
                 param,
                 transaction
             );
-
             await transaction.CommitAsync();
 
             log.LogDebug(
@@ -262,13 +261,11 @@ public class BaseDl<T>(
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-
             log.LogError(
                 ex,
                 "{Prefix} Exception while updating",
                 Prefix
             );
-
             throw;
         }
     }

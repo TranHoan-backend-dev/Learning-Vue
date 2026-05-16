@@ -1,8 +1,16 @@
 import api from './api';
 
 const salaryCompositionSystemService = {
-    getAll() {
-        return api.get('/SalaryCompositionSystems');
+    /**
+     * Lấy danh sách danh mục hệ thống có phân trang và lọc
+     */
+    getAll(pageable: any, filterRequest: any) {
+        return api.get('/SalaryCompositionSystems', {
+            params: {
+                ...pageable,
+                ...filterRequest
+            }
+        });
     }
 };
 

@@ -12,6 +12,7 @@ import SalaryCompositionHeader from "@/views/ms-salary-compositions/components/S
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
 import SalaryCompositionSystemDirectory from "./components/SalaryCompositionSystemDirectory.vue";
 import gridConfigService from "@/services/gridConfigService.ts";
+import MSPageLayout from "@/components/layout/ms-page-layout/MSPageLayout.vue";
 
 const selectedIds = ref<string[]>([]);
 const isLoading = ref(false);
@@ -36,7 +37,6 @@ const fetchData = async () => {
       pageSize: pageSize.value
     };
     const filterRequest = {
-      Keyword: searchKeyword.value,
       ColumnFilters: [] as any[]
     };
 
@@ -57,20 +57,7 @@ const fetchData = async () => {
     if (response.data) {
       console.log(response.data)
       // map response body
-      tableData.value = response.data.data.map((item: any) => ({
-        componentId: item.salaryComponentId,
-        componentCode: item.salaryComponentCode,
-        componentName: item.salaryComponentName,
-        appliedUnitId: item.appliedUnitId,
-        appliedUnitName: item.appliedUnitName,
-        salaryComponentSystemId: item.salaryComponentSystemId,
-        salaryComponentSystemName: item.salaryComponentSystemName,
-        attribute: item.attribute,
-        valueType: item.valueType,
-        value: item.value || '-',
-        status: item.status,
-        source: item.source || 'Hệ thống'
-      }));
+      mapResponseBody(response.data.data);
       totalRecords.value = response.data.pageable.totalElements;
     }
   } catch (error) {
@@ -79,6 +66,56 @@ const fetchData = async () => {
     isLoading.value = false;
   }
 };
+
+// <editor-fold> desc="Xu ly phan tim kiem"
+/**
+ * Xu ly tim kiem voi keyword
+ */
+const handleSearchByKeyword = async () => {
+  try {
+    const pageable = {
+      pageIndex: currentPage.value - 1,
+      pageSize: pageSize.value
+    };
+    const filterRequest = {
+      Keyword: searchKeyword.value,
+      ColumnFilters: [] as any[]
+    };
+    let response = await salaryCompositionService.getFilter(pageable, filterRequest);
+    debugger;
+    if (response.data) {
+      debugger;
+      mapResponseBody(response.data.data);
+    }
+  } catch (e: any) {
+    toast.error('Co loi xay ra', e.message);
+  }
+}
+
+/**
+ * Theo doi bien searchKeyword. Neu co bat cu thay doi nao, kich hoat hanh vi fetch data
+ */
+watch(searchKeyword, async () => {
+  await handleSearchByKeyword();
+})
+// </editor-fold>
+
+const mapResponseBody = (items: any[]) => {
+  tableData.value = items.map((item: any) => ({
+    componentId: item.salaryComponentId,
+    componentCode: item.salaryComponentCode,
+    componentName: item.salaryComponentName,
+    appliedUnitId: item.appliedUnitId,
+    appliedUnitName: item.appliedUnitName,
+    salaryComponentSystemId: item.salaryComponentSystemId,
+    salaryComponentSystemName: item.salaryComponentSystemName,
+    attribute: item.attribute,
+    valueType: item.valueType,
+    value: item.value || '-',
+    status: item.status,
+    source: item.source || 'Hệ thống'
+  })) as any
+}
 
 /**
  * Fetch danh sac cac column cua trang Thanh phan luong
@@ -117,7 +154,7 @@ onMounted(() => {
 /**
  * Theo doi trang thai cua cac bo loc va phan tim kiem
  */
-watch([currentPage, pageSize, searchKeyword, statusFilter], (newValues, oldValues) => {
+watch([currentPage, pageSize, statusFilter], (newValues, oldValues) => {
   // Nếu statusFilter hoặc searchKeyword thay đổi, reset về trang 1
   if (oldValues && (newValues[2] !== oldValues[2] || newValues[3] !== oldValues[3])) {
     if (currentPage.value !== 1) {
@@ -158,8 +195,29 @@ const closeConfirmModal = () => {
   selectedComposition.value = null;
 };
 
-const confirmActive = () => {
-  alert('Đã chuyển trạng thái thành công!');
+const handleChangeStatus = async (data: any) => {
+  if (!data) return;
+  try {
+    const newStatus = data.status === 1 ? 0 : 1;
+    const requestData = {
+      SalaryComponentCode: data.componentCode,
+      SalaryComponentName: data.componentName,
+      AppliedUnitId: data.appliedUnitId,
+      SalaryComponentSystemId: data.salaryComponentSystemId,
+      Attribute: data.attribute,
+      ValueType: data.valueType,
+      Value: data.value === '-' ? null : data.value,
+      Status: newStatus,
+      Source: data.source
+    };
+
+    await salaryCompositionService.update(data.componentId, requestData);
+    toast.success('Thành công', `Đã chuyển trạng thái thành công cho ${data.componentName}`);
+    await fetchData();
+  } catch (e: any) {
+    console.error(e);
+    toast.error('Có lỗi xảy ra', `Có lỗi xảy ra khi cập nhật trạng thái: ${e.message}`);
+  }
   closeConfirmModal();
 };
 
@@ -363,37 +421,43 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
 
 <template>
   <template v-if="!isSystemDirectoryVisible">
-    <section v-if="!isFormVisible" class="content">
-      <!-- Title danh sách -->
-      <SalaryCompositionHeader
-          :is-add-dropdown-visible="isAddDropdownVisible"
-          @add="handleAdd"
-          @toggle-dropdown="toggleAddDropdown"
-          @add-from-system="handleAddFromSystem"
-          @open-system="handleAddFromSystem"
-      />
+    <MSPageLayout v-if="!isFormVisible">
+      <template #header-left>
+        <div class="content_header_title">Thành phần lương</div>
+      </template>
 
-      <!-- Nội dung bảng -->
-      <SalaryCompositionDataTable
-          v-model:searchKeyword="searchKeyword"
-          v-model:selectedIds="selectedIds"
-          v-model:currentPage="currentPage"
-          v-model:pageSize="pageSize"
-          :table-data="tableData"
-          :total-records="totalRecords"
-          :columns="columns"
-          :page-info="pageInfo"
-          v-model:statusFilter="statusFilter"
-          @handlePageSizeChange="handlePageSizeChange"
-          @handleOpenConfig="handleOpenConfig"
-          @togglePin="togglePin"
-          @handleActive="handleActive"
-          @handleDuplicate="handleDuplicate"
-          @handleEdit="handleEdit"
-          @handleDelete="handleDelete"
-          @deleteSelected="handleDeleteSelected"
-      />
-    </section>
+      <template #header-right>
+        <SalaryCompositionHeader
+            :is-add-dropdown-visible="isAddDropdownVisible"
+            @add="handleAdd"
+            @toggle-dropdown="toggleAddDropdown"
+            @add-from-system="handleAddFromSystem"
+            @open-system="handleAddFromSystem"
+        />
+      </template>
+
+      <template #body>
+        <SalaryCompositionDataTable
+            v-model:searchKeyword="searchKeyword"
+            v-model:selectedIds="selectedIds"
+            v-model:currentPage="currentPage"
+            v-model:pageSize="pageSize"
+            :table-data="tableData"
+            :total-records="totalRecords"
+            :columns="columns"
+            :page-info="pageInfo"
+            v-model:statusFilter="statusFilter"
+            @handlePageSizeChange="handlePageSizeChange"
+            @handleOpenConfig="handleOpenConfig"
+            @togglePin="togglePin"
+            @handleActive="handleActive"
+            @handleDuplicate="handleDuplicate"
+            @handleEdit="handleEdit"
+            @handleDelete="handleDelete"
+            @deleteSelected="handleDeleteSelected"
+        />
+      </template>
+    </MSPageLayout>
 
     <!-- Form component overlay -->
     <SalaryCompositionForm
@@ -413,7 +477,7 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
         :delete-message="deleteModalMessage"
         v-model:columns="columns"
         :selected-composition="selectedComposition"
-        @confirmActive="confirmActive"
+        @confirmActive="handleChangeStatus"
         @confirmDelete="confirmDelete"
         @closeConfirm="closeConfirmModal"
         @closeConfig="closeConfig"

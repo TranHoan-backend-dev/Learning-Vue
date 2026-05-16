@@ -26,8 +26,12 @@ CREATE TABLE IF NOT EXISTS pa_organization
 CREATE TABLE IF NOT EXISTS pa_salary_composition_system
 (
     salary_component_system_id   CHAR(36) PRIMARY KEY,
+    salary_component_code      VARCHAR(50)  DEFAULT NULL,
     salary_component_system_name VARCHAR(255) NOT NULL,
     description                  TEXT,
+    attribute                  INT          DEFAULT 0,
+    value_type                 INT          DEFAULT 0,
+    value                      VARCHAR(255) DEFAULT '-',
     created_at                   DATETIME     DEFAULT CURRENT_TIMESTAMP,
     created_by                   VARCHAR(100) DEFAULT NULL,
     modified_at                  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -77,8 +81,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 Truncate table pa_grid_config;
 -- 4. Grid configuration initial setup
-INSERT IGNORE INTO pa_grid_config (grid_config_id, grid_id, column_id, column_name, is_visible, column_order, width,
-                                   is_pinned)
+INSERT IGNORE INTO pa_grid_config (grid_config_id, grid_id, column_id, column_name, is_visible, column_order, width, is_pinned)
 VALUES (UUID(), 'SalaryComponentGrid', 'salary_component_code', 'Mã thành phần', 1, 1, 150, 0),
        (UUID(), 'SalaryComponentGrid', 'salary_component_name', 'Tên thành phần', 1, 2, 250, 1),
        (UUID(), 'SalaryComponentGrid', 'applied_unit_name', 'Đơn vị áp dụng', 1, 3, 200, 0),
@@ -87,7 +90,15 @@ VALUES (UUID(), 'SalaryComponentGrid', 'salary_component_code', 'Mã thành ph�
        (UUID(), 'SalaryComponentGrid', 'value_type', 'Kiểu giá trị', 1, 6, 120, 0),
        (UUID(), 'SalaryComponentGrid', 'value', 'Giá trị', 1, 7, 200, 0),
        (UUID(), 'SalaryComponentGrid', 'source', 'Nguồn tạo', 1, 8, 150, 0),
-       (UUID(), 'SalaryComponentGrid', 'status', 'Trạng thái', 1, 9, 150, 0);
+       (UUID(), 'SalaryComponentGrid', 'status', 'Trạng thái', 1, 9, 150, 0),
+       
+       -- SalaryComponentSystemGrid (Danh mục hệ thống)
+       (UUID(), 'SalaryComponentSystemGrid', 'componentCode', 'Mã thành phần', 1, 1, 250, 1),
+       (UUID(), 'SalaryComponentSystemGrid', 'componentName', 'Tên thành phần', 1, 2, 250, 1),
+       (UUID(), 'SalaryComponentSystemGrid', 'salaryComponentSystemName', 'Loại thành phần', 1, 3, 150, 0),
+       (UUID(), 'SalaryComponentSystemGrid', 'attribute', 'Tính chất', 1, 4, 120, 0),
+       (UUID(), 'SalaryComponentSystemGrid', 'valueType', 'Kiểu giá trị', 1, 5, 120, 0),
+       (UUID(), 'SalaryComponentSystemGrid', 'value', 'Giá trị', 1, 6, 200, 0);
 
 truncate table pa_salary_composition;
 -- 3. Seed data for pa_salary_composition (20 records from data.ts)
@@ -137,18 +148,36 @@ VALUES (UUID(), '1', '1', '00000000-0000-0000-0000-000000000001', '00000000-0000
 
 truncate table pa_salary_composition_system;
 -- 2. System Components with fixed IDs for seeding
-INSERT IGNORE INTO pa_salary_composition_system (salary_component_system_id, salary_component_system_name)
-VALUES ('00000000-0000-0000-0001-000000000001', 'Thông tin nhân viên'),
-       ('00000000-0000-0000-0001-000000000002', 'Doanh số'),
-       ('00000000-0000-0000-0001-000000000003', 'Khác'),
-       ('00000000-0000-0000-0001-000000000004', 'Lương'),
-       ('00000000-0000-0000-0001-000000000005', 'Bảo hiểm - Công đoàn'),
-       ('00000000-0000-0000-0001-000000000006', 'Chấm công');
+INSERT IGNORE INTO pa_salary_composition_system (salary_component_system_id, salary_component_code, salary_component_system_name, attribute, value_type, value)
+VALUES ('00000000-0000-0000-0001-000000000001', 'TTNV', 'Thông tin nhân viên', 0, 2, '-'),
+       ('00000000-0000-0000-0001-000000000006', 'CHAM_CONG', 'Chấm công', 0, 0, '0'),
+       ('00000000-0000-0000-0001-000000000002', 'DOANH_SO', 'Doanh số', 1, 1, '0'),
+       ('00000000-0000-0000-0001-000000000007', 'KPI', 'KPI', 0, 0, '0'),
+       ('00000000-0000-0000-0001-000000000008', 'SAN_PHAM', 'Sản phẩm', 0, 0, '0'),
+       ('00000000-0000-0000-0001-000000000009', 'LUONG', 'Lương', 0, 0, '0'),
+       ('00000000-0000-0000-0001-0000000000010', 'THUE_TNCN', 'Thuế TNCN', 0, 0, '0'),
+       ('00000000-0000-0000-0001-000000000005', 'BH_CD', 'Bảo hiểm - Công đoàn', 2, 1, '0'),
+       ('00000000-0000-0000-0001-000000000003', 'KHAC', 'Khác', 0, 2, '-');
 
 truncate table pa_organization;
--- Initial Seed Data (Optional but recommended)
--- Organization
-INSERT IGNORE INTO pa_organization (organization_id, organization_code, organization_name)
-VALUES ('00000000-0000-0000-0000-000000000001', 'INTEL', 'CÔNG TY CP INTEL');
+-- Organization Hierarchy
+INSERT IGNORE INTO pa_organization (organization_id, organization_code, organization_name, parent_id)
+VALUES ('00000000-0000-0000-0000-000000000001', 'HOP_NHAT', 'Cty CP TM dịch vụ Hợp Nhất', NULL),
+       -- Children of Hợp Nhất
+       ('00000000-0000-0000-0000-000000000002', 'CN_BAC', 'Chi nhánh phía Bắc', '00000000-0000-0000-0000-000000000001'),
+       ('00000000-0000-0000-0000-000000000003', 'CN_NAM', 'Chi nhánh phía Nam', '00000000-0000-0000-0000-000000000001'),
+       ('00000000-0000-0000-0000-000000000004', 'CN_MT', 'Chi nhánh miền Tây', '00000000-0000-0000-0000-000000000001'),
+       ('00000000-0000-0000-0000-000000000005', 'TT_SX', 'Trung tâm sản xuất', '00000000-0000-0000-0000-000000000001'),
+       -- Children of Chi nhánh phía Bắc
+       ('00000000-0000-0000-0000-000000000006', 'VP_HN', 'Văn phòng Hà Nội', '00000000-0000-0000-0000-000000000002'),
+       ('00000000-0000-0000-0000-000000000007', 'VP_LS', 'Văn phòng Lạng Sơn', '00000000-0000-0000-0000-000000000002'),
+       -- Children of Chi nhánh phía Nam
+       ('00000000-0000-0000-0000-000000000008', 'VP_HCM', 'Văn phòng Hồ Chí Minh', '00000000-0000-0000-0000-000000000003'),
+       ('00000000-0000-0000-0000-000000000009', 'CN_CT', 'Chi nhánh Cần Thơ', '00000000-0000-0000-0000-000000000003'),
+       -- Children of Trung tâm sản xuất
+       ('00000000-0000-0000-0000-000000000010', 'KH_DN', 'Khối Doanh nghiệp', '00000000-0000-0000-0000-000000000005'),
+       ('00000000-0000-0000-0000-000000000011', 'KH_GD', 'Khối nền tảng Giáo dục', '00000000-0000-0000-0000-000000000005'),
+       ('00000000-0000-0000-0000-000000000012', 'KH_GPBL', 'Khối Giải pháp bán lẻ', '00000000-0000-0000-0000-000000000005'),
+       ('00000000-0000-0000-0000-000000000013', 'BAN_CNTT', 'Ban Công nghệ thông tin', '00000000-0000-0000-0000-000000000005');
 
 SET FOREIGN_KEY_CHECKS = 1;

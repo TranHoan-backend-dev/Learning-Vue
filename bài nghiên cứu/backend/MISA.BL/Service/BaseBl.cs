@@ -33,7 +33,7 @@ public class BaseBl<T>(
         var parameter = new DynamicParameters();
         var (sql, paginationSql) = BuildQueryStringWithCondition(
             request, pageable.PageIndex,
-            pageable.PageSize, ref parameter
+            (long)pageable.PageSize, ref parameter
         );
 
         var data = await baseDl.GetPagedDataListAsync<T>(
@@ -135,7 +135,7 @@ public class BaseBl<T>(
     /// <returns></returns>
     private (string, string) BuildQueryStringWithCondition(
         FilterRequest request, int pageIndex,
-        decimal pageSize, ref DynamicParameters parameters
+        long pageSize, ref DynamicParameters parameters
     )
     {
         var type = typeof(T);
@@ -233,8 +233,8 @@ public class BaseBl<T>(
 
         // Them limit offset
         subQuery.AppendLine("  ORDER BY t1.created_at DESC LIMIT @limit OFFSET @offset");
-        parameters.Add("@limit", pageSize);
-        parameters.Add("@offset", pageIndex * pageSize);
+        parameters.Add("@limit", (long)pageSize);
+        parameters.Add("@offset", (long)pageIndex * (long)pageSize);
 
         query.Append(subQuery);
 

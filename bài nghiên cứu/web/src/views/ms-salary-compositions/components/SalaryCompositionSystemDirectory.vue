@@ -5,6 +5,7 @@ import salaryCompositionService from "@/services/salaryCompositionService.ts";
 import salaryCompositionSystemService from "@/services/salaryCompositionSystemService.ts";
 import gridConfigService from "@/services/gridConfigService.ts";
 import {getAttributeName, getValueTypeName} from "@/views/ms-salary-compositions/data.ts";
+import MSPageLayout from "@/components/layout/ms-page-layout/MSPageLayout.vue";
 
 const emit = defineEmits(['back', 'addSystem']);
 
@@ -17,60 +18,34 @@ const pageSize = ref(25);
 const selectedIds = ref<string[]>([]);
 const systems = ref<any[]>([]);
 const selectedSystemId = ref("all");
-
-const fetchSystems = async () => {
-  try {
-    const response = await salaryCompositionSystemService.getAll();
-    if (response.data) {
-      systems.value = [
-        { salaryComponentSystemId: 'all', salaryComponentSystemName: 'Tất cả thành phần' },
-        ...response.data
-      ];
-    }
-  } catch (error) {
-    console.error('Lỗi khi lấy danh mục hệ thống, sử dụng mock:', error);
-  }
-};
+const columns = ref<any[]>([]);
 
 const fetchData = async () => {
   isLoading.value = true;
   try {
     const pageable = {
-      pageIndex: currentPage.value - 1,
-      pageSize: pageSize.value
+      PageIndex: currentPage.value - 1,
+      PageSize: pageSize.value
     };
-    
-    const columnFilters: any[] = [
-      { Column: 'Source', Value: 'Hệ thống' }
-    ];
-
-    if (selectedSystemId.value !== 'all') {
-      columnFilters.push({ 
-        Column: 'SalaryComponentSystemId', 
-        Value: selectedSystemId.value 
-      });
-    }
 
     const filterRequest = {
       Keyword: searchKeyword.value,
-      ColumnFilters: columnFilters
+      ColumnFilters: []
     };
 
-    const response = await salaryCompositionService.getFilter(pageable, filterRequest);
+    debugger;
+    const response = await salaryCompositionSystemService.getAll(pageable, filterRequest);
     
     if (response.data && response.data.data) {
       tableData.value = response.data.data.map((item: any) => ({
-        componentId: item.salaryComponentId,
-        componentCode: item.salaryComponentCode,
-        componentName: item.salaryComponentName,
-        salaryComponentSystemId: item.salaryComponentSystemId,
-        salaryComponentSystemName: item.salaryComponentSystemName,
-        attribute: item.attribute,
-        valueType: item.valueType,
-        value: item.value || '-',
+        ...item,
+        componentId: item.salaryComponentSystemId,
+        categoryName: 'Hệ thống',
         source: 'Hệ thống'
       }));
-      totalRecords.value = response.data.pageable.totalElements;
+      totalRecords.value = response.data.pageable?.totalElements || response.data.data.length;
+      console.log(response.data);
+      debugger;
     }
   } catch (error) {
     console.error(error);
@@ -83,11 +58,11 @@ const fetchColumns = async () => {
   try {
     const response = await gridConfigService.getByGridId('SalaryComponentSystemGrid');
     if (response.data && response.data.length > 0) {
+      debugger;
       columns.value = response.data.map((col: any) => ({
         dataField: col.columnId === 'salary_component_code' ? 'componentCode' : 
-                   (col.columnId === 'salary_component_name' ? 'componentName' : 
-                    (col.columnId === 'salary_component_system_name' ? 'salaryComponentSystemName' : 
-                     (col.columnId === 'value_type' ? 'valueType' : col.columnId))),
+                   (col.columnId === 'componentName' ? 'salaryComponentSystemName' : 
+                     (col.columnId === 'value_type' ? 'valueType' : col.columnId)),
         caption: col.columnName,
         visible: col.isVisible === 1,
         width: col.width,
@@ -102,7 +77,6 @@ const fetchColumns = async () => {
 };
 
 onMounted(() => {
-  fetchSystems();
   fetchColumns();
   fetchData();
 });
@@ -124,8 +98,6 @@ const handlePageSizeChange = () => {
   fetchData();
 };
 
-const columns = ref<any[]>([]);
-
 const pageInfo = computed(() => {
   const start = totalRecords.value > 0 ? (currentPage.value - 1) * pageSize.value + 1 : 0;
   const end = Math.min(currentPage.value * pageSize.value, totalRecords.value);
@@ -146,33 +118,33 @@ const handleAddSystem = (data: any) => {
 </script>
 
 <template>
-  <section class="content">
-    <div class="content_header">
-      <div class="content_header_left">
-        <div class="back_button_container" @click="emit('back')">
-          <div class="mi_icon_back"></div>
-        </div>
-        <div class="content_header_title">Danh mục thành phần lương của hệ thống</div>
+  <MSPageLayout>
+    <template #header-left>
+      <div class="back_button_container" @click="emit('back')">
+        <div class="mi_icon_back"></div>
       </div>
-    </div>
+      <div class="content_header_title">Danh mục thành phần lương của hệ thống</div>
+    </template>
 
-    <SalaryCompositionDataTable
-        v-model:searchKeyword="searchKeyword"
-        v-model:selectedIds="selectedIds"
-        v-model:currentPage="currentPage"
-        v-model:pageSize="pageSize"
-        :table-data="tableData"
-        :total-records="totalRecords"
-        :columns="columns"
-        :page-info="pageInfo"
-        :is-system-mode="true"
-        :system-items="systems"
-        v-model:selectedSystemId="selectedSystemId"
-        @handlePageSizeChange="handlePageSizeChange"
-        @togglePin="togglePin"
-        @addSystem="handleAddSystem"
-        status-filter=""/>
-  </section>
+    <template #body>
+      <SalaryCompositionDataTable
+          v-model:searchKeyword="searchKeyword"
+          v-model:selectedIds="selectedIds"
+          v-model:currentPage="currentPage"
+          v-model:pageSize="pageSize"
+          :table-data="tableData"
+          :total-records="totalRecords"
+          :columns="columns"
+          :page-info="pageInfo"
+          :is-system-mode="true"
+          :system-items="systems"
+          v-model:selectedSystemId="selectedSystemId"
+          @handlePageSizeChange="handlePageSizeChange"
+          @togglePin="togglePin"
+          @addSystem="handleAddSystem"
+          status-filter=""/>
+    </template>
+  </MSPageLayout>
 </template>
 
 <style scoped src="../style.css"></style>
@@ -200,10 +172,4 @@ const handleAddSystem = (data: any) => {
   background-repeat: no-repeat;
 }
 
-
-
-.content_header_left {
-  display: flex;
-  align-items: center;
-}
 </style>

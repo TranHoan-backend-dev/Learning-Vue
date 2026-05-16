@@ -13,7 +13,7 @@ interface Props {
   deleteMessage: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits([
   'update:isConfirmVisible',
@@ -32,7 +32,7 @@ const closeConfirmModal = () => {
 };
 
 const confirmActive = () => {
-  emit('confirmActive');
+  emit('confirmActive', props.selectedComposition);
 };
 
 const closeConfig = () => {
@@ -59,7 +59,7 @@ const onColumnsUpdate = (val: any[]) => {
     >
       <div class="misa-popup-body">
         Bạn có chắc chắn muốn chuyển trạng thái thành phần lương <strong>{{ selectedComposition?.componentName }}</strong>
-        sang đang theo dõi không?
+        sang <strong>{{ selectedComposition?.status === 1 ? 'Ngừng theo dõi' : 'Đang theo dõi' }}</strong> không?
       </div>
 
       <DxToolbarItem toolbar="bottom" location="after" template="cancelBtn"/>

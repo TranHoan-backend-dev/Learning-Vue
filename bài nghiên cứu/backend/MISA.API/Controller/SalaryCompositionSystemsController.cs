@@ -15,9 +15,11 @@ public class SalaryCompositionSystemsController(IBaseBl<SalaryCompositionSystem>
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public async Task<IActionResult> GetAllAsync()
+    public async Task<IActionResult> GetAllAsync([FromQuery] Pageable pageable, [FromQuery] FilterRequest request)
     {
-        var result = await baseBl.GetAllAsync(new Pageable { PageSize = 1000 }, new FilterRequest());
-        return Ok(result.Data);
+        pageable ??= new Pageable();
+        request ??= new FilterRequest();
+        var result = await baseBl.GetAllAsync(pageable, request);
+        return Ok(result);
     }
 }

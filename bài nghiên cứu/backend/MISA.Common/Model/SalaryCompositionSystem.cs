@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using MISA.Common.Attributes;
 using MISA.Common.Base;
 
@@ -18,13 +19,39 @@ public class SalaryCompositionSystem : BaseModel
     public Guid SalaryComponentSystemId { get; set; } = Guid.NewGuid();
 
     /// <summary>
+    /// Mã thành phần hệ thống
+    /// </summary>
+    [ConfigColumn("salary_component_code")]
+    [ConfigSearchable]
+    public string? ComponentCode { get; set; }
+
+    /// <summary>
     /// Tên danh mục hệ thống.<br/>
     /// Not null
     /// </summary>
     [ConfigColumn("salary_component_system_name")] 
+    [ConfigSearchable]
     [Required] 
     [MaxLength(255)] 
     public required string SalaryComponentSystemName { get; set; }
+
+    /// <summary>
+    /// Tính chất (0: Khác, 1: Thu nhập, 2: Khấu trừ)
+    /// </summary>
+    [ConfigColumn("attribute")]
+    public int Attribute { get; set; } = 0;
+
+    /// <summary>
+    /// Kiểu giá trị
+    /// </summary>
+    [ConfigColumn("value_type")]
+    public int ValueType { get; set; } = 0;
+
+    /// <summary>
+    /// Giá trị mặc định
+    /// </summary>
+    [ConfigColumn("value")]
+    public string Value { get; set; } = "-";
 
     /// <summary>
     /// Mô tả

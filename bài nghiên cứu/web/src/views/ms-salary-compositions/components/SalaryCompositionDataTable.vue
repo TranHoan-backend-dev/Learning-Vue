@@ -312,9 +312,7 @@ onMounted(() => {
               </div>
             </template>
 
-            <template #status-cell="{ data }">
-              <MSStatusBadge :status="data.value"/>
-            </template>
+            <template #status-cell="{ data }"><MSStatusBadge :status="data.value"/></template>
 
             <template #addSystemTemplate="{ data }">
               <div
@@ -329,7 +327,7 @@ onMounted(() => {
                     hide-event="mouseleave"
                     position="top"
                 >
-                  Sử dụng
+                  {{ data.data.status ? 'Ngừng theo dõi' : 'Theo dõi' }}
                 </DxTooltip>
               </div>
             </template>
@@ -342,14 +340,14 @@ onMounted(() => {
                     class="action-btn action-active"
                     @click="emit('handleActive', data.data)"
                 >
-                  <MSIcon name="check-circle" color="var(--primary-green)"/>
+                  <MSIcon :name="data.data.status ? 'minus-circle' : 'check-circle'" :color="data.data.status ? '#ff8c00' : 'var(--primary-green)'"/>
                   <DxTooltip
                       :target="`#active-${data.data.componentId}`"
                       show-event="mouseenter"
                       hide-event="mouseleave"
                       position="top"
                   >
-                    Sử dụng
+                    {{ data.data.status ? 'Ngừng theo dõi' : 'Theo dõi' }}
                   </DxTooltip>
                 </div>
 
@@ -495,6 +493,8 @@ onMounted(() => {
 .dx-datagrid-rowsview .dx-data-row > td {
   border-bottom: 1px solid var(--misa-border-color) !important;
   border-right: 1px solid var(--misa-border-color) !important;
+  padding: 0 12px !important;
+  height: 32px !important;
 }
 
 /* Đảm bảo cột STT và cột checkbox cũng có border */
@@ -526,6 +526,7 @@ onMounted(() => {
 /* Đảm bảo nội dung hàng bên dưới hiển thị màu so le */
 :deep(.dx-datagrid-rowsview .dx-data-row) {
   background-color: #ffffff;
+  height: 32px !important;
 }
 
 :deep(.dx-datagrid-rowsview .dx-data-row.dx-row-alt) {
@@ -535,7 +536,7 @@ onMounted(() => {
 /* Đảm bảo container chính luôn có màu so le chạy dài ra hết bảng */
 :deep(.dx-datagrid-rowsview .dx-datagrid-content) {
   background-image: linear-gradient(#ffffff 50%, #f8f8f8 50%);
-  background-size: 100% 96px; /* Giả định chiều cao 2 hàng là 96px (48px mỗi hàng) */
+  background-size: 100% 64px; /* 32px * 2 rows */
 }
 
 /* Chỉ làm ẩn nội dung (nút) bên trong, không làm ẩn cả ô */

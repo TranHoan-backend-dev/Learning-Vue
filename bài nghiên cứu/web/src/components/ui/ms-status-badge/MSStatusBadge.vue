@@ -29,6 +29,13 @@ const statusClass = computed(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0 10px;
+  height: 22px;
+  line-height: 22px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  width: fit-content;
+  white-space: nowrap;
 }
 
 .status-dot {
@@ -38,10 +45,16 @@ const statusClass = computed(() => {
 }
 
 .status-text {
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 400;
 }
 
-/* Đang theo dõi */
+/* Đang theo dõi (Active) */
+.status-active {
+  background-color: #ebf9eb;
+  border-color: #b3ebb3;
+}
+
 .status-active .status-dot {
   background-color: var(--primary-green);
 }
@@ -50,12 +63,17 @@ const statusClass = computed(() => {
   color: var(--primary-green);
 }
 
-/* Ngừng theo dõi */
+/* Ngừng theo dõi (Inactive) */
+.status-inactive {
+  background-color: #fff7e6;
+  border-color: #ffcc99;
+}
+
 .status-inactive .status-dot {
-  background-color: var(--misa-warning);
+  background-color: #ff8c00;
 }
 
 .status-inactive .status-text {
-  color: var(--misa-warning);
+  color: #ff8c00;
 }
 </style>
