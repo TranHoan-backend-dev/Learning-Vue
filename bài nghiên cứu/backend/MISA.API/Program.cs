@@ -24,6 +24,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddScoped(typeof(IBaseBl<>), typeof(BaseBl<>));
 builder.Services.AddScoped<ISalaryCompositionBl, SalaryCompositionBl>();
 builder.Services.AddScoped(typeof(IBaseDl<>), typeof(BaseDl<>));
+builder.Services.AddScoped<ISalaryCompositionDl, SalaryCompositionDl>();
 builder.Services.AddScoped<DbContext>();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

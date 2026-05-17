@@ -55,6 +55,13 @@ const salaryCompositionService = {
     },
 
     /**
+     * Lấy chi tiết thành phần lương theo ID
+     */
+    getById(id: string) {
+        return api.get(`/SalaryCompositions/${id}`);
+    },
+
+    /**
      * Xóa thành phần lương
      */
     delete(id: string) {

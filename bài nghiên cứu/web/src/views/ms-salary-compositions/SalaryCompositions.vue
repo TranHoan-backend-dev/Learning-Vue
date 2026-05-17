@@ -103,7 +103,7 @@ const mapResponseBody = (items: any[]) => {
     componentId: item.salaryComponentId,
     componentCode: item.salaryComponentCode,
     componentName: item.salaryComponentName,
-    appliedUnitId: item.appliedUnitId,
+    appliedUnitIds: item.appliedUnitIds,
     appliedUnitName: item.appliedUnitName,
     salaryComponentSystemId: item.salaryComponentSystemId,
     salaryComponentSystemName: item.salaryComponentSystemName,
@@ -111,7 +111,8 @@ const mapResponseBody = (items: any[]) => {
     valueType: item.valueType,
     value: item.value || '-',
     status: item.status,
-    source: item.source || 'Hệ thống'
+    source: item.source || 'Hệ thống',
+    isUsed: item.isUsed
   })) as any
 }
 
@@ -207,13 +208,14 @@ const handleChangeStatus = async (data: any) => {
     const requestData = {
       SalaryComponentCode: data.componentCode,
       SalaryComponentName: data.componentName,
-      AppliedUnitId: data.appliedUnitId,
+      AppliedUnitIds: data.appliedUnitIds,
       SalaryComponentSystemId: data.salaryComponentSystemId,
       Attribute: data.attribute,
       ValueType: data.valueType,
       Value: data.value === '-' ? null : data.value,
       Status: newStatus,
-      Source: data.source
+      Source: data.source,
+      IsUsed: data.isUsed
     };
 
     await salaryCompositionService.update(data.componentId, requestData);
@@ -249,15 +251,41 @@ const handleAdd = () => {
   isFormVisible.value = true;
 };
 
+const fetchDetailAndOpenForm = async (mode: 'edit' | 'view' | 'copy', id: string, baseData: any) => {
+  isLoading.value = true;
+  try {
+    const res = await salaryCompositionService.getById(id);
+    if (res.data) {
+      const detail = res.data;
+      formKey.value = Date.now();
+      formMode.value = mode;
+      selectedRowId.value = detail.salaryComponentId;
+      formInitialData.value = {
+        componentId: detail.salaryComponentId,
+        componentCode: detail.salaryComponentCode,
+        componentName: detail.salaryComponentName,
+        appliedUnitIds: detail.appliedUnitIds || [],
+        appliedUnitName: detail.appliedUnitName,
+        salaryComponentSystemId: detail.salaryComponentSystemId,
+        salaryComponentSystemName: detail.salaryComponentSystemName,
+        attribute: detail.attribute,
+        valueType: detail.valueType,
+        value: detail.value || '-',
+        status: detail.status,
+        source: detail.source || 'Hệ thống'
+      };
+      isFormVisible.value = true;
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải chi tiết:', error);
+    toast.error('Lỗi', 'Không thể tải chi tiết bản ghi');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const handleEdit = (data: any) => {
-  formKey.value = Date.now();
-  formMode.value = 'edit';
-  selectedRowId.value = data.componentId;
-  formInitialData.value = {
-    ...data,
-    componentCode: data.componentCode
-  };
-  isFormVisible.value = true;
+  fetchDetailAndOpenForm('edit', data.componentId, data);
 };
 
 /**
@@ -265,11 +293,7 @@ const handleEdit = (data: any) => {
  * @param data
  */
 const handleRowClick = (data: any) => {
-  formKey.value = Date.now();
-  formMode.value = 'view';
-  selectedRowId.value = data.componentId;
-  formInitialData.value = {...data}
-  isFormVisible.value = true;
+  fetchDetailAndOpenForm('view', data.componentId, data);
 }
 
 /**
@@ -277,13 +301,7 @@ const handleRowClick = (data: any) => {
  * @param data
  */
 const handleDuplicate = (data: any) => {
-  formKey.value = Date.now();
-  formMode.value = 'copy';
-  formInitialData.value = {
-    ...data,
-    componentCode: data.componentCode
-  };
-  isFormVisible.value = true;
+  fetchDetailAndOpenForm('copy', data.componentId, data);
 };
 
 const closeForm = () => {
@@ -303,13 +321,14 @@ const handleSaveForm = async (formData: any, stayOpen = false) => {
     const requestData = {
       SalaryComponentCode: formData.componentCode,
       SalaryComponentName: formData.componentName,
-      AppliedUnitId: formData.appliedUnitId,
+      AppliedUnitIds: formData.appliedUnitIds,
       SalaryComponentSystemId: formData.salaryComponentSystemId,
       Attribute: formData.attribute,
       ValueType: formData.valueType,
       Value: formData.valueFormula || formData.quota,
       Status: 1, // Mặc định: Đang sử dụng
-      Source: 'Tự thêm'
+      Source: 'Tự thêm',
+      IsUsed: true
     };
     if (formMode.value === 'add' || formMode.value === 'copy') {
       await salaryCompositionService.create(requestData);

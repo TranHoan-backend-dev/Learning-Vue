@@ -32,6 +32,46 @@ const componentCodeRef = ref<HTMLInputElement | null>(null);
 const quotaFormulaRef = ref<InstanceType<typeof MsFormula> | null>(null);
 const valueFormulaRef = ref<InstanceType<typeof MsFormula> | null>(null);
 
+// <editor-fold> desc="Xu ly tu dong dien cho Ma thanh phan"
+// Auto-fill code logic
+const isCodeManuallyEdited = ref(false);
+
+const removeAccentsAndSpecialChars = (str: string): string => {
+  if (!str) return '';
+  let result = str.toLowerCase();
+  result = result.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a');
+  result = result.replace(/[èéẹẻẽêềếệểễ]/g, 'e');
+  result = result.replace(/[ìíịỉĩ]/g, 'i');
+  result = result.replace(/[òóọỏõôồốộổỗơờớợởỡ]/g, 'o');
+  result = result.replace(/[ùúụủũưừứựửữ]/g, 'u');
+  result = result.replace(/[ỳýỵỷỹ]/g, 'y');
+  result = result.replace(/đ/g, 'd');
+  result = result.replace(/[^a-z0-9]/g, ' ');
+  result = result.trim().replace(/\s+/g, '_');
+  return result.toUpperCase();
+};
+
+const onComponentNameInput = () => {
+  clearError('componentName');
+  if (props.mode === 'add' || props.mode === 'copy' || props.mode === 'edit') {
+    if (!isCodeManuallyEdited.value) {
+      formData.value.componentCode = removeAccentsAndSpecialChars(formData.value.componentName);
+      if (formData.value.componentCode) {
+        clearError('componentCode');
+      }
+    }
+  }
+};
+
+const onComponentCodeInput = () => {
+  clearError('componentCode');
+  isCodeManuallyEdited.value = true;
+  if (!formData.value.componentCode) {
+    isCodeManuallyEdited.value = false;
+  }
+};
+// </editor-fold>
+
 // Validation
 const errors = ref<Record<string, string>>({});
 
@@ -171,13 +211,14 @@ watch(() => formData.value.attribute, (newVal, oldVal) => {
  */
 const initForm = () => {
   errors.value = {};
+  isCodeManuallyEdited.value = false;
   if (props.mode === 'edit' || props.mode === 'copy' || props.mode === 'view') {
     if (props.initialData) {
       formData.value = {
         ...getDefaultData(),
         ...props.initialData,
         salaryComponentSystemId: props.initialData.salaryComponentSystemId,
-        appliedUnitId: props.initialData.appliedUnitId
+        appliedUnitIds: props.initialData.appliedUnitIds || []
       };
       // neu la che do Nhan ban, thi 2 truong nay can phai trong de nguoi dung tu cau hinh componentCode va componentName moi
       if (props.mode === 'copy') {
@@ -198,8 +239,8 @@ const initForm = () => {
       }
 
       // Sync tree selection
-      if (formData.value.appliedUnitId) {
-        treeBoxValue.value = [formData.value.appliedUnitId];
+      if (formData.value.appliedUnitIds && formData.value.appliedUnitIds.length > 0) {
+        treeBoxValue.value = [...formData.value.appliedUnitIds];
       } else {
         treeBoxValue.value = [];
       }
@@ -230,7 +271,7 @@ const onTreeViewSelectionChanged = (e: any) => {
   const nodes = e.component.getSelectedNodes();
   treeBoxValue.value = nodes.map((node: any) => node.key);
   // Update formData
-  formData.value.appliedUnitId = treeBoxValue.value.length > 0 ? treeBoxValue.value[0] : null;
+  formData.value.appliedUnitIds = [...treeBoxValue.value];
   clearError('appliedFor');
 };
 
@@ -259,7 +300,7 @@ const removeTag = (id: string) => {
 
   const idsToRemove = new Set([id, ...getDescendantIds(id)]);
   treeBoxValue.value = treeBoxValue.value.filter(v => !idsToRemove.has(v));
-  formData.value.appliedUnitId = treeBoxValue.value.length > 0 ? treeBoxValue.value[0] : null;
+  formData.value.appliedUnitIds = [...treeBoxValue.value];
   validateField('appliedFor');
 };
 
@@ -361,7 +402,7 @@ const handleSaveAndAdd = async () => {
                      class="misa-input w-full-input"
                      :class="{ 'input-error': errors.componentName }"
                      v-model="formData.componentName"
-                     @input="clearError('componentName')"
+                     @input="onComponentNameInput"
                      @blur="validateField('componentName')"
                      maxlength="255"
                      :disabled="mode === 'view'"
@@ -380,7 +421,7 @@ const handleSaveAndAdd = async () => {
                      :class="{ 'input-error': errors.componentCode }"
                      v-model="formData.componentCode"
                      placeholder="Nhập mã viết liền"
-                     @input="clearError('componentCode')"
+                     @input="onComponentCodeInput"
                      @blur="validateField('componentCode')"
                      maxlength="255"
                      :disabled="mode === 'view'"

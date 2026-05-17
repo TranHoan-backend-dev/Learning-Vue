@@ -84,7 +84,7 @@ public class BaseBl<T>(
     /// Tạo mới đối tượng
     /// </summary>
     /// <param name="model">Dữ liệu bản ghi cần thêm</param>
-    public async Task AddAsync(T model)
+    public virtual async Task AddAsync(T model)
     {
         log.LogInformation("Add new record for entity: {Entity}", typeof(T).Name);
         await baseDl.CreateAsync(model);
@@ -96,7 +96,7 @@ public class BaseBl<T>(
     /// <param name="model">Dữ liệu cần cập nhật</param>
     /// <param name="id">Id của bản ghi cần cập nhật</param>
     /// <returns></returns>
-    public async Task<int> UpdateAsync(T model, Guid id)
+    public virtual async Task<int> UpdateAsync(T model, Guid id)
     {
         log.LogInformation("Update record {Id} for entity: {Entity}", id, typeof(T).Name);
 

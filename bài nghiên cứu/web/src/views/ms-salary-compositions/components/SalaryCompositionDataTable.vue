@@ -320,7 +320,7 @@ onMounted(() => {
             <template #status-cell="{ data }"><MSStatusBadge :status="data.value"/></template>
 
             <template #addSystemTemplate="{ data }">
-              <div class="action-buttons add-system-action">
+              <div class="action-buttons add-system-action" @click.stop>
                 <div
                     :id="`add-sys-${data.data.componentId}`"
                     class="action-btn"
@@ -340,7 +340,7 @@ onMounted(() => {
             </template>
 
             <template #actionTemplate="{ data }">
-              <div class="action-buttons">
+              <div class="action-buttons" @click.stop>
                 <!-- Nút Sử dụng (Tạm thời để tích xanh cho tất cả bản ghi) -->
                 <div
                     :id="`active-${data.data.componentId}`"

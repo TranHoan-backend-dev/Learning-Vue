@@ -135,7 +135,7 @@ const addSystemComposition = async (data: any) => {
       Value: data.value === '-' ? null : data.value,
       Status: 1,
       Source: 'Hệ thống',
-      AppliedUnitId: data.appliedUnitId,
+      AppliedUnitIds: data.appliedUnitIds,
       IsUsed: true
     };
     debugger;

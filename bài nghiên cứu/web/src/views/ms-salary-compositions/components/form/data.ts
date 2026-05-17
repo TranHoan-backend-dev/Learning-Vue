@@ -1,7 +1,7 @@
 export const defaultData = {
     componentName: '',
     componentCode: '',
-    appliedUnitId: null as string | null,
+    appliedUnitIds: [] as string[],
     salaryComponentSystemId: null as string | null,
     attribute: 1, // Default: Thu nhập (1)
     taxType: null as string | null,

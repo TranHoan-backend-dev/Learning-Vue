@@ -4,21 +4,26 @@ using MISA.BL.DTO.Request;
 using MISA.Common.Enum;
 using MISA.Common.Model;
 using MISA.Common.Model.Pageable;
-using MISA.DL.Base;
+using MISA.DL.Repository;
 
 namespace MISA.BL.Service;
 
 public class SalaryCompositionBl(
-    IBaseDl<SalaryComposition> baseDl,
+    ISalaryCompositionDl salaryCompositionDl,
     ILogger<SalaryComposition> log
 )
-    : BaseBl<SalaryComposition>(baseDl, log), ISalaryCompositionBl
+    : BaseBl<SalaryComposition>(salaryCompositionDl, log), ISalaryCompositionBl
 {
+    private readonly ISalaryCompositionDl _salaryCompositionDl = salaryCompositionDl;
+
     protected override string GetJoinColumns() =>
-        "t2.organization_name AS AppliedUnitName, t3.salary_component_system_name AS SalaryComponentSystemName";
+        "t3.salary_component_system_name AS SalaryComponentSystemName, " +
+        "(SELECT GROUP_CONCAT(o.organization_name SEPARATOR ', ') " +
+        " FROM pa_salary_composition_organization sco " +
+        " JOIN pa_organization o ON sco.organization_id = o.organization_id " +
+        " WHERE sco.salary_component_id = t1.salary_component_id) AS AppliedUnitName";
 
     protected override string GetJoinSql() =>
-        "LEFT JOIN pa_organization t2 ON t1.applied_unit_id = t2.organization_id " +
         "LEFT JOIN pa_salary_composition_system t3 ON t1.salary_component_system_id = t3.salary_component_system_id";
 
     public async Task<PagingData<SalaryComposition>> GetAllUsedCompositions(
@@ -47,7 +52,7 @@ public class SalaryCompositionBl(
             ref parameters
         );
 
-        var data = await baseDl.GetPagedDataListAsync<SalaryComposition>(
+        var data = await _salaryCompositionDl.GetPagedDataListAsync<SalaryComposition>(
             parameters, query,
             parameters, pagination
         );
@@ -62,5 +67,41 @@ public class SalaryCompositionBl(
                 TotalElements = data.Pageable
             }
         };
+    }
+
+    public override async Task AddAsync(SalaryComposition model)
+    {
+        await base.AddAsync(model);
+        if (model.AppliedUnitIds != null && model.AppliedUnitIds.Any())
+        {
+            await _salaryCompositionDl.InsertAppliedUnitsAsync(model.SalaryComponentId, model.AppliedUnitIds);
+        }
+    }
+
+    public override async Task<int> UpdateAsync(SalaryComposition model, Guid id)
+    {
+        var result = await base.UpdateAsync(model, id);
+        // Delete existing relations
+        await _salaryCompositionDl.DeleteAppliedUnitsAsync(id);
+        
+        // Insert new relations
+        if (model.AppliedUnitIds != null && model.AppliedUnitIds.Any())
+        {
+            await _salaryCompositionDl.InsertAppliedUnitsAsync(id, model.AppliedUnitIds);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Ghi đè logic của class cha để lấy thông tin chi tiết kèm danh sách đơn vị áp dụng.
+    /// </summary>
+    public override async Task<SalaryComposition?> GetByIdAsync(Guid id)
+    {
+        var result = await base.GetByIdAsync(id);
+        if (result != null)
+        {
+            result.AppliedUnitIds = await _salaryCompositionDl.GetAppliedUnitIdsAsync(id);
+        }
+        return result;
     }
 }

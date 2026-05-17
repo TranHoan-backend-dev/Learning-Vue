@@ -42,11 +42,11 @@ public class SalaryComposition : BaseModel
     public required string SalaryComponentName { get; set; }
 
     /// <summary>
-    /// Id của đơn vị áp dụng (Organization).<br/>
-    /// Lưu dưới dạng UUID
+    /// Danh sách ID của các đơn vị áp dụng.
+    /// Lưu vào bảng pa_salary_composition_organization.
     /// </summary>
-    [ConfigColumn("applied_unit_id")]
-    public Guid? AppliedUnitId { get; set; }
+    [NotMapped]
+    public List<Guid>? AppliedUnitIds { get; set; }
 
     /// <summary>
     /// Id của danh mục hệ thống (SalaryCompositionSystem).<br/>

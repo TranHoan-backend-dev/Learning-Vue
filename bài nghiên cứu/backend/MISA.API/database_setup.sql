@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS pa_salary_composition
     salary_component_id        CHAR(36) PRIMARY KEY,
     salary_component_code      VARCHAR(255) NOT NULL UNIQUE,
     salary_component_name      VARCHAR(255) NOT NULL,
-    applied_unit_id            CHAR(36)     DEFAULT NULL,
     salary_component_system_id CHAR(36)     NOT NULL,
     attribute                  INT          NOT NULL COMMENT '0: Khác, 1: Thu nhập, 2: Khấu trừ',
     value_type                 INT COMMENT '0: Số, 1: Tiền tệ, 2: Chữ, 3: Ngày, 4: Phần trăm',
@@ -56,8 +55,17 @@ CREATE TABLE IF NOT EXISTS pa_salary_composition
     created_by                 VARCHAR(100) DEFAULT NULL,
     modified_at                DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     modified_by                VARCHAR(100) DEFAULT NULL,
-    CONSTRAINT FK_pa_salary_composition_Org FOREIGN KEY (applied_unit_id) REFERENCES pa_organization (organization_id),
     CONSTRAINT FK_pa_salary_composition_System FOREIGN KEY (salary_component_system_id) REFERENCES pa_salary_composition_system (salary_component_system_id)
+) ENGINE = InnoDB;
+
+-- 3.5 Table pa_salary_composition_organization (Many-to-Many mapping)
+CREATE TABLE IF NOT EXISTS pa_salary_composition_organization
+(
+    salary_component_id CHAR(36) NOT NULL,
+    organization_id     CHAR(36) NOT NULL,
+    PRIMARY KEY (salary_component_id, organization_id),
+    CONSTRAINT FK_sco_salary_component FOREIGN KEY (salary_component_id) REFERENCES pa_salary_composition (salary_component_id) ON DELETE CASCADE,
+    CONSTRAINT FK_sco_organization FOREIGN KEY (organization_id) REFERENCES pa_organization (organization_id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
 -- 4. Table pa_grid_config (Danh sách các cột của bảng)
@@ -101,51 +109,35 @@ VALUES (UUID(), 'SalaryComponentGrid', 'salary_component_code', 'Mã thành ph�
        (UUID(), 'SalaryComponentSystemGrid', 'valueType', 'Kiểu giá trị', 1, 5, 120, 0),
        (UUID(), 'SalaryComponentSystemGrid', 'value', 'Giá trị', 1, 6, 200, 0);
 
+truncate table pa_salary_composition_organization;
 truncate table pa_salary_composition;
 -- 3. Seed data for pa_salary_composition (20 records from data.ts)
 INSERT IGNORE INTO pa_salary_composition (salary_component_id, salary_component_code, salary_component_name,
-                                          applied_unit_id, salary_component_system_id, attribute, value_type, value,
+                                          salary_component_system_id, attribute, value_type, value,
                                           status, source, is_used)
-VALUES (UUID(), '1', '1', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000003', 0, 0, '-', 1,
-        'Tự thêm', false),
-       (UUID(), '465ERTERT', 'PC CKH121', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000002', 1, 1, '1000000', 1, 'Tự thêm', true),
-       (UUID(), 'A', 'A', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000003', 1, 1, '300',
-        0, 'Tự thêm', false),
-       (UUID(), 'AVA', 'ava', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000001', 1, 1,
-        '= TONG_CONG_...', 0, 'Tự thêm', false),
-       (UUID(), 'BAC_LUONG', 'Bậc lương', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000001', 0, 2, '-', 1, 'Tự thêm', true),
-       (UUID(), 'BANG_THUE', 'Bảng thuế', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000004', 0, 3, '5.000.000', 1, 'Tự thêm', true),
-       (UUID(), 'BHTN', 'BHTN', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000005', 2, 1,
-        '=BHTN', 1, 'Tự thêm', false),
-       (UUID(), 'BHTN_CONG_TY_DONG', 'BHTN (Công ty đóng)', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000005', 0, 1, '=BHTN_CONG_T...', 1, 'Tự thêm', true),
-       (UUID(), 'BHXH', 'BHXH', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000005', 2, 1,
-        '=ROUND(BHXH, 1)', 1, 'Tự thêm', false),
-       (UUID(), 'BHYT', 'BHYT', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000005', 2, 1,
-        '=BHYT', 1, 'Tự thêm', true),
-       (UUID(), 'CA_DAC_BIET', 'Ca đặc biệt', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000006', 0, 0, '-', 1, 'Tự thêm', true),
-       (UUID(), 'CDP', 'Công đoàn phí', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000005',
-        2, 1, '=if( TINH_CHAT_L... )', 1, 'Tự thêm', true),
-       (UUID(), 'CHECKBOX', 'Checkbox', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000001',
-        0, 2, '-', 1, 'Tự thêm', true),
-       (UUID(), 'CHUYEN_DOANH_SO', 'Chuyên doanh số', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000004', 1, 1, '=E6/2', 1, 'Tự thêm', true),
-       (UUID(), 'COMBOBOX', 'combobox', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0001-000000000001',
-        0, 2, '-', 1, 'Tự thêm', true),
-       (UUID(), 'CONG_AN_CA', 'Công ăn ca', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000006', 0, 0, '-', 1, 'Tự thêm', true),
-       (UUID(), 'PC_AN_TRUA', 'Phụ cấp ăn trưa', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000004', 1, 1, '730000', 1, 'Tự thêm', true),
-       (UUID(), 'PC_DIEN_THOAI', 'Phụ cấp điện thoại', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000004', 1, 1, '200000', 1, 'Tự thêm', true),
-       (UUID(), 'THU_NHAP_KHAC_1', 'Thu nhập khác 1', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000003', 1, 1, '0', 1, 'Tự thêm', true),
-       (UUID(), 'THU_NHAP_KHAC_2', 'Thu nhập khác 2', '00000000-0000-0000-0000-000000000001',
-        '00000000-0000-0000-0001-000000000003', 1, 1, '0', 1, 'Tự thêm', true);
+VALUES ('00000000-0000-0000-0002-000000000001', '1', '1', '00000000-0000-0000-0001-000000000003', 0, 0, '-', 1, 'Tự thêm', false),
+       ('00000000-0000-0000-0002-000000000002', '465ERTERT', 'PC CKH121', '00000000-0000-0000-0001-000000000002', 1, 1, '1000000', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000003', 'A', 'A', '00000000-0000-0000-0001-000000000003', 1, 1, '300', 0, 'Tự thêm', false),
+       ('00000000-0000-0000-0002-000000000004', 'AVA', 'ava', '00000000-0000-0000-0001-000000000001', 1, 1, '= TONG_CONG_...', 0, 'Tự thêm', false),
+       ('00000000-0000-0000-0002-000000000005', 'BAC_LUONG', 'Bậc lương', '00000000-0000-0000-0001-000000000001', 0, 2, '-', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000006', 'BANG_THUE', 'Bảng thuế', '00000000-0000-0000-0001-000000000004', 0, 3, '5.000.000', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000007', 'BHTN', 'BHTN', '00000000-0000-0000-0001-000000000005', 2, 1, '=BHTN', 1, 'Tự thêm', false),
+       ('00000000-0000-0000-0002-000000000008', 'BHTN_CONG_TY_DONG', 'BHTN (Công ty đóng)', '00000000-0000-0000-0001-000000000005', 0, 1, '=BHTN_CONG_T...', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000009', 'BHXH', 'BHXH', '00000000-0000-0000-0001-000000000005', 2, 1, '=ROUND(BHXH, 1)', 1, 'Tự thêm', false),
+       ('00000000-0000-0000-0002-000000000010', 'BHYT', 'BHYT', '00000000-0000-0000-0001-000000000005', 2, 1, '=BHYT', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000011', 'CA_DAC_BIET', 'Ca đặc biệt', '00000000-0000-0000-0001-000000000006', 0, 0, '-', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000012', 'CDP', 'Công đoàn phí', '00000000-0000-0000-0001-000000000005', 2, 1, '=if( TINH_CHAT_L... )', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000013', 'CHECKBOX', 'Checkbox', '00000000-0000-0000-0001-000000000001', 0, 2, '-', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000014', 'CHUYEN_DOANH_SO', 'Chuyên doanh số', '00000000-0000-0000-0001-000000000004', 1, 1, '=E6/2', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000015', 'COMBOBOX', 'combobox', '00000000-0000-0000-0001-000000000001', 0, 2, '-', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000016', 'CONG_AN_CA', 'Công ăn ca', '00000000-0000-0000-0001-000000000006', 0, 0, '-', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000017', 'PC_AN_TRUA', 'Phụ cấp ăn trưa', '00000000-0000-0000-0001-000000000004', 1, 1, '730000', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000018', 'PC_DIEN_THOAI', 'Phụ cấp điện thoại', '00000000-0000-0000-0001-000000000004', 1, 1, '200000', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000019', 'THU_NHAP_KHAC_1', 'Thu nhập khác 1', '00000000-0000-0000-0001-000000000003', 1, 1, '0', 1, 'Tự thêm', true),
+       ('00000000-0000-0000-0002-000000000020', 'THU_NHAP_KHAC_2', 'Thu nhập khác 2', '00000000-0000-0000-0001-000000000003', 1, 1, '0', 1, 'Tự thêm', true);
+
+INSERT IGNORE INTO pa_salary_composition_organization (salary_component_id, organization_id)
+SELECT salary_component_id, '00000000-0000-0000-0000-000000000001' FROM pa_salary_composition;
 
 truncate table pa_salary_composition_system;
 -- 2. System Components with fixed IDs for seeding
