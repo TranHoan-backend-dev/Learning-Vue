@@ -38,7 +38,8 @@ const emit = defineEmits([
   'handleDelete',
   'deleteSelected',
   'update:statusFilter',
-  'addSystem'
+  'addSystem',
+  'handleRowClick'
 ]);
 
 /**
@@ -226,6 +227,7 @@ onMounted(() => {
               key-expr="componentId"
               :selected-row-keys="selectedIds"
               @update:selected-row-keys="handleSelectedIdsChange"
+              @row-click="(e) => emit('handleRowClick', e.data)"
               :column-auto-width="false"
               :allow-column-resizing="true"
               column-resizing-mode="nextColumn"

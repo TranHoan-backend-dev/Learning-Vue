@@ -16,7 +16,7 @@ import {attributeOptions, valueTypeOptions} from "@/views/ms-salary-compositions
 
 const emit = defineEmits(['close', 'save']);
 const props = defineProps<{
-  mode: 'add' | 'edit' | 'copy';
+  mode: 'add' | 'edit' | 'copy' | 'view';
   initialData?: any;
 }>();
 
@@ -88,6 +88,13 @@ const validateField = (field: string): boolean => {
         return false;
       }
       break;
+
+    case 'appliedFor':
+      if (!treeBoxValue.value || treeBoxValue.value.length === 0) {
+        errors.value.appliedFor = 'Đơn vị áp dụng không được để trống'
+        return false;
+      }
+      break;
   }
 
   // Xóa lỗi nếu hợp lệ
@@ -96,7 +103,7 @@ const validateField = (field: string): boolean => {
 };
 
 const validateAll = (): boolean => {
-  const fields = ['componentName', 'componentCode', 'salaryComponentSystemId', 'attribute'];
+  const fields = ['componentName', 'componentCode', 'salaryComponentSystemId', 'attribute', 'appliedFor'];
   let isValid = true;
 
   // Validate tất cả các trường
@@ -159,9 +166,12 @@ watch(() => formData.value.attribute, (newVal, oldVal) => {
 });
 
 // Khởi tạo form
+/**
+ * Co 3 che do la edit, copy, view. Edit/View thi binding toan bo du lieu vao form. Copy thi tru Ma thanh phan va Ten thanh phan ra
+ */
 const initForm = () => {
   errors.value = {};
-  if (props.mode === 'edit' || props.mode === 'copy') {
+  if (props.mode === 'edit' || props.mode === 'copy' || props.mode === 'view') {
     if (props.initialData) {
       formData.value = {
         ...getDefaultData(),
@@ -169,6 +179,19 @@ const initForm = () => {
         salaryComponentSystemId: props.initialData.salaryComponentSystemId,
         appliedUnitId: props.initialData.appliedUnitId
       };
+      // neu la che do Nhan ban, thi 2 truong nay can phai trong de nguoi dung tu cau hinh componentCode va componentName moi
+      if (props.mode === 'copy') {
+        formData.value.componentCode = '';
+        formData.value.componentName = '';
+      }
+      
+      // Ensure numeric binding for attribute and valueType if they exist
+      if (props.initialData.attribute !== undefined && props.initialData.attribute !== null) {
+        formData.value.attribute = Number(props.initialData.attribute);
+      }
+      if (props.initialData.valueType !== undefined && props.initialData.valueType !== null) {
+        formData.value.valueType = Number(props.initialData.valueType);
+      }
 
       if (props.initialData.value) {
         formData.value.valueFormula = props.initialData.value;
@@ -181,9 +204,6 @@ const initForm = () => {
         treeBoxValue.value = [];
       }
 
-      if (props.mode === 'copy') {
-        formData.value.componentCode = `${formData.value.componentCode}_COPY`;
-      }
     }
   } else {
     formData.value = getDefaultData();
@@ -211,6 +231,7 @@ const onTreeViewSelectionChanged = (e: any) => {
   treeBoxValue.value = nodes.map((node: any) => node.key);
   // Update formData
   formData.value.appliedUnitId = treeBoxValue.value.length > 0 ? treeBoxValue.value[0] : null;
+  clearError('appliedFor');
 };
 
 const onTreeItemClick = () => {
@@ -220,11 +241,26 @@ const onTreeItemClick = () => {
 const selectedItems = computed(() => {
   return appliedUnits.value
       .filter(u => treeBoxValue.value.includes(u.organizationId))
+      // Chỉ giữ lại những node mà cha của nó không được chọn (top-most selected nodes)
+      .filter(u => !u.parentId || !treeBoxValue.value.includes(u.parentId))
       .map(u => ({id: u.organizationId, text: u.organizationName}));
 });
 
 const removeTag = (id: string) => {
-  treeBoxValue.value = treeBoxValue.value.filter(v => v !== id);
+  // Lấy danh sách tất cả các node con/cháu của node đang bị xóa
+  const getDescendantIds = (parentId: string): string[] => {
+    const children = appliedUnits.value.filter(u => u.parentId === parentId).map(u => u.organizationId);
+    let ids = [...children];
+    for (const childId of children) {
+      ids = [...ids, ...getDescendantIds(childId)];
+    }
+    return ids;
+  };
+
+  const idsToRemove = new Set([id, ...getDescendantIds(id)]);
+  treeBoxValue.value = treeBoxValue.value.filter(v => !idsToRemove.has(v));
+  formData.value.appliedUnitId = treeBoxValue.value.length > 0 ? treeBoxValue.value[0] : null;
+  validateField('appliedFor');
 };
 
 const loadCategories = async () => {
@@ -302,12 +338,14 @@ const handleSaveAndAdd = async () => {
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </div>
-          <div class="salary-form-title">{{ mode === 'edit' ? 'Sửa' : 'Thêm' }} thành phần</div>
+          <div class="salary-form-title">{{ mode === 'edit' ? 'Sửa' : mode === 'view' ? 'Chi tiết' : 'Thêm' }} thành phần</div>
         </div>
         <div class="salary-form-header-right">
           <button class="misa-btn-cancel" @click="$emit('close')">Hủy bỏ</button>
-          <button class="misa-btn-outline" @click="handleSaveAndAdd">Lưu và thêm</button>
-          <button class="misa-btn-primary" @click="handleSave">Lưu</button>
+          <template v-if="mode !== 'view'">
+            <button class="misa-btn-outline" @click="handleSaveAndAdd">Lưu và thêm</button>
+            <button class="misa-btn-primary" @click="handleSave">Lưu</button>
+          </template>
         </div>
       </div>
 
@@ -326,6 +364,7 @@ const handleSaveAndAdd = async () => {
                      @input="clearError('componentName')"
                      @blur="validateField('componentName')"
                      maxlength="255"
+                     :disabled="mode === 'view'"
                      tabindex="1"/>
               <div v-if="errors.componentName" class="error-message">{{ errors.componentName }}</div>
             </div>
@@ -343,17 +382,20 @@ const handleSaveAndAdd = async () => {
                      placeholder="Nhập mã viết liền"
                      @input="clearError('componentCode')"
                      @blur="validateField('componentCode')"
-                     maxlength="255" tabindex="2"/>
+                     maxlength="255"
+                     :disabled="mode === 'view'"
+                     tabindex="2"/>
               <div v-if="errors.componentCode" class="error-message">{{ errors.componentCode }}</div>
             </div>
           </div>
 
           <!-- Đơn vị áp dụng -->
-          <div class="form-row">
-            <div class="form-label">Đơn vị áp dụng</div>
+          <div class="form-row" :class="{ 'has-error': errors.appliedFor }">
+            <div class="form-label">Đơn vị áp dụng <span class="required">*</span></div>
             <div class="form-control">
               <DxDropDownBox
-                  class="misa-selectbox w-full-input"
+                  class="misa-selectbox w-full-input unit-dropdown"
+                  :class="{ 'select-error': errors.appliedFor }"
                   v-model:value="treeBoxValue"
                   v-model:opened="isTreeOpened"
                   :data-source="treeDataSource"
@@ -364,6 +406,7 @@ const handleSaveAndAdd = async () => {
                   field-template="field-template"
                   :drop-down-options="{ container: '.salary-form-container', wrapperAttr: { class: 'misa-dropdown-tree-popup' } }"
                   :tab-index="3"
+                  :disabled="mode === 'view'"
               >
                 <template #field-template="{ data }">
                   <div class="misa-tagbox-field">
@@ -371,7 +414,8 @@ const handleSaveAndAdd = async () => {
                       <div v-for="item in selectedItems" :key="item.id" class="misa-tag">
                         <span class="misa-tag-text">{{ item.text }}</span>
                         <span class="misa-tag-remove" @click.stop="removeTag(item.id)">
-                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor"
+                               stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
                           </svg>
@@ -379,6 +423,7 @@ const handleSaveAndAdd = async () => {
                       </div>
                       <input
                           class="dx-texteditor-input"
+                          :class="{ 'hide-value-text': selectedItems.length > 0 }"
                           readonly
                           :placeholder="selectedItems.length === 0 ? '--- Tất cả đơn vị ---' : ''"
                       />
@@ -393,8 +438,8 @@ const handleSaveAndAdd = async () => {
                       parent-id-expr="parentId"
                       display-expr="text"
                       :select-by-click="true"
-                      :select-nodes-recursive="false"
-                      show-check-boxes-mode="multiple"
+                      :select-nodes-recursive="true"
+                      show-check-boxes-mode="selectAll"
                       selection-mode="multiple"
                       :selected-item-keys="treeBoxValue"
                       @selection-changed="onTreeViewSelectionChanged"
@@ -402,6 +447,7 @@ const handleSaveAndAdd = async () => {
                   />
                 </template>
               </DxDropDownBox>
+              <div v-if="errors.appliedFor" class="error-message">{{ errors.appliedFor }}</div>
             </div>
           </div>
 
@@ -415,9 +461,10 @@ const handleSaveAndAdd = async () => {
                   :items="salaryComponentSystems"
                   display-expr="salaryComponentSystemName"
                   value-expr="salaryComponentSystemId"
-                  v-model="formData.salaryComponentSystemId"
+                  v-model:value="formData.salaryComponentSystemId"
                   @value-changed="clearError('salaryComponentSystemId')"
-                  :tab-index="4"/>
+                  :tab-index="4"
+                  :disabled="mode === 'view'"/>
               <div v-if="errors.salaryComponentSystemId" class="error-message">{{ errors.salaryComponentSystemId }}
               </div>
             </div>
@@ -433,14 +480,15 @@ const handleSaveAndAdd = async () => {
                   style="width: 250px"
                   :items="attributeOptions"
                   display-expr="name" value-expr="id"
-                  v-model="formData.attribute"
+                  v-model:value="formData.attribute"
                   @value-changed="clearError('attribute')"
-                  :tab-index="5"/>
+                  :tab-index="5"
+                  :disabled="mode === 'view'"/>
 
               <!-- Radio thuế: chỉ hiển thị khi Tính chất = Thu nhập -->
               <div v-if="showTaxOptions && formData.attribute === 1" class="radio-group ml-24">
-                <label v-for="tax in taxOptions" :key="tax.value" class="radio-label">
-                  <input type="radio" v-model="formData.taxType" :value="tax.value" :tabindex="tax.tabindex">
+                <label v-for="tax in taxOptions" :key="tax.value" class="radio-label" :class="{'disabled-label': mode === 'view'}">
+                  <input type="radio" v-model="formData.taxType" :value="tax.value" :tabindex="tax.tabindex" :disabled="mode === 'view'">
                   <span class="radio-custom"></span> {{ tax.label }}
                 </label>
               </div>
@@ -457,11 +505,12 @@ const handleSaveAndAdd = async () => {
                     ref="quotaFormulaRef"
                     v-model="formData.quota"
                     placeholder="Tự động gợi ý công thức và tham số khi gõ"
-                    :rows="6"/>
+                    :rows="6"
+                    :disabled="mode === 'view'"/>
               </div>
               <div class="checkbox-container mt-16">
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="formData.allowExceedQuota" tabindex="10">
+                <label class="checkbox-label" :class="{'disabled-label': mode === 'view'}">
+                  <input type="checkbox" v-model="formData.allowExceedQuota" tabindex="10" :disabled="mode === 'view'">
                   <span class="checkbox-custom"></span> Cho phép giá trị tính vượt quá định mức
                 </label>
                 <div class="info-icon-container ml-4" title="Giải thích về định mức">
@@ -481,8 +530,9 @@ const handleSaveAndAdd = async () => {
                   :items="valueTypeOptions"
                   display-expr="name"
                   value-expr="id"
-                  v-model="formData.valueType"
-                  :tab-index="11"/>
+                  v-model:value="formData.valueType"
+                  :tab-index="11"
+                  :disabled="mode === 'view'"/>
             </div>
           </div>
 
@@ -491,8 +541,8 @@ const handleSaveAndAdd = async () => {
             <div class="form-label pt-8">Giá trị</div>
             <div class="form-control flex-col">
               <div class="radio-row mb-12">
-                <label class="radio-label">
-                  <input type="radio" v-model="formData.valueCalculation" value="Tự động cộng tổng" tabindex="12">
+                <label class="radio-label" :class="{'disabled-label': mode === 'view'}">
+                  <input type="radio" v-model="formData.valueCalculation" value="Tự động cộng tổng" tabindex="12" :disabled="mode === 'view'">
                   <span class="radio-custom"></span> Tự động cộng tổng giá trị của các nhân viên
                 </label>
                 <div class="inline-selectbox-wrapper ml-12">
@@ -501,7 +551,7 @@ const handleSaveAndAdd = async () => {
                       style="width: 250px"
                       :items="calculationTargetOptions"
                       v-model="formData.valueCalculationTarget"
-                      :disabled="formData.valueCalculation !== 'Tự động cộng tổng'"
+                      :disabled="mode === 'view' || formData.valueCalculation !== 'Tự động cộng tổng'"
                       :tab-index="13">
                     <DxButton name="info" location="after" :options="{
                       icon: 'info',
@@ -515,12 +565,13 @@ const handleSaveAndAdd = async () => {
               </div>
 
               <div class="radio-row mb-12">
-                <label class="radio-label">
+                <label class="radio-label" :class="{'disabled-label': mode === 'view'}">
                   <input
                       type="radio"
                       v-model="formData.valueCalculation"
                       value="Tính theo công thức tự đặt"
-                      tabindex="14">
+                      tabindex="14"
+                      :disabled="mode === 'view'">
                   <span class="radio-custom"></span> Tính theo công thức tự đặt
                 </label>
               </div>
@@ -530,7 +581,7 @@ const handleSaveAndAdd = async () => {
                     ref="valueFormulaRef"
                     v-model="formData.valueFormula"
                     placeholder="Tự động gợi ý công thức và tham số khi gõ"
-                    :disabled="formData.valueCalculation !== 'Tính theo công thức tự đặt'"
+                    :disabled="mode === 'view' || formData.valueCalculation !== 'Tính theo công thức tự đặt'"
                     :rows="6"/>
               </div>
             </div>
@@ -544,7 +595,8 @@ const handleSaveAndAdd = async () => {
                   class="misa-textarea w-full-input"
                   rows="3"
                   v-model="formData.description"
-                  tabindex="15"/>
+                  tabindex="15"
+                  :disabled="mode === 'view'"/>
             </div>
           </div>
 
@@ -553,9 +605,9 @@ const handleSaveAndAdd = async () => {
             <div class="form-label">Hiển thị trên phiếu lương</div>
             <div class="form-control">
               <div class="radio-group">
-                <label v-for="option in showOnPayslipOptions" :key="option.value" class="radio-label">
+                <label v-for="option in showOnPayslipOptions" :key="option.value" class="radio-label" :class="{'disabled-label': mode === 'view'}">
                   <input type="radio" v-model="formData.showOnPayslip" :value="option.value"
-                         :tabindex="option.tabindex">
+                         :tabindex="option.tabindex" :disabled="mode === 'view'">
                   <span class="radio-custom"></span> {{ option.label }}
                 </label>
               </div>

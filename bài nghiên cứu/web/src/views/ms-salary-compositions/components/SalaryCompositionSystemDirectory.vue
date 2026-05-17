@@ -7,7 +7,7 @@ import {getAttributeName, getValueTypeName} from "@/views/ms-salary-compositions
 import MSPageLayout from "@/components/layout/ms-page-layout/MSPageLayout.vue";
 import {toast} from "@/services/toast.ts";
 
-const emit = defineEmits(['back', 'addSystem']);
+const emit = defineEmits(['back']);
 
 const isLoading = ref(false);
 const searchKeyword = ref("");
@@ -91,6 +91,9 @@ watch(searchKeyword, () => {
   fetchData();
 });
 
+/**
+ * Xử ly su thay doi cua co bang
+ */
 const handlePageSizeChange = () => {
   currentPage.value = 1;
   fetchData();
@@ -111,7 +114,6 @@ const togglePin = (e: any, dataField: string) => {
 };
 
 const handleAddSystem = (data: any) => {
-  emit('addSystem');
   addSystemComposition(data);
   fetchData();
 };

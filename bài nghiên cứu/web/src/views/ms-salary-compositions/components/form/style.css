@@ -163,6 +163,13 @@
     border-color: var(--primary-green);
 }
 
+.misa-input:disabled,
+.misa-textarea:disabled {
+    background-color: #f5f5f5;
+    color: #111;
+    cursor: not-allowed;
+}
+
 .misa-textarea {
     resize: vertical;
 }
@@ -360,6 +367,26 @@
     border-color: var(--primary-green);
 }
 
+:deep(.dx-texteditor.dx-state-disabled.dx-editor-outlined) {
+    background-color: #f5f5f5 !important;
+    border-color: #e0e0e0 !important;
+    opacity: 1 !important;
+}
+
+:deep(.dx-texteditor.dx-state-disabled .dx-texteditor-input) {
+    color: #111 !important;
+}
+
+/* Revert specific style for Đơn vị áp dụng when disabled */
+:deep(.unit-dropdown.dx-state-disabled.dx-editor-outlined) {
+    background-color: #fff !important;
+}
+
+:deep(.unit-dropdown.dx-state-disabled .dx-texteditor-input),
+:deep(.unit-dropdown.dx-state-disabled .misa-tag-text) {
+    color: #111 !important;
+}
+
 :deep(.misa-selectbox-gray .dx-texteditor-container) {
     background-color: #f2f2f2 !important;
     border-color: transparent !important;
@@ -401,23 +428,27 @@
     flex: 1;
 }
 
+.misa-tagbox-tags .dx-texteditor-input.hide-value-text {
+    color: transparent !important;
+    flex: none !important;
+}
+
 .misa-tag {
     background-color: #f2f2f2;
     border: 1px solid #e0e0e0;
     border-radius: 4px;
-    padding: 0 8px;
-    height: 26px;
+    padding: 2px 8px;
+    min-height: 26px;
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    max-width: 200px;
+    max-width: 100%;
 }
 
 .misa-tag-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    word-break: break-word;
+    white-space: normal;
 }
 
 .misa-tag-remove {
@@ -492,4 +523,9 @@
 
 :deep(.dx-dropdowneditor-icon) {
     color: #666;
+}
+
+.disabled-label {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

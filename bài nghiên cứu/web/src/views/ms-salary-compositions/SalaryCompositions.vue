@@ -156,8 +156,8 @@ onMounted(() => {
  * Theo doi trang thai cua cac bo loc va phan tim kiem
  */
 watch([currentPage, pageSize, statusFilter], (newValues, oldValues) => {
-  // Nếu statusFilter hoặc searchKeyword thay đổi, reset về trang 1
-  if (oldValues && (newValues[2] !== oldValues[2] || newValues[3] !== oldValues[3])) {
+  // Nếu statusFilter thay đổi, reset về trang 1
+  if (oldValues && (newValues[2] !== oldValues[2])) {
     if (currentPage.value !== 1) {
       currentPage.value = 1;
       return;
@@ -233,11 +233,14 @@ const closeConfirmModal = () => {
 };
 
 const isFormVisible = ref(false);
-const formMode = ref<'add' | 'edit' | 'copy'>('add');
+const formMode = ref<'add' | 'edit' | 'copy' | 'view'>('add');
 const formInitialData = ref<any>(null);
 const selectedRowId = ref<string | null>(null);
 const formKey = ref(0);
 
+/**
+ * Mo form de tao 1 ban ghi moi
+ */
 const handleAdd = () => {
   formKey.value = Date.now();
   formMode.value = 'add';
@@ -257,6 +260,22 @@ const handleEdit = (data: any) => {
   isFormVisible.value = true;
 };
 
+/**
+ * Xu ly viec mo form view details
+ * @param data
+ */
+const handleRowClick = (data: any) => {
+  formKey.value = Date.now();
+  formMode.value = 'view';
+  selectedRowId.value = data.componentId;
+  formInitialData.value = {...data}
+  isFormVisible.value = true;
+}
+
+/**
+ * Xu ly viec nhan ban ban ghi
+ * @param data
+ */
 const handleDuplicate = (data: any) => {
   formKey.value = Date.now();
   formMode.value = 'copy';
@@ -466,6 +485,7 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
             @handleEdit="handleEdit"
             @handleDelete="handleDelete"
             @deleteSelected="handleDeleteSelected"
+            @handleRowClick="handleRowClick"
         />
       </template>
     </MSPageLayout>
@@ -495,11 +515,7 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
     />
   </template>
 
-  <SalaryCompositionSystemDirectory
-      v-else
-      @back="closeSystemDirectory"
-      @addSystem="addSystemComposition"
-  />
+  <SalaryCompositionSystemDirectory v-else @back="closeSystemDirectory"/>
 </template>
 
 <style scoped src="./style.css"></style>
