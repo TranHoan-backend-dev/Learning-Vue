@@ -1,7 +1,31 @@
 <script setup lang="ts">
-import {ref, watch} from "vue";
+import {ref, watch, onMounted, onUnmounted} from "vue";
 import type {LeftHeaderComponents, RightHeaderComponents} from "@/components/layout/ms-header/model.ts";
 import SearchField from "@/components/ui/ms-input/SearchField.vue";
+
+const isMobileMode = ref(false);
+const isMobileMenuOpen = ref(false);
+const isSearchHidden = ref(false);
+
+const handleResize = () => {
+  // Thay đổi breakpoint xuống 992px để tránh bị gom sớm trên màn hình laptop thông thường (1280px, 1366px)
+  isMobileMode.value = window.innerWidth <= 992;
+  // Chỉ ẩn thanh tìm kiếm khi màn hình thực sự quá nhỏ (dưới 700px) không đủ chứa logo + search + menu
+  isSearchHidden.value = window.innerWidth <= 700;
+  
+  if (!isMobileMode.value) {
+    isMobileMenuOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+  handleResize();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
 
 let message = ref()
 watch(message, (newValue, _) => {
@@ -70,7 +94,7 @@ const rightComponents: RightHeaderComponents[] = [
         </div>
       </div>
       <!--    Thanh tìm kiếm-->
-      <div class="navbar_left_search">
+      <div class="navbar_left_search" v-if="!isSearchHidden">
         <!--      icon-->
         <div class="navbar_left_search_icon"></div>
         <SearchField
@@ -84,18 +108,46 @@ const rightComponents: RightHeaderComponents[] = [
 
     <!-- Right header -->
     <section class="navbar_right">
-      <div class="navbar_right_website">
-        <div class="navbar_right_website_icon"></div>
-        <div class="navbar_right_website_text">
-          Website tuyen dung
+      <template v-if="!isMobileMode">
+        <div class="navbar_right_website">
+          <div class="navbar_right_website_icon"></div>
+          <div class="navbar_right_website_text">
+            Website tuyen dung
+          </div>
         </div>
-      </div>
-      <div class="navbar_right_item"
-           v-for="(component, index) in rightComponents"
-           :key="index"
-           :title="component.parentTitle.toString()"
-      >
-        <div :class="component.childClassName"></div>
+        <div class="navbar_right_item"
+             v-for="(component, index) in rightComponents"
+             :key="index"
+             :title="component.parentTitle.toString()"
+        >
+          <div :class="component.childClassName"></div>
+        </div>
+      </template>
+
+      <!-- Hamburger Menu cho màn hình nhỏ -->
+      <div v-else class="navbar_right_hamburger" @click="isMobileMenuOpen = !isMobileMenuOpen">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7a8188" stroke-width="2" style="cursor: pointer;">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+
+        <div v-if="isMobileMenuOpen" class="mobile_dropdown_menu">
+          <div class="navbar_right_website">
+            <div class="navbar_right_website_icon"></div>
+            <div class="navbar_right_website_text">
+              Website
+            </div>
+          </div>
+          <div class="navbar_right_item"
+               v-for="(component, index) in rightComponents"
+               :key="index"
+               :title="component.parentTitle.toString()"
+          >
+            <div :class="component.childClassName"></div>
+            <span class="mobile_dropdown_text">{{ component.parentTitle }}</span>
+          </div>
+        </div>
       </div>
     </section>
   </div>
