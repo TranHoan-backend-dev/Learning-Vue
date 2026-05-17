@@ -6,6 +6,7 @@ import salaryCompositionSystemService from "@/services/salaryCompositionSystemSe
 import gridConfigService from "@/services/gridConfigService.ts";
 import {getAttributeName, getValueTypeName} from "@/views/ms-salary-compositions/data.ts";
 import MSPageLayout from "@/components/layout/ms-page-layout/MSPageLayout.vue";
+import {toast} from "@/services/toast.ts";
 
 const emit = defineEmits(['back', 'addSystem']);
 
@@ -34,7 +35,7 @@ const fetchData = async () => {
     };
 
     const response = await salaryCompositionService.getFilter(pageable, filterRequest, false);
-    
+
     if (response.data && response.data.data) {
       tableData.value = response.data.data.map((item: any) => ({
         ...item,
@@ -58,8 +59,8 @@ const fetchColumns = async () => {
     const response = await gridConfigService.getByGridId('SalaryComponentSystemGrid');
     if (response.data && response.data.length > 0) {
       columns.value = response.data.map((col: any) => ({
-        dataField: col.columnId === 'salary_component_code' ? 'componentCode' : 
-                   (col.columnId === 'componentName' ? 'salaryComponentSystemName' : 
+        dataField: col.columnId === 'salary_component_code' ? 'componentCode' :
+                   (col.columnId === 'componentName' ? 'salaryComponentSystemName' :
                      (col.columnId === 'value_type' ? 'valueType' : col.columnId)),
         caption: col.columnName,
         visible: col.isVisible === 1,
@@ -111,7 +112,39 @@ const togglePin = (e: any, dataField: string) => {
 };
 
 const handleAddSystem = (data: any) => {
-  emit('addSystem', data);
+  emit('addSystem');
+  addSystemComposition(data);
+  fetchData();
+};
+
+/**
+ * Xu ly viec chuyen doi trang thai is_used cua ban ghi
+ * @param data
+ */
+const addSystemComposition = async (data: any) => {
+  debugger;
+  try {
+    // Map du lieu vao request payload
+    const requestData = {
+      SalaryComponentCode: data.salaryComponentCode,
+      SalaryComponentName: data.salaryComponentName,
+      SalaryComponentSystemId: data.salaryComponentSystemId,
+      Attribute: data.attribute,
+      ValueType: data.valueType,
+      Value: data.value === '-' ? null : data.value,
+      Status: 1,
+      Source: 'Hệ thống',
+      AppliedUnitId: data.appliedUnitId,
+      IsUsed: true
+    };
+    debugger;
+    await salaryCompositionService.update(data.salaryComponentId, requestData);
+    toast.success('Thêm thành công', `Đã thêm thành phần ${data.salaryComponentName} từ hệ thống`);
+    await fetchData();
+  } catch (error) {
+    console.error(error);
+    toast.error('Lỗi', 'Không thể thêm thành phần từ hệ thống');
+  }
 };
 </script>
 

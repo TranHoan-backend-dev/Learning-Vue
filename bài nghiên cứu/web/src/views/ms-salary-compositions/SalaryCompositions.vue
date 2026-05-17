@@ -273,7 +273,7 @@ const closeForm = () => {
 };
 
 /**
- * Luu du lieu ve backend
+ * Luu du lieu moi tao hoac duoc chinh sua ve backend
  * @param formData
  * @param stayOpen
  */
@@ -392,36 +392,15 @@ const handleAddFromSystem = () => {
   isAddDropdownVisible.value = false;
 };
 
+/**
+ * Xu lu nut <- de quay ve trang "Thanh phan luong"
+ * Khi quay ve trang Thanh phan luong thi fetch lai data
+ */
 const closeSystemDirectory = () => {
   isSystemDirectoryVisible.value = false;
+  fetchData();
 };
 // </editor-fold>
-
-const addSystemComposition = async (data: any) => {
-  debugger;
-  try {
-    // Map du lieu vao request payload
-    const requestData = {
-      SalaryComponentCode: data.salaryComponentCode,
-      SalaryComponentName: data.salaryComponentName,
-      SalaryComponentSystemId: data.salaryComponentSystemId,
-      Attribute: data.attribute,
-      ValueType: data.valueType,
-      Value: data.value === '-' ? null : data.value,
-      Status: 1,
-      Source: 'Hệ thống',
-      AppliedUnitId: data.appliedUnitId,
-      IsUsed: true
-    };
-    debugger;
-    await salaryCompositionService.update(data.salaryComponentId, requestData);
-    toast.success('Thêm thành công', `Đã thêm thành phần ${data.salaryComponentName} từ hệ thống`);
-    await fetchData();
-  } catch (error) {
-    console.error(error);
-    toast.error('Lỗi', 'Không thể thêm thành phần từ hệ thống');
-  }
-};
 
 // Column configuration
 const columns = ref<any[]>([]);
