@@ -534,7 +534,7 @@ const handleSaveAndAdd = async () => {
                 </label>
               </div>
             </div>
-            <div v-if="errors.attribute" class="error-message" style="margin-left: 220px;">{{ errors.attribute }}</div>
+            <div v-if="errors.attribute" class="error-message attribute-error">{{ errors.attribute }}</div>
           </div>
 
           <!-- Định mức -->
