@@ -421,7 +421,7 @@ onMounted(() => {
 
         <div class="content_body_footer_right">
           <div class="content_body_footer_pagesize">
-            <span class="paging_label">Số bản ghi trên trang</span>
+            <span class="paging_label">Số dòng/trang</span>
             <div class="page_size_custom_select">
               <DxSelectBox
                   class="misa-selectbox"
@@ -430,6 +430,7 @@ onMounted(() => {
                   display-expr="label"
                   value-expr="value"
                   :width="70"
+                  :drop-down-options="{ wrapperAttr: { class: 'misa-pagesize-dropdown' } }"
                   @value-changed="handlePageSizeValChange"
               />
             </div>
@@ -612,5 +613,14 @@ onMounted(() => {
 
 .action-btn:hover {
   opacity: 0.7;
+}
+</style>
+
+<style>
+/* Override DevExtreme dropdown item padding globally */
+.misa-pagesize-dropdown .dx-list-item-content {
+  padding-top: 6px !important;
+  padding-bottom: 2px !important;
+  min-height: 32px !important;
 }
 </style>

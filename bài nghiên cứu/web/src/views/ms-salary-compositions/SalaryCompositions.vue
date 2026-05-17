@@ -21,7 +21,7 @@ const searchKeyword = ref("");
 const tableData = ref<SalaryCompositions[]>([]);
 const totalRecords = ref(0);
 const currentPage = ref(1);
-const pageSize = ref(10);
+const pageSize = ref(25);
 const statusFilter = ref("all");
 
 // <editor-fold> desc="Xu ly logic bang"
@@ -179,7 +179,7 @@ const handlePageSizeChange = () => {
 const pageInfo = computed(() => {
   const start = totalRecords.value > 0 ? (currentPage.value - 1) * pageSize.value + 1 : 0;
   const end = Math.min(currentPage.value * pageSize.value, totalRecords.value);
-  return `${start} - ${end} / ${totalRecords.value} bản ghi`;
+  return `${start} - ${end}`;
 });
 // </editor-fold>
 
