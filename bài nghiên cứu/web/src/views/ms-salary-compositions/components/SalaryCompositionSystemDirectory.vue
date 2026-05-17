@@ -2,7 +2,6 @@
 import {ref, onMounted, computed, watch} from 'vue';
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
 import salaryCompositionService from "@/services/salaryCompositionService.ts";
-import salaryCompositionSystemService from "@/services/salaryCompositionSystemService.ts";
 import gridConfigService from "@/services/gridConfigService.ts";
 import {getAttributeName, getValueTypeName} from "@/views/ms-salary-compositions/data.ts";
 import MSPageLayout from "@/components/layout/ms-page-layout/MSPageLayout.vue";
@@ -60,15 +59,15 @@ const fetchColumns = async () => {
     if (response.data && response.data.length > 0) {
       columns.value = response.data.map((col: any) => ({
         dataField: col.columnId === 'salary_component_code' ? 'componentCode' :
-                   (col.columnId === 'componentName' ? 'salaryComponentSystemName' :
-                     (col.columnId === 'value_type' ? 'valueType' : col.columnId)),
+            (col.columnId === 'componentName' ? 'salaryComponentSystemName' :
+                (col.columnId === 'value_type' ? 'valueType' : col.columnId)),
         caption: col.columnName,
         visible: col.isVisible === 1,
         width: col.width,
         isPinned: col.isPinned === 1,
         calculateCellValue: col.columnId === 'attribute' ? (data: any) => getAttributeName(data.attribute) :
-                            col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
-      }));
+            col.columnId === 'value_type' ? (data: any) => getValueTypeName(data.valueType) : undefined
+      }))
     }
   } catch (error) {
     console.error('Lỗi khi tải cấu hình cột hệ thống:', error);

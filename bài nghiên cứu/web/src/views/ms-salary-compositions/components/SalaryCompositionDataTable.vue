@@ -291,10 +291,13 @@ onMounted(() => {
                 v-if="isSystemMode"
                 caption=""
                 cell-template="addSystemTemplate"
-                alignment="center"
-                :width="50"
-                fixed
+                alignment="right"
+                :width="80"
+                :fixed="true"
                 fixed-position="right"
+                css-class="col-action"
+                :allow-filtering="false"
+                :allow-sorting="false"
                 :visible-index="1000"
             />
 
@@ -315,20 +318,22 @@ onMounted(() => {
             <template #status-cell="{ data }"><MSStatusBadge :status="data.value"/></template>
 
             <template #addSystemTemplate="{ data }">
-              <div
-                  :id="`add-sys-${data.data.componentId}`"
-                  class="add-system-btn"
-                  @click="emit('addSystem', data.data)"
-              >
-                <MSIcon name="plus" size="20" color="var(--primary-green)"/>
-                <DxTooltip
-                    :target="`#add-sys-${data.data.componentId}`"
-                    show-event="mouseenter"
-                    hide-event="mouseleave"
-                    position="top"
+              <div class="action-buttons add-system-action">
+                <div
+                    :id="`add-sys-${data.data.componentId}`"
+                    class="action-btn"
+                    @click="emit('addSystem', data.data)"
                 >
-                  Đưa vào danh sách sử dụng
-                </DxTooltip>
+                  <MSIcon name="plus" size="20" color="var(--primary-green)"/>
+                  <DxTooltip
+                      :target="`#add-sys-${data.data.componentId}`"
+                      show-event="mouseenter"
+                      hide-event="mouseleave"
+                      position="top"
+                  >
+                    Đưa vào danh sách sử dụng
+                  </DxTooltip>
+                </div>
               </div>
             </template>
 
@@ -591,6 +596,10 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 12px;
   height: 100%;
+}
+
+.add-system-action {
+  justify-content: center;
 }
 
 .action-btn {
