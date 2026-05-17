@@ -15,11 +15,31 @@
 
 <script lang="ts" setup>
 import Header from '@/components/layout/ms-header/Header.vue'
-import {ref} from "vue";
+import {ref, onMounted, onUnmounted} from "vue";
 import Sidebar from "@/components/layout/ms-sidebar/Sidebar.vue";
 import CustomToast from "@/components/ui/ms-toast/CustomToast.vue";
 
 const isCollapsed = ref(false);
+
+const handleResize = () => {
+  // Sử dụng breakpoint chuẩn 1280px (dành cho laptop/tablet ngang) thay vì tỷ lệ screen.width
+  // vì screen.width sẽ bị sai khi dùng giả lập Responsive của trình duyệt
+  // và gây lỗi trên các màn hình quá to (như màn 4K).
+  if (window.innerWidth <= 1280) {
+    isCollapsed.value = true;
+  } else {
+    isCollapsed.value = false;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+  handleResize(); // trigger on mount
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <style scoped>

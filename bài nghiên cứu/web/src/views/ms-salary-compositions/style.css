@@ -10,6 +10,8 @@
   justify-content: space-between;
   align-items: center;
   background-color: #f4f5f8;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .content_header_title {
@@ -22,6 +24,9 @@
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .misa-btn-outline {
@@ -37,6 +42,7 @@
   gap: 8px;
   cursor: pointer;
   transition: var(--misa-transition);
+  white-space: nowrap;
 }
 
 .misa-btn-outline:hover {
@@ -64,6 +70,7 @@
   gap: 8px;
   cursor: pointer;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
 }
 
 .misa-btn-primary-left:hover {
@@ -126,6 +133,8 @@
   background-color: var(--misa-white);
   border-radius: 4px;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .content_body_title {
@@ -135,12 +144,14 @@
   align-items: center;
   padding: 0 16px;
   background-color: var(--misa-white);
+  flex-shrink: 0;
 }
 
 
 
 .content_body_table {
-  height: calc(100% - 108px);
+  flex: 1;
+  min-height: 0;
 }
 
 .table_wrapper {
@@ -273,12 +284,28 @@ tr:hover .table_action {
 }
 
 .content_body_footer {
-  height: 52px;
+  height: auto;
+  min-height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 10px 16px;
   border-top: 1px solid #dddde4;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+@media screen and (max-width: 768px) {
+  .content_body_footer {
+    justify-content: center;
+    flex-direction: column;
+  }
+  .content_body_footer_right {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 /* ========== FOOTER PAGING STYLES ========== */
