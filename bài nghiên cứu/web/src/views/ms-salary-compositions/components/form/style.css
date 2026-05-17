@@ -373,3 +373,123 @@
     color: #0075FF !important;
     font-size: 16px !important;
 }
+
+/* TagBox / Chips Styles */
+.misa-tagbox-field {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 36px;
+    padding: 4px 34px 2px 8px !important; /* top 4px, right 34px (icon space), bottom 2px, left 8px */
+    box-sizing: border-box;
+    position: relative;
+}
+
+.misa-tagbox-tags {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+}
+
+.misa-tagbox-tags .dx-texteditor-input {
+    padding: 0 !important;
+    height: 26px !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 1;
+}
+
+.misa-tag {
+    background-color: #f2f2f2;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 0 8px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    max-width: 200px;
+}
+
+.misa-tag-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.misa-tag-remove {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #666;
+}
+
+.misa-tag-remove:hover {
+    color: #ff4d4f;
+}
+
+:deep(.dx-dropdowneditor-icon) {
+    width: 34px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+:deep(.dx-treeview-item-content) {
+    font-size: 13px !important;
+}
+
+:deep(.dx-treeview-item) {
+    min-height: 34px !important;
+    padding: 0 4px !important;
+}
+
+:deep(.dx-treeview-node-container:first-child) {
+    padding-left: 0 !important;
+}
+
+:deep(.dx-treeview-node-container .dx-treeview-node-container) {
+    padding-left: 14px !important;
+}
+
+:deep(.dx-treeview-toggle-item-visibility) {
+    width: 22px !important;
+    height: 34px !important;
+    margin-right: 0 !important;
+}
+
+:deep(.dx-treeview-item-with-checkbox .dx-checkbox) {
+    margin-right: 6px !important;
+}
+
+:deep(.dx-treeview-item.dx-state-selected) {
+    background-color: #e8f5e9 !important;
+    color: #28a745 !important;
+}
+
+/* Thu hẹp tối đa khoảng trắng của khung dropdown list */
+:deep(.misa-dropdown-tree-popup .dx-popup-content) {
+    padding: 0 !important;
+}
+
+:deep(.misa-dropdown-tree-popup .dx-treeview) {
+    padding: 4px 0 !important;
+}
+
+:deep(.dx-treeview-item) {
+    padding: 0 8px !important;
+}
+
+:deep(.dx-checkbox-checked .dx-checkbox-icon) {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+:deep(.dx-dropdowneditor-icon) {
+    color: #666;
+}

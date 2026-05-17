@@ -82,9 +82,7 @@ const handleSearchByKeyword = async () => {
       ColumnFilters: [] as any[]
     };
     let response = await salaryCompositionService.getFilter(pageable, filterRequest, true);
-    debugger;
     if (response.data) {
-      debugger;
       mapResponseBody(response.data.data);
     }
   } catch (e: any) {
@@ -325,6 +323,11 @@ const deleteModalMessage = ref('');
 const deleteType = ref<'single' | 'multiple'>('single');
 const pendingDeleteData = ref<any>(null);
 
+// <editor-fold> desc="Xu ly thao tac xoa"
+/**
+ * Mo modal xac nhan xoa
+ * @param data
+ */
 const handleDelete = (data: any) => {
   pendingDeleteData.value = data;
   deleteType.value = 'single';
@@ -332,6 +335,9 @@ const handleDelete = (data: any) => {
   isDeleteModalOpen.value = true;
 };
 
+/**
+ * Mo modal xac nhan xoa nhieu
+ */
 const handleDeleteSelected = () => {
   if (selectedIds.value.length === 0) return;
   deleteType.value = 'multiple';
@@ -339,13 +345,14 @@ const handleDeleteSelected = () => {
   isDeleteModalOpen.value = true;
 };
 
+/**
+ * Xac nhan xoa. Gui danh sach id can xoa ve backend
+ */
 const confirmDelete = async () => {
   isDeleteModalOpen.value = false;
   isLoading.value = true;
-  debugger;
   try {
     if (deleteType.value === 'single' && pendingDeleteData.value) {
-      debugger;
       await salaryCompositionService.delete(pendingDeleteData.value.componentId);
       toast.success('Xóa thành công', `Đã xóa thành phần lương ${pendingDeleteData.value.componentName}`);
     } else {
@@ -362,7 +369,9 @@ const confirmDelete = async () => {
     pendingDeleteData.value = null;
   }
 };
+// </editor-fold>
 
+// <editor-fold> desc="Xu ly nut chevron down 'Them moi'"
 const isAddDropdownVisible = ref(false);
 
 const toggleAddDropdown = (e: any) => {
@@ -386,22 +395,27 @@ const handleAddFromSystem = () => {
 const closeSystemDirectory = () => {
   isSystemDirectoryVisible.value = false;
 };
+// </editor-fold>
 
 const addSystemComposition = async (data: any) => {
+  debugger;
   try {
     // Map du lieu vao request payload
     const requestData = {
-      SalaryComponentCode: data.componentCode,
-      SalaryComponentName: data.componentName,
+      SalaryComponentCode: data.salaryComponentCode,
+      SalaryComponentName: data.salaryComponentName,
       SalaryComponentSystemId: data.salaryComponentSystemId,
       Attribute: data.attribute,
       ValueType: data.valueType,
-      Value: data.value,
+      Value: data.value === '-' ? null : data.value,
       Status: 1,
-      Source: 'Hệ thống'
+      Source: 'Hệ thống',
+      AppliedUnitId: data.appliedUnitId,
+      IsUsed: true
     };
-    await salaryCompositionService.create(requestData);
-    toast.success('Thêm thành công', `Đã thêm thành phần ${data.componentName} từ hệ thống`);
+    debugger;
+    await salaryCompositionService.update(data.salaryComponentId, requestData);
+    toast.success('Thêm thành công', `Đã thêm thành phần ${data.salaryComponentName} từ hệ thống`);
     await fetchData();
   } catch (error) {
     console.error(error);

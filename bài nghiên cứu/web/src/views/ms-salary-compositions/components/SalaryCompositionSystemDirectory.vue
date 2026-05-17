@@ -57,7 +57,6 @@ const fetchColumns = async () => {
   try {
     const response = await gridConfigService.getByGridId('SalaryComponentSystemGrid');
     if (response.data && response.data.length > 0) {
-      debugger;
       columns.value = response.data.map((col: any) => ({
         dataField: col.columnId === 'salary_component_code' ? 'componentCode' : 
                    (col.columnId === 'componentName' ? 'salaryComponentSystemName' : 

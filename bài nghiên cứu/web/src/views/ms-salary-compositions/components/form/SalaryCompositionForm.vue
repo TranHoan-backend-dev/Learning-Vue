@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {ref, onMounted, watch, nextTick, computed} from 'vue';
+import DxDropDownBox from 'devextreme-vue/drop-down-box';
+import DxTreeView from 'devextreme-vue/tree-view';
 import DxSelectBox, {DxButton} from 'devextreme-vue/select-box';
 import MsFormula from '@/components/ui/ms-formula/MsFormula.vue';
 import organizationService from '@/services/organizationService.ts';
@@ -172,6 +174,13 @@ const initForm = () => {
         formData.value.valueFormula = props.initialData.value;
       }
 
+      // Sync tree selection
+      if (formData.value.appliedUnitId) {
+        treeBoxValue.value = [formData.value.appliedUnitId];
+      } else {
+        treeBoxValue.value = [];
+      }
+
       if (props.mode === 'copy') {
         formData.value.componentCode = `${formData.value.componentCode}_COPY`;
       }
@@ -183,6 +192,40 @@ const initForm = () => {
 
 const appliedUnits = ref<any[]>([]);
 const salaryComponentSystems = ref<any[]>([]);
+
+// Tree selection state
+const treeBoxValue = ref<string[]>([]);
+const isTreeOpened = ref(false);
+
+const treeDataSource = computed(() => {
+  return appliedUnits.value.map(unit => ({
+    id: unit.organizationId,
+    parentId: unit.parentId || null,
+    text: unit.organizationName,
+    expanded: true
+  }));
+});
+
+const onTreeViewSelectionChanged = (e: any) => {
+  const nodes = e.component.getSelectedNodes();
+  treeBoxValue.value = nodes.map((node: any) => node.key);
+  // Update formData
+  formData.value.appliedUnitId = treeBoxValue.value.length > 0 ? treeBoxValue.value[0] : null;
+};
+
+const onTreeItemClick = () => {
+  // Option: Close on click if single selection, but user wants chips so probably multi-selection
+};
+
+const selectedItems = computed(() => {
+  return appliedUnits.value
+      .filter(u => treeBoxValue.value.includes(u.organizationId))
+      .map(u => ({id: u.organizationId, text: u.organizationName}));
+});
+
+const removeTag = (id: string) => {
+  treeBoxValue.value = treeBoxValue.value.filter(v => v !== id);
+};
 
 const loadCategories = async () => {
   try {
@@ -309,14 +352,56 @@ const handleSaveAndAdd = async () => {
           <div class="form-row">
             <div class="form-label">Đơn vị áp dụng</div>
             <div class="form-control">
-              <DxSelectBox
+              <DxDropDownBox
                   class="misa-selectbox w-full-input"
-                  :items="appliedUnits"
-                  display-expr="organizationName"
-                  value-expr="organizationId"
-                  v-model="formData.appliedUnitId"
+                  v-model:value="treeBoxValue"
+                  v-model:opened="isTreeOpened"
+                  :data-source="treeDataSource"
+                  value-expr="id"
+                  display-expr="text"
                   placeholder="--- Tất cả đơn vị ---"
-                  :tab-index="3"/>
+                  content-template="tree-template"
+                  field-template="field-template"
+                  :drop-down-options="{ container: '.salary-form-container', wrapperAttr: { class: 'misa-dropdown-tree-popup' } }"
+                  :tab-index="3"
+              >
+                <template #field-template="{ data }">
+                  <div class="misa-tagbox-field">
+                    <div class="misa-tagbox-tags">
+                      <div v-for="item in selectedItems" :key="item.id" class="misa-tag">
+                        <span class="misa-tag-text">{{ item.text }}</span>
+                        <span class="misa-tag-remove" @click.stop="removeTag(item.id)">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </span>
+                      </div>
+                      <input
+                          class="dx-texteditor-input"
+                          readonly
+                          :placeholder="selectedItems.length === 0 ? '--- Tất cả đơn vị ---' : ''"
+                      />
+                    </div>
+                  </div>
+                </template>
+                <template #tree-template>
+                  <DxTreeView
+                      :data-source="treeDataSource"
+                      data-structure="plain"
+                      key-expr="id"
+                      parent-id-expr="parentId"
+                      display-expr="text"
+                      :select-by-click="true"
+                      :select-nodes-recursive="false"
+                      show-check-boxes-mode="multiple"
+                      selection-mode="multiple"
+                      :selected-item-keys="treeBoxValue"
+                      @selection-changed="onTreeViewSelectionChanged"
+                      @item-click="onTreeItemClick"
+                  />
+                </template>
+              </DxDropDownBox>
             </div>
           </div>
 

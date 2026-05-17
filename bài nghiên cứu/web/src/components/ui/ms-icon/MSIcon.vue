@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 
 interface Props {
-  name: 'pin' | 'check-circle' | 'minus-circle' | 'copy' | 'edit' | 'trash' | 'drag-handle' | 'info' | 'warning' | 'error' | 'close';
+  name: 'pin' | 'check-circle' | 'minus-circle' | 'copy' | 'edit' | 'trash' | 'drag-handle' | 'info' | 'warning' | 'error' | 'close' | 'plus';
   size?: string | number;
   color?: string;
   strokeWidth?: string | number;
@@ -59,6 +59,12 @@ const isFillIcon = computed(() => ['pin', 'drag-handle'].includes(props.name));
         <line x1="6" y1="6" x2="18" y2="18"></line>
       </template>
 
+      <!-- plus -->
+      <template v-else-if="name === 'plus'">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </template>
+
       <!-- copy / Nhân bản -->
       <template v-else-if="name === 'copy'">
         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -95,6 +101,7 @@ const isFillIcon = computed(() => ['pin', 'drag-handle'].includes(props.name));
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .ms-icon svg {

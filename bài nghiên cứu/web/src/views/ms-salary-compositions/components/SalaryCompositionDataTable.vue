@@ -320,14 +320,14 @@ onMounted(() => {
                   class="add-system-btn"
                   @click="emit('addSystem', data.data)"
               >
-                <MSIcon name="check-circle" size="20" color="var(--primary-green)"/>
+                <MSIcon name="plus" size="20" color="var(--primary-green)"/>
                 <DxTooltip
                     :target="`#add-sys-${data.data.componentId}`"
                     show-event="mouseenter"
                     hide-event="mouseleave"
                     position="top"
                 >
-                  {{ data.data.status ? 'Ngừng theo dõi' : 'Theo dõi' }}
+                  Đưa vào danh sách sử dụng
                 </DxTooltip>
               </div>
             </template>
