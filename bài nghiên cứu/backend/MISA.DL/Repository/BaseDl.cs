@@ -113,7 +113,8 @@ public class BaseDl<T>(
             var columnsList = string.Join(",", columns);
             var (primaryKeyModel, primaryKeyTable) = type.GetPrimaryKey();
 
-            if (await IsExist(type, tableName, entity, conn, transaction))
+            var record = await IsExist(type, tableName, entity, conn, transaction);
+            if (record is not null)
             {
                 throw new ExistingException($"Bản ghi đã tồn tại trong hệ thống.");
             }
@@ -200,9 +201,10 @@ public class BaseDl<T>(
             }
 
             // lay ra cac thuoc tinh can check trung
-            if (await IsExist(type, tableName, entity, conn, transaction))
+            var record = await IsExist(type, tableName, entity, conn, transaction);
+            if (record is not null && record.GetValue(primaryKeyModel)?.ToString() != primaryKeyValue?.ToString())
             {
-                throw new ExistingException("Bản ghi đã tồn tại trong hệ thống.");
+                throw new ExistingException($"Bản ghi đã tồn tại trong hệ thống.");
             }
 
             // Lấy ra cc thuộc tính không phải khóa chính
@@ -335,7 +337,7 @@ public class BaseDl<T>(
         return await conn.ExecuteScalarAsync<int>(command, param: parameters);
     }
 
-    private async Task<bool> IsExist(
+    private async Task<T?> IsExist(
         Type type, string tableName, T entity,
         MySqlConnection conn, MySqlTransaction transaction
     )
@@ -354,13 +356,13 @@ public class BaseDl<T>(
                 if (string.IsNullOrWhiteSpace(val)) continue;
 
                 var duplicatedColumn = property.GetColumnName();
-                var checkSql = $"SELECT COUNT(*) FROM `{tableName}` WHERE {duplicatedColumn} = @val";
-                var existsCount = await conn.ExecuteScalarAsync<int>(checkSql, new { val }, transaction);
+                var checkSql = $"SELECT * FROM `{tableName}` WHERE {duplicatedColumn} = @val";
+                var record = await conn.QueryFirstOrDefaultAsync<T>(checkSql, new { val }, transaction);
 
-                return existsCount > 0;
+                return record;
             }
         }
 
-        return false;
+        return null;
     }
 }

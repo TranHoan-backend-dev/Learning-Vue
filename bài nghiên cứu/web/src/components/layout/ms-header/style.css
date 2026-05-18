@@ -84,6 +84,7 @@
     align-items: center;
     position: relative;
     margin-left: 16px;
+    margin-right: 16px; /* Khoảng cách an toàn với cụm tiện ích bên phải */
 }
 
 .navbar_left_search_icon {
@@ -150,6 +151,7 @@
 .navbar_right {
     display: flex;
     align-items: center;
+    padding-right: 24px;
 }
 
 .navbar_right_website {
@@ -181,9 +183,12 @@
 }
 
 .navbar_right_notify_icon {
-    width: 22px;
-    height: 25px;
-    background-image: url("https://amisplatform.misacdn.net/apps/recruit/icon-notification-version.d5e3dc604036ed5b.svg");
+    width: 20px;
+    height: 20px;
+    background-image: var(--misa-amis-icon-1);
+    background-position: -2px -634px;
+    transform: scale(0.8); /* Scale down slightly to match other header icons */
+    transform-origin: center;
 }
 
 .navbar_right_store_icon {
@@ -266,17 +271,22 @@
 
 .navbar_right_notifibox_count {
     display: flex;
-    background-color: red;
+    background-color: #f62d3e; /* Màu đỏ thông báo chuẩn MISA */
     color: white;
-    padding: 0 7px;
-    height: 16px;
-    border-radius: 24px;
-    font-size: 10px;
+    width: 14px; /* Chiều rộng thu gọn hình tròn */
+    height: 14px; /* Chiều cao thu gọn hình tròn */
+    border-radius: 50%; /* Tạo hình tròn hoàn hảo */
+    padding: 0; /* Loại bỏ padding ngang để tránh biến thành hình kẹo thuốc */
+    font-size: 9px; /* Cỡ chữ thu gọn cân đối */
     font-weight: 700;
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: -4px;
+    top: -2px; /* Định vị góc trên bên phải thon gọn */
+    right: -2px;
+    border: 1.5px solid #ffffff; /* Viền trắng tách biệt sang trọng */
+    box-sizing: content-box;
+    line-height: 1;
 }
 
 .navbar_right_store_count {
@@ -353,4 +363,85 @@
     margin-left: 12px;
     font-size: 14px;
     color: #111;
+}
+
+.navbar_right_avatar_initials {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #7c5cfc; /* A premium modern purple/violet matching the image */
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar_right_avatar_initials:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 2px 8px rgba(124, 92, 252, 0.4);
+    transform: scale(1.05);
+}
+
+/* Prevent double circular background highlight on hover for avatar */
+.navbar_right_item_avatar:hover {
+    background-color: transparent !important;
+}
+
+/* Custom Knowledge Bulb Combined Icon */
+.navbar_right_combined_icon {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px; /* Dịch chuyển toàn bộ icon xuống 2px để căn giữa hoàn hảo với nút tròn hover */
+    margin-left: 3px;
+}
+
+.combined_book {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.85);
+    width: 24px;
+    height: 17px;
+    -webkit-mask-image: var(--misa-amis-icon-1);
+    -webkit-mask-position: -2px -824px;
+    -webkit-mask-repeat: no-repeat;
+    background-color: #7a8188;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Stepped-pocket clip-path: raised deep center (65% depth) to clear the crease while staying safely above the book's bottom arch peak */
+    clip-path: polygon(0% 0%, 28% 0%, 28% 45%, 44% 45%, 44% 65%, 56% 65%, 56% 45%, 72% 45%, 72% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+.combined_bulb {
+    position: absolute;
+    top: -3px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.72);
+    width: 25px;
+    height: 25px;
+    -webkit-mask-image: var(--misa-amis-icon-1);
+    -webkit-mask-position: -244px -894px;
+    -webkit-mask-repeat: no-repeat;
+    background-color: #7a8188;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover effects for vibrant glowing bulb and dark book */
+.navbar_right_item_combined:hover .combined_book {
+    background-color: #fbb03b;
+}
+
+.navbar_right_item_combined:hover .combined_bulb {
+    background-color: #fbb03b; /* Glowing yellow/orange bulb! */
+    filter: drop-shadow(0 0 4px rgba(251, 176, 59, 0.8));
+    transform: translateX(-50%) scale(0.78) translateY(-1px); /* Popping micro-interaction! */
 }

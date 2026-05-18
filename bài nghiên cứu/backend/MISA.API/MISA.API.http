@@ -1,8 +1,8 @@
-@MISA.API_HostAddress = http://localhost:8000
+@MISA_API_HostAddress = http://localhost:8000
 @newId = 00000000-0000-0000-9999-000000000001
 
 ### 1. Lấy danh sách thành phần lương (Phân trang, lọc, và trạng thái sử dụng)
-POST {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/filter?PageIndex=0&PageSize=10&isUsed=false
+POST {{MISA_API_HostAddress}}/api/v1/SalaryCompositions/filter?PageIndex=0&PageSize=10&isUsed=false
 Content-Type: application/json
 
 {
@@ -13,7 +13,7 @@ Content-Type: application/json
 ###
 
 ### 2. Thêm mới thành phần lương (Loại: Doanh số - Thu nhập, Tiền tệ)
-POST {{MISA.API_HostAddress}}/api/v1/SalaryCompositions
+POST {{MISA_API_HostAddress}}/api/v1/SalaryCompositions
 Content-Type: application/json
 
 {
@@ -35,13 +35,13 @@ Content-Type: application/json
 ###
 
 ### 3. Lấy thành phần lương theo ID
-GET {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
+GET {{MISA_API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
 Accept: application/json
 
 ###
 
 ### 4. Cập nhật thành phần lương (Loại: Bảo hiểm - Công đoàn - Khấu trừ, Tiền tệ)
-PUT {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
+PUT {{MISA_API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
 Content-Type: application/json
 
 {
@@ -62,7 +62,7 @@ Content-Type: application/json
 ###
 
 ### 5. Xóa nhiều thành phần lương
-DELETE {{MISA.API_HostAddress}}/api/v1/SalaryCompositions
+DELETE {{MISA_API_HostAddress}}/api/v1/SalaryCompositions
 Content-Type: application/json
 
 [

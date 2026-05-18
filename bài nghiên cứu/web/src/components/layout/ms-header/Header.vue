@@ -6,6 +6,7 @@ import SearchField from "@/components/ui/ms-input/SearchField.vue";
 const isMobileMode = ref(false);
 const isMobileMenuOpen = ref(false);
 const isSearchHidden = ref(false);
+const userInitials = ref("DT");
 
 const handleResize = () => {
   // Thay đổi breakpoint xuống 992px để tránh bị gom sớm trên màn hình laptop thông thường (1280px, 1366px)
@@ -58,12 +59,12 @@ const leftComponents: LeftHeaderComponents[] = [
 const navbarRightClassNamePrefix = "navbar_right_"
 const rightComponents: RightHeaderComponents[] = [
   {
-    parentTitle: "Thông báo",
-    childClassName: navbarRightClassNamePrefix.concat("notify_icon")
-  },
-  {
     parentTitle: "Chat",
     childClassName: navbarRightClassNamePrefix.concat("chat_icon")
+  },
+  {
+    parentTitle: "Thông báo",
+    childClassName: navbarRightClassNamePrefix.concat("notify_icon")
   },
   {
     parentTitle: "Help",
@@ -72,6 +73,10 @@ const rightComponents: RightHeaderComponents[] = [
   {
     parentTitle: "Option",
     childClassName: navbarRightClassNamePrefix.concat("option_icon")
+  },
+  {
+    parentTitle: "Knowledge Bulb",
+    childClassName: navbarRightClassNamePrefix.concat("knowledge_bulb_icon")
   },
   {
     parentTitle: "Avatar",
@@ -93,34 +98,42 @@ const rightComponents: RightHeaderComponents[] = [
           {{ component.label }}
         </div>
       </div>
-      <!--    Thanh tìm kiếm-->
-      <div class="navbar_left_search" v-if="!isSearchHidden">
-        <!--      icon-->
-        <div class="navbar_left_search_icon"></div>
-        <SearchField
-            className="navbar_left_search_input"
-            placeholder="tin tuyển dụng, ứng viên, nhân tài,..."
-            label=""
-            v-model="message"
-        />
-      </div>
+
     </section>
 
     <!-- Right header -->
     <section class="navbar_right">
       <template v-if="!isMobileMode">
-        <div class="navbar_right_website">
-          <div class="navbar_right_website_icon"></div>
-          <div class="navbar_right_website_text">
-            Website tuyen dung
-          </div>
+        <!--    Thanh tìm kiếm-->
+        <div class="navbar_left_search" v-if="!isSearchHidden">
+          <!--      icon-->
+          <div class="navbar_left_search_icon"></div>
+          <SearchField
+               className="navbar_left_search_input"
+               placeholder=""
+               label=""
+               v-model="message"
+          />
         </div>
+
         <div class="navbar_right_item"
              v-for="(component, index) in rightComponents"
              :key="index"
              :title="component.parentTitle.toString()"
+             :class="{ 
+               'navbar_right_item_avatar': component.parentTitle === 'Avatar',
+               'navbar_right_item_combined': component.parentTitle === 'Knowledge Bulb'
+             }"
         >
-          <div :class="component.childClassName"></div>
+          <div v-if="component.parentTitle === 'Avatar'" class="navbar_right_avatar_initials">{{ userInitials }}</div>
+          <div v-else-if="component.parentTitle === 'Knowledge Bulb'" class="navbar_right_combined_icon">
+            <div class="combined_book"></div>
+            <div class="combined_bulb"></div>
+          </div>
+          <template v-else>
+            <div :class="component.childClassName"></div>
+            <div v-if="component.parentTitle === 'Thông báo'" class="navbar_right_notifibox_count">3</div>
+          </template>
         </div>
       </template>
 
@@ -133,18 +146,25 @@ const rightComponents: RightHeaderComponents[] = [
         </svg>
 
         <div v-if="isMobileMenuOpen" class="mobile_dropdown_menu">
-          <div class="navbar_right_website">
-            <div class="navbar_right_website_icon"></div>
-            <div class="navbar_right_website_text">
-              Website
-            </div>
-          </div>
+
           <div class="navbar_right_item"
                v-for="(component, index) in rightComponents"
                :key="index"
                :title="component.parentTitle.toString()"
+               :class="{ 
+                 'navbar_right_item_avatar': component.parentTitle === 'Avatar',
+                 'navbar_right_item_combined': component.parentTitle === 'Knowledge Bulb'
+               }"
           >
-            <div :class="component.childClassName"></div>
+            <div v-if="component.parentTitle === 'Avatar'" class="navbar_right_avatar_initials">{{ userInitials }}</div>
+            <div v-else-if="component.parentTitle === 'Knowledge Bulb'" class="navbar_right_combined_icon">
+              <div class="combined_book"></div>
+              <div class="combined_bulb"></div>
+            </div>
+            <template v-else>
+              <div :class="component.childClassName"></div>
+              <div v-if="component.parentTitle === 'Thông báo'" class="navbar_right_notifibox_count">3</div>
+            </template>
             <span class="mobile_dropdown_text">{{ component.parentTitle }}</span>
           </div>
         </div>

@@ -19,7 +19,7 @@
   --misa-text-primary: #111111;
   --misa-text-body: #333333;
   --misa-text-secondary: #666666;
-  --misa-border-radius: 4px;
+  --misa-border-radius: 6px;
   --misa-control-height: 36px;
   --misa-control-height-small: 32px;
   --misa-transition: all 0.2s ease;
@@ -98,4 +98,16 @@ td {
   background-color: #ebecef;
   transition: left 0.3s ease;
   background: url("https://amisplatform.misacdn.net/images/imagesapps/recruit/background_default1.jpg");
+}
+
+/* Custom full-height popup overrides for system directory modal */
+.system-directory-popup-wrapper .dx-popup-content {
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 8px !important;
+}
+
+.system-directory-popup-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
 }

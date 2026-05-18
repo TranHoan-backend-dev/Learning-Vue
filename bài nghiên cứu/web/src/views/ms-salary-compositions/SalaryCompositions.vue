@@ -10,7 +10,7 @@ import SalaryCompositionPopups from "./components/SalaryCompositionPopups.vue";
 import {onMounted} from "vue";
 import SalaryCompositionHeader from "@/views/ms-salary-compositions/components/SalaryCompositionHeader.vue";
 import SalaryCompositionDataTable from "@/views/ms-salary-compositions/components/SalaryCompositionDataTable.vue";
-import SalaryCompositionSystemDirectory from "./components/SalaryCompositionSystemDirectory.vue";
+import SalaryCompositionSystemModal from "./components/SalaryCompositionSystemModal.vue";
 import gridConfigService from "@/services/gridConfigService.ts";
 import MSPageLayout from "@/components/layout/ms-page-layout/MSPageLayout.vue";
 
@@ -490,72 +490,75 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
 </script>
 
 <template>
-  <template v-if="!isSystemDirectoryVisible">
-    <MSPageLayout v-if="!isFormVisible">
-      <template #header-left>
-        <div class="content_header_title">Thành phần lương</div>
-      </template>
+  <MSPageLayout v-if="!isFormVisible">
+    <template #header-left>
+      <div class="content_header_title">Thành phần lương</div>
+    </template>
 
-      <template #header-right>
-        <SalaryCompositionHeader
-            :is-add-dropdown-visible="isAddDropdownVisible"
-            @add="handleAdd"
-            @toggle-dropdown="toggleAddDropdown"
-            @add-from-system="handleAddFromSystem"
-            @open-system="handleAddFromSystem"
-        />
-      </template>
+    <template #header-right>
+      <SalaryCompositionHeader
+          :is-add-dropdown-visible="isAddDropdownVisible"
+          @add="handleAdd"
+          @toggle-dropdown="toggleAddDropdown"
+          @add-from-system="handleAddFromSystem"
+          @open-system="handleAddFromSystem"
+      />
+    </template>
 
-      <template #body>
-        <SalaryCompositionDataTable
-            v-model:searchKeyword="searchKeyword"
-            v-model:selectedIds="selectedIds"
-            v-model:currentPage="currentPage"
-            v-model:pageSize="pageSize"
-            :table-data="tableData"
-            :total-records="totalRecords"
-            :columns="columns"
-            :page-info="pageInfo"
-            v-model:statusFilter="statusFilter"
-            @handlePageSizeChange="handlePageSizeChange"
-            @handleOpenConfig="handleOpenConfig"
-            @togglePin="togglePin"
-            @handleActive="handleActive"
-            @handleDuplicate="handleDuplicate"
-            @handleEdit="handleEdit"
-            @handleDelete="handleDelete"
-            @deleteSelected="handleDeleteSelected"
-            @handleRowClick="handleRowClick"
-        />
-      </template>
-    </MSPageLayout>
+    <template #body>
+      <SalaryCompositionDataTable
+          v-model:searchKeyword="searchKeyword"
+          v-model:selectedIds="selectedIds"
+          v-model:currentPage="currentPage"
+          v-model:pageSize="pageSize"
+          :table-data="tableData"
+          :total-records="totalRecords"
+          :columns="columns"
+          :page-info="pageInfo"
+          v-model:statusFilter="statusFilter"
+          @handlePageSizeChange="handlePageSizeChange"
+          @handleOpenConfig="handleOpenConfig"
+          @togglePin="togglePin"
+          @handleActive="handleActive"
+          @handleDuplicate="handleDuplicate"
+          @handleEdit="handleEdit"
+          @handleDelete="handleDelete"
+          @deleteSelected="handleDeleteSelected"
+          @handleRowClick="handleRowClick"
+      />
+    </template>
+  </MSPageLayout>
 
-    <!-- Form component overlay -->
-    <SalaryCompositionForm
-        v-if="isFormVisible"
-        :key="formKey"
-        :mode="formMode"
-        :initial-data="formInitialData"
-        @close="closeForm"
-        @save="handleSaveForm"
-    />
+  <!-- Form component overlay -->
+  <SalaryCompositionForm
+      v-if="isFormVisible"
+      :key="formKey"
+      :mode="formMode"
+      :initial-data="formInitialData"
+      @close="closeForm"
+      @save="handleSaveForm"
+  />
 
-    <!-- Popups (Confirm & Column Config) -->
-    <SalaryCompositionPopups
-        v-model:isConfirmVisible="isConfirmModalOpen"
-        v-model:isConfigVisible="isColumnConfigVisible"
-        v-model:isDeleteVisible="isDeleteModalOpen"
-        :delete-message="deleteModalMessage"
-        v-model:columns="columns"
-        :selected-composition="selectedComposition"
-        @confirmActive="handleChangeStatus"
-        @confirmDelete="confirmDelete"
-        @closeConfirm="closeConfirmModal"
-        @closeConfig="closeConfig"
-    />
-  </template>
+  <!-- Popups (Confirm & Column Config) -->
+  <SalaryCompositionPopups
+      v-model:isConfirmVisible="isConfirmModalOpen"
+      v-model:isConfigVisible="isColumnConfigVisible"
+      v-model:isDeleteVisible="isDeleteModalOpen"
+      :delete-message="deleteModalMessage"
+      v-model:columns="columns"
+      :selected-composition="selectedComposition"
+      @confirmActive="handleChangeStatus"
+      @confirmDelete="confirmDelete"
+      @closeConfirm="closeConfirmModal"
+      @closeConfig="closeConfig"
+  />
 
-  <SalaryCompositionSystemDirectory v-else @back="closeSystemDirectory"/>
+  <!-- System Catalog Modal Popup -->
+  <SalaryCompositionSystemModal
+      v-if="isSystemDirectoryVisible"
+      @close="isSystemDirectoryVisible = false"
+      @save="fetchData"
+  />
 </template>
 
 <style scoped src="./style.css"></style>
