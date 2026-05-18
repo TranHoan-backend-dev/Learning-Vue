@@ -23,8 +23,8 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log) : IExce
 
         var response = new ErrorResult()
         {
-            DevMsg = message,
-            UserMsg = ResourcesVN.GeneralError,
+            UserMsg = message,
+            DevMsg = ResourcesVN.GeneralError,
             MoreInfo = exception.ToString(),
         };
         log.LogError($"[GlobalExceptionHandler] Error happening when solving the request: {response}");

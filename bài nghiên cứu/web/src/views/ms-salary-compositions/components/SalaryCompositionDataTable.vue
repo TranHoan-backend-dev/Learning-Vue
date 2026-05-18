@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {computed, ref, onMounted} from "vue";
 import DxSelectBox from "devextreme-vue/select-box";
+import DxDropDownBox from "devextreme-vue/drop-down-box";
+import DxTreeView from "devextreme-vue/tree-view";
 import DxDataGrid, {
   DxColumn,
   DxHeaderFilter,
@@ -110,6 +112,24 @@ const fullColumns = computed(() => {
   }));
 });
 
+const appliedUnits = ref<any[]>([]);
+const treeBoxValue = ref<string[]>([]);
+const isTreeOpened = ref(false);
+const showInactiveUnits = ref(false);
+
+const treeDataSource = computed(() => {
+  return appliedUnits.value.map((org: any) => ({
+    id: org.organizationId,
+    parentId: org.parentId,
+    text: org.organizationName
+  }));
+});
+
+const onTreeViewSelectionChanged = (e: any) => {
+  const keys = e.component.getSelectedNodeKeys();
+  treeBoxValue.value = keys;
+};
+
 /**
  * Fetch danh sach cac Don vi ap dung
  */
@@ -117,6 +137,7 @@ const loadAllOrganization = async () => {
   try {
     let res = await organizationService.getAll();
     if (res.data) {
+      appliedUnits.value = res.data;
       // Map lại dữ liệu để khớp với text/value của DxSelectBox
       organization.value = [
         {text: 'Tất cả đơn vị', value: 'all'},
@@ -186,13 +207,43 @@ onMounted(() => {
                     :width="160"
                 />
                 <!-- Lọc theo đơn vi áp dung -->
-                <DxSelectBox
-                    class="misa-selectbox"
-                    :items="organization"
+                <DxDropDownBox
+                    class="misa-selectbox filter-unit-dropdown"
+                    v-model:value="treeBoxValue"
+                    v-model:opened="isTreeOpened"
+                    :data-source="treeDataSource"
+                    value-expr="id"
                     display-expr="text"
-                    value-expr="value"
-                    value="all"
-                    :width="320"/>
+                    placeholder="Tất cả đơn vị"
+                    content-template="tree-template"
+                    :drop-down-options="{ container: '.content_body_container', wrapperAttr: { class: 'misa-filter-dropdown-tree-popup' } }"
+                    :width="320"
+                >
+                  <template #tree-template>
+                    <div class="filter-tree-container">
+                      <DxTreeView
+                          :data-source="treeDataSource"
+                          data-structure="plain"
+                          key-expr="id"
+                          parent-id-expr="parentId"
+                          display-expr="text"
+                          :select-by-click="true"
+                          :select-nodes-recursive="true"
+                          show-check-boxes-mode="selectAll"
+                          selection-mode="multiple"
+                          :selected-item-keys="treeBoxValue"
+                          @selection-changed="onTreeViewSelectionChanged"
+                      />
+                      <!-- Checkbox ở dưới cùng của popup -->
+                      <div class="filter-show-inactive-container">
+                        <label class="checkbox-label show-inactive-label">
+                          <input type="checkbox" v-model="showInactiveUnits">
+                          <span class="checkbox-custom"></span> Hiển thị đơn vị ngừng theo dõi
+                        </label>
+                      </div>
+                    </div>
+                  </template>
+                </DxDropDownBox>
               </template>
 
               <template v-else>
@@ -230,7 +281,7 @@ onMounted(() => {
               @row-click="(e) => emit('handleRowClick', e.data)"
               :column-auto-width="false"
               :allow-column-resizing="true"
-              column-resizing-mode="nextColumn"
+              column-resizing-mode="widget"
               width="100%"
               height="100%"
           >
@@ -615,6 +666,117 @@ onMounted(() => {
 
 .action-btn:hover {
   opacity: 0.7;
+}
+
+/* Styling for units dropdown filter */
+.filter-tree-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 4px;
+}
+
+.filter-show-inactive-container {
+  padding: 8px 12px;
+  background-color: var(--background-button-hover);
+  border-top: 1px solid var(--misa-border-color);
+  display: flex;
+  align-items: center;
+}
+
+.show-inactive-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 13px;
+  color: #111;
+  user-select: none;
+}
+
+.show-inactive-label input {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #afafaf;
+  margin-right: 8px;
+  display: inline-block;
+  position: relative;
+  background-color: #fff;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.show-inactive-label:hover .checkbox-custom {
+  border-color: var(--primary-green);
+}
+
+.show-inactive-label input:checked + .checkbox-custom {
+  border-color: var(--primary-green);
+  background-color: #fff;
+}
+
+.show-inactive-label input:checked + .checkbox-custom::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--primary-green);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Green hover effect on filter dropdown items */
+:deep(.misa-filter-dropdown-tree-popup) {
+  border-radius: 4px;
+  box-shadow: var(--misa-shadow-dropdown);
+  border: 1px solid var(--misa-border-color);
+}
+
+:deep(.misa-filter-dropdown-tree-popup .dx-popup-content) {
+  padding: 0 !important;
+}
+
+:deep(.misa-filter-dropdown-tree-popup .dx-treeview) {
+  padding: 4px 0 !important;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+:deep(.misa-filter-dropdown-tree-popup .dx-treeview-item) {
+  min-height: 34px !important;
+  padding: 0 8px !important;
+  display: flex;
+  align-items: center;
+  font-size: 13px !important;
+}
+
+:deep(.misa-filter-dropdown-tree-popup .dx-treeview-item.dx-state-hover) {
+  background-color: var(--background-button-hover) !important;
+  color: var(--primary-green) !important;
+}
+
+:deep(.misa-filter-dropdown-tree-popup .dx-treeview-item.dx-state-focused) {
+  background-color: var(--background-button-hover) !important;
+  color: var(--primary-green) !important;
+}
+
+:deep(.misa-filter-dropdown-tree-popup .dx-treeview-item.dx-state-selected) {
+  background-color: var(--background-button-hover) !important;
+  color: var(--primary-green) !important;
+}
+
+/* Green focus border for filter box itself */
+:deep(.filter-unit-dropdown.dx-dropdowneditor-active.dx-editor-outlined) {
+  border-color: var(--primary-green) !important;
+}
+
+:deep(.filter-unit-dropdown.dx-state-focused.dx-editor-outlined) {
+  border-color: var(--primary-green) !important;
 }
 </style>
 

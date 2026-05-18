@@ -251,6 +251,12 @@ const handleAdd = () => {
   isFormVisible.value = true;
 };
 
+/**
+ * Fetch salary composition details khi người dùng mở form
+ * @param mode
+ * @param id
+ * @param baseData
+ */
 const fetchDetailAndOpenForm = async (mode: 'edit' | 'view' | 'copy', id: string, baseData: any) => {
   isLoading.value = true;
   try {
@@ -284,6 +290,10 @@ const fetchDetailAndOpenForm = async (mode: 'edit' | 'view' | 'copy', id: string
   }
 };
 
+/**
+ * Xu ly viec sua ban ghi
+ * @param data
+ */
 const handleEdit = (data: any) => {
   fetchDetailAndOpenForm('edit', data.componentId, data);
 };
@@ -330,11 +340,12 @@ const handleSaveForm = async (formData: any, stayOpen = false) => {
       Source: 'Tự thêm',
       IsUsed: true
     };
+    // Nếu là tạo mới/nhân bản
     if (formMode.value === 'add' || formMode.value === 'copy') {
       await salaryCompositionService.create(requestData);
       var content = formMode.value === 'copy' ? 'Nhân bản' : 'Thêm mới';
       toast.success(`${content} thành công`, `${content} thành công ${requestData.SalaryComponentName}`);
-    } else {
+    } else { // Nếu là sửa
       // Khi sửa, dùng ID thực của bản ghi (nếu có trong formData hoặc state)
       const id = selectedRowId.value || formData.salaryComponentId;
       await salaryCompositionService.update(id, requestData);
@@ -348,20 +359,27 @@ const handleSaveForm = async (formData: any, stayOpen = false) => {
       formKey.value = Date.now();
     }
     await fetchData();
-  } catch (error) {
-    console.error(error);
-    toast.error('Lỗi khi lưu dữ liệu', 'Đã có lỗi xảy ra');
+  } catch (error: any) {
+    console.log(error.response);
+    var errorMsg = "Đã có lỗi xảy ra";
+    debugger;
+    if (error.response && error.response.data) {
+      const res = error.response.data;
+      if (res.userMsg) {
+        errorMsg = res.userMsg;
+      }
+    }
+    toast.error('Lỗi khi lưu dữ liệu', errorMsg);
   } finally {
     isLoading.value = false;
   }
 };
 
+// <editor-fold> desc="Xu ly thao tac xoa"
 const isDeleteModalOpen = ref(false);
 const deleteModalMessage = ref('');
 const deleteType = ref<'single' | 'multiple'>('single');
 const pendingDeleteData = ref<any>(null);
-
-// <editor-fold> desc="Xu ly thao tac xoa"
 /**
  * Mo modal xac nhan xoa
  * @param data
@@ -440,6 +458,7 @@ const closeSystemDirectory = () => {
 };
 // </editor-fold>
 
+// <editor-fold> desc="Cau hinh cot"
 // Column configuration
 const columns = ref<any[]>([]);
 
@@ -465,6 +484,8 @@ const handleOpenConfig = () => {
 const closeConfig = () => {
   isColumnConfigVisible.value = false;
 };
+// </editor-fold>
+
 toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ thống', 5000);
 </script>
 

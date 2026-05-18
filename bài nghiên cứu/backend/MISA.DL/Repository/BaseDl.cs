@@ -1,5 +1,4 @@
 using System.Data;
-using System.Reflection;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using MISA.Common.Attributes;
@@ -9,6 +8,7 @@ using MISA.Common.Extension;
 using MISA.Common.Procedures;
 using MISA.DL.Base;
 using MISA.DL.Context;
+using MySqlConnector;
 
 namespace MISA.DL.Repository;
 
@@ -113,31 +113,9 @@ public class BaseDl<T>(
             var columnsList = string.Join(",", columns);
             var (primaryKeyModel, primaryKeyTable) = type.GetPrimaryKey();
 
-            // Lấy ra danh sách các thuộc tính có đánh dấu cần check trùng
-            var duplicatedProperties = type
-                .GetProperties()
-                .Where(p => Attribute.IsDefined(p, typeof(CheckDuplicatedAttribute)))
-                .ToList();
-
-            // Kiểm tra bản ghi bị trùng
-            if (duplicatedProperties.Any())
+            if (await IsExist(type, tableName, entity, conn, transaction))
             {
-                foreach (var property in duplicatedProperties)
-                {
-                    var val = property.GetValue(entity)?.ToString();
-                    if (string.IsNullOrWhiteSpace(val)) continue;
-
-                    var duplicatedColumn = property.GetColumnName();
-                    var checkSql = $"SELECT COUNT(*) FROM `{tableName}` WHERE {duplicatedColumn} = @val";
-                    var existsCount = await conn.ExecuteScalarAsync<int>(checkSql, new { val }, transaction);
-
-                    if (existsCount > 0)
-                    {
-                        var configColumn = property.GetCustomAttribute<ConfigColumnAttribute>();
-                        var fieldName = configColumn?.ColumnName ?? property.Name;
-                        throw new ExistingException($"{fieldName} <{val}> đã tồn tại trong hệ thống.");
-                    }
-                }
+                throw new ExistingException($"Bản ghi đã tồn tại trong hệ thống.");
             }
 
             // Audit dữ liệu
@@ -201,6 +179,7 @@ public class BaseDl<T>(
         await using var conn = context.GetConnection();
         await conn.OpenAsync();
         await using var transaction = await conn.BeginTransactionAsync();
+        var param = new DynamicParameters();
         var variable = "@PrimaryKey";
 
         try
@@ -208,6 +187,23 @@ public class BaseDl<T>(
             var type = typeof(T);
             var tableName = type.GetTableNameOnly();
             var (primaryKeyModel, primaryKeyTable) = type.GetPrimaryKey();
+            var primaryKeyValue = entity.GetValue(primaryKeyModel);
+            // truyền giá trị cho biến @PrimaryKey
+            param.Add(variable, primaryKeyValue);
+
+            // Kiem tra xem id nay co ton tai hay khong
+            var query = $"SELECT COUNT(*) FROM `{tableName}` WHERE `{primaryKeyTable}` = @PrimaryKey";
+            var res = await conn.QueryFirstOrDefaultAsync<int>(query, param, transaction);
+            if (res == 0)
+            {
+                throw new NotFoundException("Ban ghi nay khong ton tai trong he thong");
+            }
+
+            // lay ra cac thuoc tinh can check trung
+            if (await IsExist(type, tableName, entity, conn, transaction))
+            {
+                throw new ExistingException("Bản ghi đã tồn tại trong hệ thống.");
+            }
 
             // Lấy ra cc thuộc tính không phải khóa chính
             var columns = type
@@ -225,7 +221,6 @@ public class BaseDl<T>(
                        SET {string.Join(",", setStatements)}
                        WHERE {primaryKeyTable} = {variable}
                        """;
-            var param = new DynamicParameters();
 
             foreach (var col in columns)
             {
@@ -234,10 +229,6 @@ public class BaseDl<T>(
                     entity.GetValue(col)
                 );
             }
-
-            var primaryKeyValue = entity.GetValue(primaryKeyModel);
-            // truyền giá trị cho biến @PrimaryKey
-            param.Add(variable, primaryKeyValue);
 
             log.LogDebug(
                 "{Prefix} Build command: {Sql}",
@@ -342,5 +333,34 @@ public class BaseDl<T>(
         log.LogInformation($"{Prefix} Get total records count");
         await using var conn = context.GetConnection();
         return await conn.ExecuteScalarAsync<int>(command, param: parameters);
+    }
+
+    private async Task<bool> IsExist(
+        Type type, string tableName, T entity,
+        MySqlConnection conn, MySqlTransaction transaction
+    )
+    {
+        var duplicatedProperties = type
+            .GetProperties()
+            .Where(p => Attribute.IsDefined(p, typeof(CheckDuplicatedAttribute)))
+            .ToList();
+
+        // Kiểm tra bản ghi bị trùng
+        if (duplicatedProperties.Any())
+        {
+            foreach (var property in duplicatedProperties)
+            {
+                var val = property.GetValue(entity)?.ToString();
+                if (string.IsNullOrWhiteSpace(val)) continue;
+
+                var duplicatedColumn = property.GetColumnName();
+                var checkSql = $"SELECT COUNT(*) FROM `{tableName}` WHERE {duplicatedColumn} = @val";
+                var existsCount = await conn.ExecuteScalarAsync<int>(checkSql, new { val }, transaction);
+
+                return existsCount > 0;
+            }
+        }
+
+        return false;
     }
 }

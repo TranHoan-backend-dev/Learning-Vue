@@ -1,7 +1,8 @@
 @MISA.API_HostAddress = http://localhost:8000
+@newId = 00000000-0000-0000-9999-000000000001
 
-### 1. Lấy danh sách thành phần lương (Phân trang và lọc)
-POST {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/filter?PageIndex=0&PageSize=10
+### 1. Lấy danh sách thành phần lương (Phân trang, lọc, và trạng thái sử dụng)
+POST {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/filter?PageIndex=0&PageSize=10&isUsed=false
 Content-Type: application/json
 
 {
@@ -11,15 +12,19 @@ Content-Type: application/json
 
 ###
 
-### 2. Thêm mới thành phần lương
-# @name createRecord
+### 2. Thêm mới thành phần lương (Loại: Doanh số - Thu nhập, Tiền tệ)
 POST {{MISA.API_HostAddress}}/api/v1/SalaryCompositions
 Content-Type: application/json
 
 {
+  "SalaryComponentId": "{{newId}}",
   "SalaryComponentCode": "TEST_CODE_{{$guid}}",
-  "SalaryComponentName": "Thành phần lương Test",
-  "SalaryComponentSystemId": "00000000-0000-0000-0000-000000000000",
+  "SalaryComponentName": "Thành phần lương Test Doanh Số",
+  "SalaryComponentSystemId": "00000000-0000-0000-0001-000000000002",
+  "AppliedUnitIds": [
+    "00000000-0000-0000-0000-000000000001",
+    "00000000-0000-0000-0000-000000000002"
+  ],
   "Attribute": 1,
   "ValueType": 1,
   "Value": "1000000",
@@ -29,25 +34,26 @@ Content-Type: application/json
 
 ###
 
-@newId = {{createRecord.response.body.$}}
-
 ### 3. Lấy thành phần lương theo ID
 GET {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
 Accept: application/json
 
 ###
 
-### 4. Cập nhật thành phần lương
+### 4. Cập nhật thành phần lương (Loại: Bảo hiểm - Công đoàn - Khấu trừ, Tiền tệ)
 PUT {{MISA.API_HostAddress}}/api/v1/SalaryCompositions/{{newId}}
 Content-Type: application/json
 
 {
   "SalaryComponentId": "{{newId}}",
-  "SalaryComponentCode": "UPDATED_CODE",
-  "SalaryComponentName": "Thành phần lương Updated",
-  "SalaryComponentSystemId": "00000000-0000-0000-0000-000000000000",
+  "SalaryComponentCode": "UPDATED_CODE_{{$guid}}",
+  "SalaryComponentName": "Thành phần lương Updated BHXH",
+  "SalaryComponentSystemId": "00000000-0000-0000-0001-000000000005",
+  "AppliedUnitIds": [
+    "00000000-0000-0000-0000-000000000001"
+  ],
   "Attribute": 2,
-  "ValueType": 2,
+  "ValueType": 1,
   "Value": "2000000",
   "Status": 0,
   "Source": "Test API Updated"

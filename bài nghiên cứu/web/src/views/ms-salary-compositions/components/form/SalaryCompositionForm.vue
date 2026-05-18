@@ -33,10 +33,16 @@ const quotaFormulaRef = ref<InstanceType<typeof MsFormula> | null>(null);
 const valueFormulaRef = ref<InstanceType<typeof MsFormula> | null>(null);
 
 // <editor-fold> desc="Xu ly tu dong dien cho Ma thanh phan"
-// Auto-fill code logic
+// Cờ đánh dấu để nhận biết trường Mã thành phần có đang nhập tay hay không
 const isCodeManuallyEdited = ref(false);
 
-const removeAccentsAndSpecialChars = (str: string): string => {
+/**
+ * Xu ly cac ky tu tieng Viet, khoang trang,...
+ * Các ký tự tiếng Việt đổi thành không dấu
+ * Khoảng trắng sẽ sửa thành dấu gạch dưới
+ * @param str
+ */
+const autoCompleteCompositionCode = (str: string): string => {
   if (!str) return '';
   let result = str.toLowerCase();
   result = result.replace(/[àáạảãâầấậẩẫăằắặẳẵ]/g, 'a');
@@ -46,16 +52,20 @@ const removeAccentsAndSpecialChars = (str: string): string => {
   result = result.replace(/[ùúụủũưừứựửữ]/g, 'u');
   result = result.replace(/[ỳýỵỷỹ]/g, 'y');
   result = result.replace(/đ/g, 'd');
-  result = result.replace(/[^a-z0-9]/g, ' ');
+  result = result.replace(/[^a-z0-9]/g, ' '); // loại bỏ các ký tự đặc biệt, thay bằng khoảng trắng
   result = result.trim().replace(/\s+/g, '_');
   return result.toUpperCase();
 };
 
+/**
+ * Xu ly su kien nhap ten Thanh phan luong
+ * View details thì không nhập được
+ */
 const onComponentNameInput = () => {
   clearError('componentName');
   if (props.mode === 'add' || props.mode === 'copy' || props.mode === 'edit') {
     if (!isCodeManuallyEdited.value) {
-      formData.value.componentCode = removeAccentsAndSpecialChars(formData.value.componentName);
+      formData.value.componentCode = autoCompleteCompositionCode(formData.value.componentName);
       if (formData.value.componentCode) {
         clearError('componentCode');
       }
@@ -63,6 +73,11 @@ const onComponentNameInput = () => {
   }
 };
 
+/**
+ * Xử lý hành vi nhập thủ công vào trường Mã thành phần
+ * Nếu nhập tay thì sẽ kích hoạt hàm này và cờ sẽ đổi về true
+ * Nếu xóa hết giá trị trong trường, cờ sẽ đổi về false (reset trạng thái nhập tự động)
+ */
 const onComponentCodeInput = () => {
   clearError('componentCode');
   isCodeManuallyEdited.value = true;
@@ -72,7 +87,7 @@ const onComponentCodeInput = () => {
 };
 // </editor-fold>
 
-// Validation
+// Err message của các trường
 const errors = ref<Record<string, string>>({});
 
 // <editor-fold> desc="Validation"
@@ -81,7 +96,8 @@ const errors = ref<Record<string, string>>({});
  * ComponentName: khong duoc de trong, khong dai qua 255 ky tu
  * ComponentCode: khong duoc de trong, khong dai qua 255 ky tu, khong ky tu dac biet (chỉ có chu, số, dấu gạch dưới)
  * SalaryComponentSystemId: khong duoc de trong
- * Attribute: khong duoc de trong
+ * Attribute: khong duoc de trong,
+ * AppliedFor: khong duoc de trong
  * @param field
  */
 const validateField = (field: string): boolean => {
@@ -225,7 +241,7 @@ const initForm = () => {
         formData.value.componentCode = '';
         formData.value.componentName = '';
       }
-      
+
       // Ensure numeric binding for attribute and valueType if they exist
       if (props.initialData.attribute !== undefined && props.initialData.attribute !== null) {
         formData.value.attribute = Number(props.initialData.attribute);
@@ -252,9 +268,11 @@ const initForm = () => {
 };
 
 const appliedUnits = ref<any[]>([]);
-const salaryComponentSystems = ref<any[]>([]);
 
-// Tree selection state
+// <editor-fold> desc="Xu ly cau truc cha con cua selecboxobox (Don vi ap dung)"
+/**
+ * Tree selection state
+ */
 const treeBoxValue = ref<string[]>([]);
 const isTreeOpened = ref(false);
 
@@ -303,7 +321,10 @@ const removeTag = (id: string) => {
   formData.value.appliedUnitIds = [...treeBoxValue.value];
   validateField('appliedFor');
 };
+// </editor-fold>
 
+// <editor-fold> desc="Fetch danh sach Don vi ap dung"
+const salaryComponentSystems = ref<any[]>([]);
 const loadCategories = async () => {
   try {
     const [unitsRes, systemsRes] = await Promise.all([
@@ -321,6 +342,7 @@ const loadCategories = async () => {
     console.error('Lỗi khi tải danh mục:', error);
   }
 };
+// </editor-fold>
 
 onMounted(() => {
   initForm();
@@ -352,19 +374,6 @@ const handleSave = () => {
   formData.value = getDefaultData();
   console.log(formData.value);
 };
-
-const handleSaveAndAdd = async () => {
-  if (!validateAll()) {
-    focusFirstError();
-    return;
-  }
-  emit('save', formData.value, true); // stayOpen = true
-  // Reset form cho lần thêm tiếp theo
-  formData.value = getDefaultData();
-  errors.value = {};
-  // nextTick(() => componentNameRef.value?.focus());
-  await nextTick(() => componentNameRef.value?.focus());
-};
 </script>
 
 <template>
@@ -379,12 +388,14 @@ const handleSaveAndAdd = async () => {
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </div>
-          <div class="salary-form-title">{{ mode === 'edit' ? 'Sửa' : mode === 'view' ? 'Chi tiết' : 'Thêm' }} thành phần</div>
+          <div class="salary-form-title">{{ mode === 'edit' ? 'Sửa' : mode === 'view' ? 'Chi tiết' : 'Thêm' }} thành
+            phần
+          </div>
         </div>
         <div class="salary-form-header-right">
           <button class="misa-btn-cancel" @click="$emit('close')">Hủy bỏ</button>
           <template v-if="mode !== 'view'">
-            <button class="misa-btn-outline" @click="handleSaveAndAdd">Lưu và thêm</button>
+            <button class="misa-btn-outline" @click="handleSave">Lưu và thêm</button>
             <button class="misa-btn-primary" @click="handleSave">Lưu</button>
           </template>
         </div>
@@ -397,6 +408,7 @@ const handleSaveAndAdd = async () => {
           <div class="form-row" :class="{ 'has-error': errors.componentName }">
             <div class="form-label">Tên thành phần <span class="required">*</span></div>
             <div class="form-control">
+              <!-- @input: su kien lang nghe thay doi -->
               <input ref="componentNameRef"
                      type="text"
                      class="misa-input w-full-input"
@@ -528,8 +540,10 @@ const handleSaveAndAdd = async () => {
 
               <!-- Radio thuế: chỉ hiển thị khi Tính chất = Thu nhập -->
               <div v-if="showTaxOptions && formData.attribute === 1" class="radio-group ml-24">
-                <label v-for="tax in taxOptions" :key="tax.value" class="radio-label" :class="{'disabled-label': mode === 'view'}">
-                  <input type="radio" v-model="formData.taxType" :value="tax.value" :tabindex="tax.tabindex" :disabled="mode === 'view'">
+                <label v-for="tax in taxOptions" :key="tax.value" class="radio-label"
+                       :class="{'disabled-label': mode === 'view'}">
+                  <input type="radio" v-model="formData.taxType" :value="tax.value" :tabindex="tax.tabindex"
+                         :disabled="mode === 'view'">
                   <span class="radio-custom"></span> {{ tax.label }}
                 </label>
               </div>
@@ -583,7 +597,8 @@ const handleSaveAndAdd = async () => {
             <div class="form-control flex-col">
               <div class="radio-row mb-12">
                 <label class="radio-label" :class="{'disabled-label': mode === 'view'}">
-                  <input type="radio" v-model="formData.valueCalculation" value="Tự động cộng tổng" tabindex="12" :disabled="mode === 'view'">
+                  <input type="radio" v-model="formData.valueCalculation" value="Tự động cộng tổng" tabindex="12"
+                         :disabled="mode === 'view'">
                   <span class="radio-custom"></span> Tự động cộng tổng giá trị của các nhân viên
                 </label>
                 <div class="inline-selectbox-wrapper ml-12">
@@ -646,7 +661,8 @@ const handleSaveAndAdd = async () => {
             <div class="form-label">Hiển thị trên phiếu lương</div>
             <div class="form-control">
               <div class="radio-group">
-                <label v-for="option in showOnPayslipOptions" :key="option.value" class="radio-label" :class="{'disabled-label': mode === 'view'}">
+                <label v-for="option in showOnPayslipOptions" :key="option.value" class="radio-label"
+                       :class="{'disabled-label': mode === 'view'}">
                   <input type="radio" v-model="formData.showOnPayslip" :value="option.value"
                          :tabindex="option.tabindex" :disabled="mode === 'view'">
                   <span class="radio-custom"></span> {{ option.label }}
