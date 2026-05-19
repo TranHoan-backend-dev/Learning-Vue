@@ -13,6 +13,8 @@ import SalaryCompositionDataTable from "@/views/ms-salary-compositions/component
 import SalaryCompositionSystemModal from "./components/SalaryCompositionSystemModal.vue";
 import gridConfigService from "@/services/gridConfigService.ts";
 import MSPageLayout from "@/components/layout/ms-page-layout/MSPageLayout.vue";
+import SalaryCompositionSystemDirectory
+  from "@/views/ms-salary-compositions/components/SalaryCompositionSystemDirectory.vue";
 
 const selectedIds = ref<string[]>([]);
 const isLoading = ref(false);
@@ -302,7 +304,7 @@ const handleEdit = (data: any) => {
  * Xu ly viec mo form view details
  * @param data
  */
-const handleRowClick = (data: any) => {
+const handleViewDetails = (data: any) => {
   fetchDetailAndOpenForm('view', data.componentId, data);
 }
 
@@ -430,6 +432,10 @@ const confirmDelete = async () => {
 // <editor-fold> desc="Xu ly nut chevron down 'Them moi'"
 const isAddDropdownVisible = ref(false);
 
+/**
+ * Ẩn hiện nút dropdown (mở hoặc đóng Danh mục hệ thống)
+ * @param e 
+ */
 const toggleAddDropdown = (e: any) => {
   e.stopPropagation();
   isAddDropdownVisible.value = !isAddDropdownVisible.value;
@@ -441,10 +447,17 @@ window.addEventListener('click', () => {
 });
 
 const isSystemDirectoryVisible = ref(false);
+const isSystemModalVisible = ref(false);
 
-const handleAddFromSystem = () => {
+const handleOpenSystemDirectory = () => {
   console.log('Switching to System Directory view...');
   isSystemDirectoryVisible.value = true;
+  isAddDropdownVisible.value = false;
+};
+
+const handleOpenSystemModal = () => {
+  console.log('Opening System Catalog Modal...');
+  isSystemModalVisible.value = true;
   isAddDropdownVisible.value = false;
 };
 
@@ -464,15 +477,22 @@ const columns = ref<any[]>([]);
 
 const isColumnConfigVisible = ref(false);
 
+/**
+ * Xu ly viec ghim cot.
+ * @param e
+ * @param dataField
+ */
 const togglePin = (e: any, dataField: string) => {
   e.stopPropagation();
+
   const column = columns.value.find(col => col.dataField === dataField);
-  if (column) {
+  const index = columns.value.findIndex(col => col.dataField === dataField);
+  if (index !== -1) {
     const newState = !column.isPinned;
-    // Reset all pins first to ensure only one column is marked as the "pin point"
-    columns.value.forEach(col => {
-      col.isPinned = false;
-    });
+    for (const [ind, col] of columns.value.entries()) {
+      if (ind == index) break;
+      col.isPinned = true;
+    }
     column.isPinned = newState;
   }
 };
@@ -490,7 +510,7 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
 </script>
 
 <template>
-  <MSPageLayout v-if="!isFormVisible">
+  <MSPageLayout v-if="!isFormVisible && !isSystemDirectoryVisible">
     <template #header-left>
       <div class="content_header_title">Thành phần lương</div>
     </template>
@@ -500,8 +520,8 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
           :is-add-dropdown-visible="isAddDropdownVisible"
           @add="handleAdd"
           @toggle-dropdown="toggleAddDropdown"
-          @add-from-system="handleAddFromSystem"
-          @open-system="handleAddFromSystem"
+          @add-from-system="handleOpenSystemModal"
+          @open-system="handleOpenSystemDirectory"
       />
     </template>
 
@@ -524,7 +544,7 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
           @handleEdit="handleEdit"
           @handleDelete="handleDelete"
           @deleteSelected="handleDeleteSelected"
-          @handleRowClick="handleRowClick"
+          @handleRowClick="handleViewDetails"
       />
     </template>
   </MSPageLayout>
@@ -555,10 +575,12 @@ toast.success('Đăng nhập thành công', 'Chào mừng đến với hệ th�
 
   <!-- System Catalog Modal Popup -->
   <SalaryCompositionSystemModal
-      v-if="isSystemDirectoryVisible"
-      @close="isSystemDirectoryVisible = false"
+      v-if="isSystemModalVisible"
+      @close="isSystemModalVisible = false"
       @save="fetchData"
   />
+
+  <SalaryCompositionSystemDirectory v-if="!isFormVisible && isSystemDirectoryVisible" @back="closeSystemDirectory"/>
 </template>
 
 <style scoped src="./style.css"></style>

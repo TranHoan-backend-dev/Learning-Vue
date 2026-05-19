@@ -175,6 +175,7 @@ const handleAgree = async () => {
       :show-title="false"
       :drag-enabled="false"
       class="system-directory-popup-wrapper"
+      :wrapper-attr="{ class: 'system-directory-popup-wrapper' }"
   >
     <div class="system-modal-layout">
       <!-- Modal Header -->
@@ -333,7 +334,16 @@ const handleAgree = async () => {
   </DxPopup>
 </template>
 
+<style>
+/* Global style block to override the teleported DevExtreme popup internal padding */
+.system-directory-popup-wrapper .dx-popup-content,
+.dx-popup-content:has(.system-modal-layout) {
+  padding: 0 !important;
+}
+</style>
+
 <style scoped>
+
 .system-modal-layout {
   display: flex;
   flex-direction: column;
@@ -346,7 +356,7 @@ const handleAgree = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px 16px 24px;
+  padding: 20px 20px 12px 20px;
   border-bottom: none;
   flex-shrink: 0;
 }
@@ -379,7 +389,7 @@ const handleAgree = async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 24px;
+  padding: 0 16px;
   overflow: hidden;
 }
 
@@ -390,6 +400,7 @@ const handleAgree = async () => {
   gap: 16px;
   margin-bottom: 16px;
   flex-shrink: 0;
+  margin-top: 20px;
 }
 
 .search-input-wrapper {
@@ -512,7 +523,7 @@ const handleAgree = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px 20px 24px;
+  padding: 12px 20px 12px 20px;
   border-top: none;
   background-color: transparent;
   flex-shrink: 0;
@@ -579,10 +590,12 @@ const handleAgree = async () => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 12px 24px;
+  padding: 12px 16px;
   border-top: 1px solid #e0e0e0;
   background-color: #f4f5f8;
   flex-shrink: 0;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
 .btn-misa-modal-cancel {

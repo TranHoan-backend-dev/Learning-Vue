@@ -1,2 +1,8 @@
 @import "common.css";
 @import "icon.css";
+
+/* Global override to remove padding from MISA popups with system catalog layouts */
+.system-directory-popup-wrapper .dx-popup-content,
+.dx-popup-content:has(.system-modal-layout) {
+  padding: 0 !important;
+}

@@ -56,7 +56,6 @@
   border-radius: var(--misa-border-radius);
   background-color: var(--primary-green);
   position: relative;
-  overflow: hidden;
 }
 
 .misa-btn-primary-left {
@@ -85,6 +84,8 @@
   justify-content: center;
   cursor: pointer;
   transition: var(--misa-transition);
+  /* border-top-right-radius: var(--misa-border-radius);
+  border-bottom-right-radius: var(--misa-border-radius); */
 }
 
 .split_button_arrow:hover {

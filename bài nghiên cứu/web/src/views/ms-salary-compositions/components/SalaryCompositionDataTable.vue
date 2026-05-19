@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref, onMounted} from "vue";
+import {computed, onMounted, ref} from "vue";
 import DxSelectBox from "devextreme-vue/select-box";
 import DxDropDownBox from "devextreme-vue/drop-down-box";
 import DxTreeView from "devextreme-vue/tree-view";
@@ -85,11 +85,7 @@ const handlePageSizeValChange = (e: any) => {
  * Tinh toan cac cot can ghim
  */
 const isFixed = (col: any) => {
-  const pinnedIndex = props.columns.findIndex(c => c.isPinned);
-  if (pinnedIndex === -1) return false;
-
-  const currentColIndex = props.columns.findIndex(c => c.dataField === col.dataField);
-  return currentColIndex !== -1 && currentColIndex <= pinnedIndex;
+  return !!col.isPinned;
 };
 
 // Phat su kien togglePin
@@ -112,11 +108,15 @@ const fullColumns = computed(() => {
   }));
 });
 
+// <editor-fold> desc="Xu ly danh sach cha con cua Don vi ap dung"
 const appliedUnits = ref<any[]>([]);
 const treeBoxValue = ref<string[]>([]);
 const isTreeOpened = ref(false);
 const showInactiveUnits = ref(false);
 
+/**
+ * Quan sat su thay doi du lieu va tu dong map du lieu
+ */
 const treeDataSource = computed(() => {
   return appliedUnits.value.map((org: any) => ({
     id: org.organizationId,
@@ -126,9 +126,9 @@ const treeDataSource = computed(() => {
 });
 
 const onTreeViewSelectionChanged = (e: any) => {
-  const keys = e.component.getSelectedNodeKeys();
-  treeBoxValue.value = keys;
+  treeBoxValue.value = e.component.getSelectedNodeKeys();
 };
+// </editor-fold>
 
 /**
  * Fetch danh sach cac Don vi ap dung
@@ -216,11 +216,12 @@ onMounted(() => {
                     display-expr="text"
                     placeholder="Tất cả đơn vị"
                     content-template="tree-template"
-                    :drop-down-options="{ container: '.content_body_container', wrapperAttr: { class: 'misa-filter-dropdown-tree-popup' } }"
+                    :drop-down-options="{ container: '.content_body_container', wrapperAttr: { class: 'misa-filter-dropdown-tree-popup' }, height: 'auto', maxHeight: 320 }"
                     :width="320"
                 >
                   <template #tree-template>
                     <div class="filter-tree-container">
+                      <!-- Dinh hinh cau truc du lieu dang cha-con -->
                       <DxTreeView
                           :data-source="treeDataSource"
                           data-structure="plain"
@@ -739,11 +740,13 @@ onMounted(() => {
 
 :deep(.misa-filter-dropdown-tree-popup .dx-popup-content) {
   padding: 0 !important;
+  max-height: 320px;
+  overflow-y: auto !important;
 }
 
 :deep(.misa-filter-dropdown-tree-popup .dx-treeview) {
   padding: 4px 0 !important;
-  max-height: 250px;
+  max-height: 220px;
   overflow-y: auto;
 }
 

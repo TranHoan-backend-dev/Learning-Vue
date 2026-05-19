@@ -113,7 +113,7 @@ const togglePin = (e: any, dataField: string) => {
   }
 };
 
-const handleAddSystem = (data: any) => {
+const handleAdding = (data: any) => {
   addSystemComposition(data);
   fetchData();
 };
@@ -173,7 +173,7 @@ const addSystemComposition = async (data: any) => {
           v-model:selectedSystemId="selectedSystemId"
           @handlePageSizeChange="handlePageSizeChange"
           @togglePin="togglePin"
-          @addSystem="handleAddSystem"
+          @addSystem="handleAdding"
           status-filter=""/>
     </template>
   </MSPageLayout>
