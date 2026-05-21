@@ -88,6 +88,7 @@ const handleSearchByKeyword = async () => {
       mapResponseBody(response.data.data);
     }
   } catch (e: any) {
+    console.error(e.message);
     toast.error('Co loi xay ra', e.message);
   }
 }

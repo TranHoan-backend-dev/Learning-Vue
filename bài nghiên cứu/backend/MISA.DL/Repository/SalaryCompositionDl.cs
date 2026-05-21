@@ -54,7 +54,7 @@ public class SalaryCompositionDl(
     /// <summary>
     /// Xóa các Đơn vị áp dụng bằng id của salary composition
     /// <param name="componentId">Id của Salary composition</param>
-    /// </summary
+    /// </summary>
     public async Task DeleteAppliedUnitsAsync(Guid componentId)
     {
         await using var conn = _context.GetConnection();

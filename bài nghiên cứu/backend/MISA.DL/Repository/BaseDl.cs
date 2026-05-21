@@ -337,6 +337,15 @@ public class BaseDl<T>(
         return await conn.ExecuteScalarAsync<int>(command, param: parameters);
     }
 
+    /// <summary>
+    /// Kiem tra xem ban ghi da ton tai hay chua
+    /// </summary>
+    /// <param name="type">Dai dien cua doi tuong can kiem tra</param>
+    /// <param name="tableName">Ten bang</param>
+    /// <param name="entity">Doi tuong can kiem tra</param>
+    /// <param name="conn">Connection</param>
+    /// <param name="transaction">Transaction</param>
+    /// <returns></returns>
     private async Task<T?> IsExist(
         Type type, string tableName, T entity,
         MySqlConnection conn, MySqlTransaction transaction
